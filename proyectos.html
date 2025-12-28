@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Daniel Rayo</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        body { margin: 0; background-color: #0a0000; font-family: 'Rajdhani', sans-serif; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        [v-cloak] { display: none; }
+        
+        .admin-container {
+            background: #000;
+            border: 2px solid #ff003c;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 50px rgba(255,0,60,0.2);
+        }
+        h1 { font-family: 'Orbitron'; color: #ff003c; text-transform: uppercase; text-align: center; margin-bottom: 30px; }
+        
+        /* Formularios */
+        input, textarea { width: 100%; background: #111; border: 1px solid #333; color: white; padding: 15px; margin-bottom: 20px; font-family: 'Rajdhani'; font-size: 1.1rem; box-sizing: border-box;}
+        input:focus, textarea:focus { border-color: #ff003c; outline: none; }
+        label { display: block; margin-bottom: 10px; color: #ff003c; font-weight: bold; text-transform: uppercase;}
+        
+        .btn { width: 100%; background: #ff003c; color: white; border: none; padding: 15px; font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn:hover { background: #ff3366; box-shadow: 0 0 20px #ff003c; }
+        .btn:disabled { background: #333; cursor: not-allowed; box-shadow: none;}
+        .btn-secondary { background: transparent; border: 2px solid #333; margin-top: 10px; }
+        .btn-secondary:hover { border-color: #fff; }
+
+        .upload-status { text-align: center; margin: 20px 0; color: #ff003c; font-weight: bold; }
+        .error-msg { color: red; text-align: center; margin-bottom: 20px; }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div id="admin-app" v-cloak>
+        
+        <div v-if="!user" class="admin-container">
+            <h1>Acceso Restringido</h1>
+            <form @submit.prevent="login">
+                <input v-model="email" type="email" placeholder="Email de administrador" required>
+                <input v-model="password" type="password" placeholder="Contraseña" required>
+                <div v-if="loginError" class="error-msg">{{ loginError }}</div>
+                <button type="submit" class="btn">Entrar al Sistema</button>
+            </form>
+            <a href="/" class="back-link">← Volver al portfolio</a>
+        </div>
+
+        <div v-else class="admin-container" style="max-width: 800px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h1>Panel de Control</h1>
+                <button @click="logout" class="btn btn-secondary" style="width: auto; padding: 10px 20px;">Cerrar Sesión</button>
+            </div>
+            <hr style="border-color: #333; margin-bottom: 30px;">
+            
+            <h3>Publicar Nuevo Proyecto</h3>
+            
+            <div class="admin-form">
+                <label>Título del Proyecto</label>
+                <input v-model="newProject.title" placeholder="Ej: Guerrero Cyberpunk">
+                
+                <label>Descripción Corta</label>
+                <textarea v-model="newProject.description" placeholder="Ej: Modelado en Zbrush, texturizado en Substance..." rows="4"></textarea>
+                
+                <label>1. Foto de Portada (Thumbnail)</label>
+                <input type="file" @change="uploadThumbnail" accept="image/*">
+                
+                <label>2. Galería de Imágenes (Selecciona varias)</label>
+                <input type="file" @change="uploadGallery" accept="image/*" multiple>
+
+                <div v-if="uploading" class="upload-status">
+                    <i class="fas fa-sync fa-spin"></i> SUBIENDO ARCHIVOS... {{ uploadProgress }}%
+                </div>
+
+                <button @click="saveProject" class="btn" :disabled="uploading || !newProject.title || !newProject.thumbnail">
+                    PUBLICAR PROYECTO AHORA
+                </button>
+            </div>
+            <a href="/" class="back-link" target="_blank">Ver el portfolio público →</a>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { db, storage, auth } from './firebase-config.js';
+        import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+        import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // Auth state
+                const user = ref(null);
+                const email = ref("");
+                const password = ref("");
+                const loginError = ref("");
+
+                // Project Form state
+                const newProject = ref({ title: '', description: '', thumbnail: '', images: [] });
+                const uploading = ref(false);
+                const uploadProgress = ref(0);
+
+                // LOGIN
+                const login = async () => {
+                    loginError.value = "";
+                    try {
+                        await signInWithEmailAndPassword(auth, email.value, password.value);
+                    } catch (error) {
+                        if(error.code === 'auth/wrong-password') loginError.value = "Contraseña incorrecta";
+                        else if(error.code === 'auth/user-not-found') loginError.value = "Usuario no encontrado";
+                        else loginError.value = "Error de acceso: " + error.code;
+                    }
+                };
+                const logout = () => signOut(auth);
+
+                // UPLOAD HELPERS
+                const uploadFile = async (file) => {
+                    const storageRef = sRef(storage, 'uploads/' + Date.now() + '_' + file.name.replace(/\s+/g, '_'));
+                    await uploadBytes(storageRef, file);
+                    return await getDownloadURL(storageRef);
+                }
+
+                const uploadThumbnail = async (e) => {
+                    if(!e.target.files[0]) return;
+                    uploading.value = true; uploadProgress.value = 10;
+                    newProject.value.thumbnail = await uploadFile(e.target.files[0]);
+                    uploading.value = false;
+                };
+
+                const uploadGallery = async (e) => {
+                    uploading.value = true;
+                    const files = e.target.files;
+                    for (let i = 0; i < files.length; i++) {
+                        const url = await uploadFile(files[i]);
+                        newProject.value.images.push(url);
+                        uploadProgress.value = Math.round(((i+1) / files.length) * 100);
+                    }
+                    uploading.value = false;
+                };
+
+                // SAVE TO FIRESTORE
+                const saveProject = async () => {
+                    if(!newProject.value.title) return;
+                    uploading.value = true;
+                    try {
+                        await addDoc(collection(db, "projects"), {
+                            ...newProject.value,
+                            createdAt: Date.now()
+                        });
+                        alert("¡Proyecto publicado con éxito!");
+                        newProject.value = { title: '', description: '', thumbnail: '', images: [] }; // Reset form
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    } finally {
+                        uploading.value = false;
+                    }
+                };
+
+                onMounted(() => {
+                    onAuthStateChanged(auth, (u) => { user.value = u; });
+                });
+
+                return { user, email, password, loginError, login, logout, newProject, uploading, uploadProgress, uploadThumbnail, uploadGallery, saveProject };
+            }
+        }).mount('#admin-app');
+    </script>
+</body>
+</html>
