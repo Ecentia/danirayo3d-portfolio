@@ -14,7 +14,7 @@ import ProjectsGrid from '@/components/sections/ProjectGrid';
 import TechStack from '@/components/sections/TechStack';
 import Experience from '@/components/sections/Experience';
 import Contact from '@/components/sections/Contact';
-
+export const dynamic = 'force-dynamic';
 // --- CONFIGURACIÓN DE ANIMACIONES CORREGIDA ---
 // Tipamos como Variants para que acepte el array en 'ease'
 const fadeInUp: Variants = {
