@@ -1,12 +1,14 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import Masonry from 'react-masonry-css';
 import { supabase } from '@/lib/supabase';
 import { Project } from '@/types/database';
 import ProjectCard from '../projects/ProjectCard';
 import ProjectModal from '../projects/ProjectModal';
-import { Cpu, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, LayoutGrid } from 'lucide-react';
 import { useAdmin } from '@/context/AdminContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const breakpointColumnsObj = {
   default: 4,
@@ -19,10 +21,13 @@ export default function ProjectsGrid() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isAdmin, deleteProject } = useAdmin(); // Usamos deleteProject del contexto
+  const { isAdmin, deleteProject } = useAdmin();
 
   const fetchProjects = async () => {
-    const { data } = await supabase.from('projects').select('*').order('display_order', { ascending: true });
+    const { data } = await supabase
+      .from('projects')
+      .select('*')
+      .order('display_order', { ascending: true });
     if (data) setProjects(data);
   };
 
@@ -38,65 +43,94 @@ export default function ProjectsGrid() {
     setIsModalOpen(true);
   };
 
-  // Función wrapper para manejar el borrado sin abrir el modal
   const handleDeleteClick = async (e: React.MouseEvent, projectId: string) => {
-    e.stopPropagation(); // Evita que se abra el modal al hacer click en la papelera
+    e.stopPropagation();
     await deleteProject(projectId);
-    fetchProjects(); // Recargar la lista tras borrar
+    fetchProjects();
   };
 
   return (
-    <section className="py-20 bg-black relative z-10">
-       <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+    <section className="py-24 bg-black relative z-10 overflow-hidden">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12">
         
-        <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-2 opacity-50 font-mono text-xs text-red-500 tracking-[0.3em]">
-                 <Cpu size={14} /><span>SYSTEM_MODULE: PROJECT_DATABASE</span>
-            </div>
-            <div className="h-[1px] flex-grow mx-8 bg-gradient-to-r from-red-900/50 to-transparent"></div>
+        {/* CABECERA DE SECCIÓN TÉCNICA */}
+        <div className="flex flex-col mb-16">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-[1px] bg-red-600"></div>
+            <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase flex items-center gap-2">
+               <LayoutGrid size={12} /> Galería_Proyectos
+            </span>
+          </div>
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
+            Selección <span className="text-zinc-800">Visual</span>
+          </h2>
         </div>
 
-        <Masonry breakpointCols={breakpointColumnsObj} className="flex w-auto -ml-4" columnClassName="pl-4 bg-clip-padding">
-          
-          {/* BOTÓN AÑADIR (ADMIN) */}
+        <Masonry 
+          breakpointCols={breakpointColumnsObj} 
+          className="flex w-auto -ml-6" 
+          columnClassName="pl-6 bg-clip-padding"
+        >
+          {/* BOTÓN AÑADIR (ADMIN) - ESTILO HEADER */}
           {isAdmin && (
-            <div className="mb-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
               <button 
                 onClick={handleOpenCreate}
-                className="w-full aspect-video border-2 border-dashed border-red-900/30 bg-red-950/5 rounded-lg flex flex-col items-center justify-center gap-3 hover:border-red-500/50 hover:bg-red-500/10 transition-all group overflow-hidden relative"
+                className="w-full aspect-square border border-white/5 bg-zinc-900/20 rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-zinc-900/40 transition-all group relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.1)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="p-3 rounded-full bg-red-500/10 text-red-500 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all">
-                  <Plus size={32} />
+                {/* Micro-esquinas tácticas */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-red-600 group-hover:border-red-600 transition-all duration-500">
+                  <Plus size={24} />
                 </div>
-                <span className="font-mono text-[10px] tracking-[0.2em] text-red-500/60 uppercase">Add_New_Entity</span>
+                <span className="font-mono text-[9px] tracking-[0.3em] text-zinc-500 group-hover:text-white uppercase transition-colors">
+                  Nueva_Entidad
+                </span>
               </button>
-            </div>
+            </motion.div>
           )}
 
           {/* LISTA DE PROYECTOS */}
-          {projects.map((project) => (
-            <div key={project.id} className="relative group mb-4">
-                {/* Botón Borrar Flotante (Solo aparece en hover si eres admin) */}
+          <AnimatePresence mode="popLayout">
+            {projects.map((project, index) => (
+              <motion.div 
+                key={project.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="relative group mb-6"
+              >
+                {/* Botón Borrar Minimalista */}
                 {isAdmin && (
                     <button 
                         onClick={(e) => handleDeleteClick(e, project.id)}
-                        className="absolute -top-2 -right-2 z-50 bg-red-600 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:bg-red-500"
+                        className="absolute top-4 right-4 z-50 bg-black/60 backdrop-blur-md text-white/50 p-2 border border-white/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all hover:text-red-500 hover:border-red-500"
                         title="Eliminar Proyecto"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                     </button>
                 )}
                 
-                {/* La tarjeta normal */}
-                <ProjectCard 
-                  project={project} 
-                  onClick={() => handleOpenEdit(project.id)}
-                />
-            </div>
-          ))}
+                <div className="transform transition-transform duration-700 group-hover:translate-y-[-4px]">
+                  <ProjectCard 
+                    project={project} 
+                    onClick={() => handleOpenEdit(project.id)}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </Masonry>
 
+        {/* MODAL DE EDICIÓN */}
         <ProjectModal 
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
