@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google"; // 1. Importamos desde Goo
 import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
 import AdminControls from "@/components/AdminControls";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import WelcomeScreen from "@/components/layout/WelcomeScreen";
 
 // 2. Configuramos las fuentes para que se descarguen solas
 const geistSans = Geist({
@@ -32,7 +35,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
         <AdminProvider>
+           <WelcomeScreen />
+          <Header />
           {children}
+          <Footer />
           <AdminControls />
         </AdminProvider>
       </body>
