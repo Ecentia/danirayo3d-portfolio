@@ -109,18 +109,6 @@ export default function Contact() {
                   </div>
                </div>
 
-               {/* Tarjeta Teléfono */}
-               <a href="tel:+34722671534" className="block group relative bg-zinc-900/40 border border-white/5 p-6 rounded-2xl backdrop-blur-sm hover:border-red-500/30 transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                     <div className="p-3 bg-zinc-900 rounded-full text-white border border-white/10 group-hover:bg-red-600 group-hover:border-red-500 transition-colors">
-                        <Phone size={20} />
-                     </div>
-                     <div>
-                        <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Teléfono</div>
-                        <div className="text-lg text-white font-medium">722 67 15 34</div>
-                     </div>
-                  </div>
-               </a>
             </div>
 
             {/* Redes Sociales */}
