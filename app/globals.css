@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rayo-red: #ff0000;
+  --color-rayo-dark: #080808;
+  --font-orbitron: var(--font-orbitron);
+}
+
+:root {
+  background: #000;
+  color: white;
+  cursor: crosshair; /* Cursor de precisión */
+}
+
+body {
+  background-color: #000;
+  overflow-x: hidden;
+}
+
+/* Efecto de Escaneo tipo CRT (Espectacular) */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(255, 0, 0, 0.02) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* Resplandor rojo ambiental */
+.red-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
+  z-index: -1;
+  filter: blur(80px);
+}
