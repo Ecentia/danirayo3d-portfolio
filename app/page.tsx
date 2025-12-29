@@ -4,7 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { Environment, ContactShadows, Grid, Sparkles, Html } from '@react-three/drei';
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion'; // Importamos Variants
 import * as THREE from 'three';
 
 // --- COMPONENTES ---
@@ -15,17 +15,21 @@ import TechStack from '@/components/sections/TechStack';
 import Experience from '@/components/sections/Experience';
 import Contact from '@/components/sections/Contact';
 
-// --- CONFIGURACIÓN DE ANIMACIONES REUTILIZABLES ---
-const fadeInUp = {
+// --- CONFIGURACIÓN DE ANIMACIONES CORREGIDA ---
+// Tipamos como Variants para que acepte el array en 'ease'
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 60 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }
+    transition: { 
+      duration: 0.8, 
+      ease: [0.25, 0.1, 0.25, 1] // Curva Bézier personalizada
+    }
   }
 };
 
-const revealSide = (direction: 'left' | 'right') => ({
+const revealSide = (direction: 'left' | 'right'): Variants => ({
   hidden: { opacity: 0, x: direction === 'left' ? -100 : 100 },
   visible: { 
     opacity: 1, 
@@ -43,7 +47,17 @@ function ExperienceScene({ targetPosition, setTargetPosition }: { targetPosition
       <color attach="background" args={['#050505']} />
       <Environment preset="city" /> 
 
-      <Grid position={[0, -1.5, 0]} args={[60, 60]} cellSize={1} cellThickness={1} cellColor="#ff0000" sectionSize={5} sectionThickness={1.5} sectionColor="#aa0000" fadeDistance={40} />
+      <Grid 
+        position={[0, -1.5, 0]} 
+        args={[60, 60]} 
+        cellSize={1} 
+        cellThickness={1} 
+        cellColor="#ff0000" 
+        sectionSize={5} 
+        sectionThickness={1.5} 
+        sectionColor="#aa0000" 
+        fadeDistance={40} 
+      />
       <Sparkles count={150} scale={20} size={3} speed={0.4} opacity={0.3} color="#ffffff" />
 
       <mesh position={[-10, -1.5, 0]} rotation={[-Math.PI / 2, 0, 0]} onPointerOver={() => setHoverSide('left')} onClick={() => setTargetPosition(-4.5)}>
@@ -116,7 +130,7 @@ export default function Home() {
               <button className="relative group px-12 py-4 md:px-16 md:py-5 bg-black/20 border border-white/10 hover:border-red-600 overflow-hidden transition-all duration-500 backdrop-blur-sm rounded-sm">
                  <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
                  <span className="relative z-10 text-white font-black text-sm md:text-xl tracking-[0.2em] flex items-center gap-3">
-                   EXPLORAR <span className="text-red-600 group-hover:text-white transition-colors">↓</span>
+                   EXPLORAR <span className="text-red-500 group-hover:text-white transition-colors">↓</span>
                  </span>
               </button>
             </Link>
