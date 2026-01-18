@@ -18,7 +18,7 @@ const MONTHS = [
 ];
 
 export default function ExperienceModal({ isOpen, onClose, itemToEdit }: ExperienceModalProps) {
-  const { registerNewExperience, registerChange, notify } = useAdmin();
+  const { registerNewExperience, registerChange, notify, setIsModalOpen } = useAdmin();
   
   // Estado base
   const [type, setType] = useState<'work' | 'education'>('work');
@@ -33,6 +33,26 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
   const [endMonth, setEndMonth] = useState('');
   const [endYear, setEndYear] = useState('');
   const [isCurrent, setIsCurrent] = useState(false);
+
+  // --- CONTROL DE HEADER Y SCROLL ---
+  useEffect(() => {
+    if (isOpen) {
+      setIsModalOpen(true);
+      document.body.style.overflow = 'hidden';
+    } else {
+      setIsModalOpen(false);
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen, setIsModalOpen]);
+
+  // --- FIX: CIERRE AL NAVEGAR (HASH CHANGE) ---
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (isOpen) onClose();
+    };
+    window.addEventListener('hashchange', handleRouteChange);
+    return () => window.removeEventListener('hashchange', handleRouteChange);
+  }, [isOpen, onClose]);
 
   // Cargar datos si es edición
   useEffect(() => {
@@ -65,7 +85,6 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
         }
       }
     } else {
-      // Reset para nueva entrada
       resetForm();
     }
   }, [itemToEdit, isOpen]);
@@ -83,21 +102,16 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
   };
 
   const handleSubmit = () => {
-    // 1. Validación: El año de inicio es OBLIGATORIO
     if (!title || !organization || !startYear) {
       notify("Falta el Título, Organización o el Año de Inicio", "error");
       return;
     }
 
-    // 2. Construir strings de fecha
     const finalStartDate = startMonth ? `${startMonth} ${startYear}` : `${startYear}`;
     
     let finalEndDate = null;
-    if (!isCurrent) {
-       // Si puso año de fin, lo construimos. Si no, se queda null (lo cual no es ideal si no es "current", pero asumiremos que si no es current debe tener fecha)
-       if (endYear) {
-         finalEndDate = endMonth ? `${endMonth} ${endYear}` : `${endYear}`;
-       }
+    if (!isCurrent && endYear) {
+      finalEndDate = endMonth ? `${endMonth} ${endYear}` : `${endYear}`;
     }
 
     const payload = {
@@ -111,7 +125,7 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
 
     if (itemToEdit) {
       registerChange(`exp_${itemToEdit.id}`, payload);
-      notify("Cambio registrado. Guarda para confirmar.", "success");
+      notify("Cambio registrado localmente", "success");
     } else {
       registerNewExperience({
         ...payload,
@@ -129,132 +143,132 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-          className="w-full max-w-lg bg-[#0a0a0a] border border-red-900/30 rounded-xl shadow-2xl overflow-hidden"
+          className="w-full max-w-lg bg-[#050505] border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-red-950/20 p-4 border-b border-red-900/20 flex justify-between items-center">
-            <h3 className="text-red-500 font-mono text-xs uppercase tracking-widest flex items-center gap-2">
+          <div className="bg-zinc-900/50 p-5 border-b border-white/5 flex justify-between items-center">
+            <h3 className="text-red-600 font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
               {type === 'work' ? <Briefcase size={14}/> : <GraduationCap size={14}/>}
-              {itemToEdit ? 'EDIT NODE DATA' : 'NEW TRAJECTORY NODE'}
+              {itemToEdit ? 'NODE_EDIT_MODE' : 'NEW_TIMELINE_NODE'}
             </h3>
-            <button onClick={onClose} className="text-zinc-500 hover:text-white"><X size={18}/></button>
+            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={20}/></button>
           </div>
 
           {/* Body */}
-          <div className="p-6 flex flex-col gap-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <div className="p-8 flex flex-col gap-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
             
-            {/* Type Selector */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Selector de Tipo */}
+            <div className="grid grid-cols-2 gap-4">
               <button 
                 onClick={() => setType('work')}
-                className={`py-3 text-xs font-mono uppercase border rounded transition-all flex justify-center items-center gap-2
-                  ${type === 'work' ? 'border-red-500 bg-red-500/10 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}
+                className={`py-3 text-[10px] font-black uppercase tracking-widest border rounded-xl transition-all flex justify-center items-center gap-2
+                  ${type === 'work' ? 'border-red-600 bg-red-600/10 text-white' : 'border-white/5 text-zinc-600 hover:border-white/10'}
                 `}
               >
-                <Briefcase size={14}/> Experience
+                <Briefcase size={14}/> Experiencia
               </button>
               <button 
                 onClick={() => setType('education')}
-                className={`py-3 text-xs font-mono uppercase border rounded transition-all flex justify-center items-center gap-2
-                  ${type === 'education' ? 'border-red-500 bg-red-500/10 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}
+                className={`py-3 text-[10px] font-black uppercase tracking-widest border rounded-xl transition-all flex justify-center items-center gap-2
+                  ${type === 'education' ? 'border-red-600 bg-red-600/10 text-white' : 'border-white/5 text-zinc-600 hover:border-white/10'}
                 `}
               >
-                <GraduationCap size={14}/> Education
+                <GraduationCap size={14}/> Formación
               </button>
             </div>
 
             {/* Inputs Principales */}
-            <div className="space-y-4">
-                <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Role / Title</label>
+            <div className="space-y-5">
+                <div className="group">
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest group-focus-within:text-red-500 transition-colors">Rol / Título</label>
                     <input 
-                    placeholder="e.g. Senior 3D Artist"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
+                      placeholder="Ej: Senior 3D Artist"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-red-600 outline-none transition-all"
                     />
                 </div>
-                <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Organization / School</label>
+                <div className="group">
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest group-focus-within:text-red-500 transition-colors">Organización / Centro</label>
                     <input 
-                    placeholder="e.g. Ubisoft / University of Design"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                    className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
+                      placeholder="Ej: Ecentia Studios"
+                      value={organization}
+                      onChange={(e) => setOrganization(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-red-600 outline-none transition-all"
                     />
                 </div>
             </div>
 
-            {/* SELECCIÓN DE FECHAS FLEXIBLE */}
-            <div className="bg-zinc-900/30 p-4 rounded border border-white/5 space-y-4">
-                <div className="flex items-center gap-2 text-red-500 text-xs font-mono uppercase mb-2">
-                    <Calendar size={12}/> Timeframe Config
+            {/* Configuración de Fechas */}
+            <div className="bg-zinc-900/20 p-5 rounded-2xl border border-white/5 space-y-5">
+                <div className="flex items-center gap-2 text-red-600 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <Calendar size={12}/> Configuración Temporal
                 </div>
                 
-                {/* FECHA INICIO */}
-                <div className="grid grid-cols-12 gap-2 items-end">
-                    <div className="col-span-12 text-[10px] text-zinc-400 font-mono">START DATE (Year Required)</div>
-                    <div className="col-span-5">
+                {/* INICIO */}
+                <div className="grid grid-cols-12 gap-3 items-end">
+                    <div className="col-span-12 text-[9px] text-zinc-600 font-mono uppercase tracking-widest">Fecha de Inicio</div>
+                    <div className="col-span-6">
                         <select 
                             value={startMonth} 
                             onChange={(e) => setStartMonth(e.target.value)}
-                            className="w-full bg-black border border-zinc-800 rounded p-2 text-xs text-white outline-none focus:border-red-500"
+                            className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-red-600 appearance-none"
                         >
-                            <option value="">(Month - Opt)</option>
+                            <option value="">Mes (Opt)</option>
                             {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
-                    <div className="col-span-7">
+                    <div className="col-span-6">
                         <input 
                             type="number" 
-                            placeholder="Year (e.g. 2022)" 
+                            placeholder="Año" 
                             value={startYear}
                             onChange={(e) => setStartYear(e.target.value)}
-                            className="w-full bg-black border border-zinc-800 rounded p-2 text-xs text-white outline-none focus:border-red-500"
+                            className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-red-600"
                         />
                     </div>
                 </div>
 
-                {/* FECHA FIN */}
-                <div className="grid grid-cols-12 gap-2 items-end pt-2 border-t border-white/5">
-                     <div className="col-span-12 flex justify-between items-center">
-                        <span className="text-[10px] text-zinc-400 font-mono">END DATE</span>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                {/* FIN */}
+                <div className="grid grid-cols-12 gap-3 items-end pt-4 border-t border-white/5">
+                     <div className="col-span-12 flex justify-between items-center mb-1">
+                        <span className="text-[9px] text-zinc-600 font-mono uppercase tracking-widest">Fecha de Finalización</span>
+                        <label className="flex items-center gap-2 cursor-pointer group">
                             <input 
                                 type="checkbox" 
                                 checked={isCurrent} 
                                 onChange={(e) => setIsCurrent(e.target.checked)}
-                                className="accent-red-500 w-3 h-3"
+                                className="accent-red-600 w-3 h-3"
                             />
-                            <span className="text-[10px] text-red-400 font-mono uppercase">Currently Working</span>
+                            <span className="text-[9px] text-red-500/70 group-hover:text-red-500 font-mono uppercase transition-colors">Actualmente</span>
                         </label>
                      </div>
                      
                      {!isCurrent && (
                         <>
-                            <div className="col-span-5">
+                            <div className="col-span-6">
                                 <select 
                                     value={endMonth} 
                                     onChange={(e) => setEndMonth(e.target.value)}
-                                    className="w-full bg-black border border-zinc-800 rounded p-2 text-xs text-white outline-none focus:border-red-500"
+                                    className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-red-600 appearance-none"
                                 >
-                                    <option value="">(Month - Opt)</option>
+                                    <option value="">Mes (Opt)</option>
                                     {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                             </div>
-                            <div className="col-span-7">
+                            <div className="col-span-6">
                                 <input 
                                     type="number" 
-                                    placeholder="Year (e.g. 2024)" 
+                                    placeholder="Año" 
                                     value={endYear}
                                     onChange={(e) => setEndYear(e.target.value)}
-                                    className="w-full bg-black border border-zinc-800 rounded p-2 text-xs text-white outline-none focus:border-red-500"
+                                    className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-red-600"
                                 />
                             </div>
                         </>
@@ -262,21 +276,21 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
                 </div>
             </div>
 
-            <div>
-                <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Description</label>
+            <div className="group">
+                <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest group-focus-within:text-red-500 transition-colors">Descripción</label>
                 <textarea 
-                placeholder="Brief description of duties or achievements..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none min-h-[100px] resize-none transition-colors scrollbar-thin scrollbar-thumb-zinc-700"
+                  placeholder="Detalla tus responsabilidades o logros clave..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:border-red-600 outline-none min-h-[120px] resize-none transition-all"
                 />
             </div>
 
             <button 
               onClick={handleSubmit}
-              className="mt-2 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)]"
+              className="mt-2 w-full bg-white text-black hover:bg-red-600 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xl active:scale-[0.98]"
             >
-              <Check size={16} /> {itemToEdit ? 'UPDATE ENTRY' : 'ADD TO TIMELINE'}
+              <Check size={16} /> {itemToEdit ? 'ACTUALIZAR NODO' : 'REGISTRAR TRAYECTORIA'}
             </button>
           </div>
         </motion.div>

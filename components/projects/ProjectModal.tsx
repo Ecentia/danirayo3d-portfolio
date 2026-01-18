@@ -8,16 +8,13 @@ import { supabase } from '@/lib/supabase';
 import { FullProjectData, Project, GalleryImage } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
 
-// --- ICONOS DE SOFTWARE (React Icons) ---
+// --- ICONOS DE SOFTWARE ---
 import { 
   SiAdobeaftereffects, SiBlender, SiAutodeskmaya, SiAdobephotoshop, 
   SiUnity, SiAdobepremierepro, 
   SiAseprite, SiKrita 
 } from 'react-icons/si';
 
-// --- ICONOS CUSTOM CORREGIDOS (Con Máscaras de Recorte y tamaño ajustado) ---
-
-// Substance 3D Designer (Sb) - Aumentado a 1.3em
 const SubstanceDesignerIcon = (props: any) => (
   <svg viewBox="0 0 512.47 499.66" fill="currentColor" width="1.3em" height="1.3em" {...props}>
     <defs>
@@ -33,7 +30,6 @@ const SubstanceDesignerIcon = (props: any) => (
   </svg>
 );
 
-// Substance 3D Painter (Pt) - Aumentado a 1.3em
 const SubstancePainterIcon = (props: any) => (
   <svg viewBox="0 0 512.47 499.66" fill="currentColor" width="1.3em" height="1.3em" {...props}>
     <defs>
@@ -49,7 +45,6 @@ const SubstancePainterIcon = (props: any) => (
   </svg>
 );
 
-// Mapeo de programas
 const SOFTWARE_LIST = [
   { name: 'After Effects', icon: SiAdobeaftereffects },
   { name: 'Blender', icon: SiBlender },
@@ -63,7 +58,6 @@ const SOFTWARE_LIST = [
   { name: 'Krita', icon: SiKrita },
 ];
 
-// --- ESTILOS (Scrollbar Visible y Roja) ---
 const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-red-900/40 hover:[&::-webkit-scrollbar-thumb]:bg-red-600 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
 
 interface ProjectModalProps {
@@ -78,16 +72,34 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isCreationMode, setIsCreationMode] = useState(false);
-  
   const [tagInput, setTagInput] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<'thumbnail' | 'gallery'>('thumbnail');
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
-  const { isAdmin, registerChange, registerNewProject, notify } = useAdmin();
+  const { isAdmin, registerChange, registerNewProject, notify, setIsModalOpen } = useAdmin();
 
-  // --- CARGA DE DATOS ---
+  // --- FIX DE OCULTAR HEADER Y BLOQUEO DE SCROLL ---
+  useEffect(() => {
+    if (isOpen) {
+      setIsModalOpen(true);
+      document.body.style.overflow = 'hidden';
+    } else {
+      setIsModalOpen(false);
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen, setIsModalOpen]);
+
+  // --- CIERRE AL NAVEGAR (HASH CHANGE) ---
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (isOpen) onClose();
+    };
+    window.addEventListener('hashchange', handleRouteChange);
+    return () => window.removeEventListener('hashchange', handleRouteChange);
+  }, [isOpen, onClose]);
+
   const loadProject = async (projectId: string) => {
     setLoading(true);
     const { data: projectData } = await supabase.from('projects').select('*').eq('id', projectId).single();
@@ -110,7 +122,6 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
       if (initialProjectId) {
         setIsCreationMode(false);
         loadProject(initialProjectId);
@@ -128,25 +139,21 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
         });
       }
     } else {
-      document.body.style.overflow = 'unset';
       setCurrentProject(null);
       setTagInput('');
     }
   }, [isOpen, initialProjectId]);
 
-  // --- HANDLERS ---
   const handleEdit = (field: keyof Project | 'creation_date', value: any) => {
     if (!currentProject || !isAdmin) return;
     setCurrentProject(prev => prev ? ({ ...prev, [field]: value }) : null);
     if (!isCreationMode) registerChange(`project_${currentProject.id}`, { [field]: value });
   };
 
-  // Gestión de Software
   const toggleSoftware = (softwareName: string) => {
     if (!currentProject) return;
     const currentTags = currentProject.tags || [];
     let newTags;
-    
     if (currentTags.includes(softwareName)) {
       newTags = currentTags.filter(t => t !== softwareName);
     } else {
@@ -155,36 +162,14 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     handleEdit('tags', newTags);
   };
 
-  const handleTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      const newTag = tagInput.trim().replace(',', '');
-      if (newTag && currentProject && !currentProject.tags?.includes(newTag)) {
-        const newTags = [...(currentProject.tags || []), newTag];
-        handleEdit('tags', newTags);
-        setTagInput('');
-      }
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    if (currentProject?.tags) {
-      const newTags = currentProject.tags.filter(tag => tag !== tagToRemove);
-      handleEdit('tags', newTags);
-    }
-  };
-
-  // --- SUBIDA DE ARCHIVOS ---
   const triggerFileUpload = (target: 'thumbnail' | 'gallery') => {
     uploadTargetRef.current = target;
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
     const file = event.target.files?.[0];
     if (!file || !currentProject) return;
-
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
@@ -192,10 +177,9 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
       const { error: uploadError } = await supabase.storage.from('portfolio-images').upload(fileName, file);
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('portfolio-images').getPublicUrl(fileName);
-
       if (uploadTargetRef.current === 'thumbnail') {
         handleEdit('thumbnail_url', publicUrl);
-        notify("Miniatura actualizada", 'success');
+        notify("Portada actualizada", 'success');
       } else {
         const newImage: GalleryImage = {
           id: `temp-img-${Date.now()}`,
@@ -205,7 +189,6 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
         };
         const newGallery = [...currentProject.gallery, newImage];
         setCurrentProject({ ...currentProject, gallery: newGallery });
-
         if (!isCreationMode) {
             await supabase.from('project_gallery').insert({
                 project_id: currentProject.id,
@@ -216,7 +199,6 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
             if (refreshedGallery) setCurrentProject(prev => prev ? ({ ...prev, gallery: refreshedGallery }) : null);
         }
         notify("Imagen añadida", 'success');
-        setTimeout(() => { imageContainerRef.current?.scrollTo({ top: imageContainerRef.current.scrollHeight, behavior: 'smooth' }); }, 100);
       }
     } catch (error: any) {
       notify('Error: ' + error.message, 'error');
@@ -259,199 +241,142 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     <AnimatePresence>
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex justify-center items-center p-0 md:p-6"
+        className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex justify-center items-center p-0 md:p-6"
         onClick={onClose}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 md:right-8 text-white/50 hover:text-red-500 z-[130] bg-black/50 rounded-full p-2 backdrop-blur transition-all">
+        <button onClick={onClose} className="absolute top-4 right-4 md:right-8 text-white/50 hover:text-red-500 z-[230] bg-black/50 rounded-full p-2 backdrop-blur transition-all">
           <X size={28} />
         </button>
 
         {!isCreationMode && prevProject && (
-          <button onClick={(e) => { e.stopPropagation(); handleNavigate(prevProject.id); }} className="fixed left-2 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-4 z-[130] hidden md:block transition-all hover:scale-110">
+          <button onClick={(e) => { e.stopPropagation(); handleNavigate(prevProject.id); }} className="fixed left-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-4 z-[230] hidden md:block transition-all hover:scale-110">
             <ChevronLeft size={48} />
           </button>
         )}
         {!isCreationMode && nextProject && (
-          <button onClick={(e) => { e.stopPropagation(); handleNavigate(nextProject.id); }} className="fixed right-2 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-4 z-[130] hidden md:block transition-all hover:scale-110">
+          <button onClick={(e) => { e.stopPropagation(); handleNavigate(nextProject.id); }} className="fixed right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-4 z-[230] hidden md:block transition-all hover:scale-110">
             <ChevronRight size={48} />
           </button>
         )}
 
         <motion.div 
-          initial={{ scale: 0.98, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.98, y: 10 }}
-          className="bg-[#050505] w-full max-w-[1600px] h-full md:h-[90vh] md:rounded-lg border border-white/5 shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-[120]"
+          initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-[#050505] w-full max-w-[1400px] h-full md:h-[90vh] md:rounded-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col md:flex-row relative z-[220]"
           onClick={(e) => e.stopPropagation()} 
         >
-          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} onClick={(e) => e.stopPropagation()} />
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
           
-          {/* IZQUIERDA: IMÁGENES */}
           <div ref={imageContainerRef} className={`flex-1 bg-black relative ${modernScrollbar}`}>
-            <div className="p-4 md:p-8 md:pb-32 flex flex-col gap-4 min-h-full">
-                {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 text-red-500 font-mono animate-pulse">LOADING DATA...</div>}
+            <div className="p-4 md:p-8 flex flex-col gap-6 min-h-full">
+                {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 text-red-500 font-mono animate-pulse uppercase tracking-[0.3em]">Cargando Datos...</div>}
 
                 {contentImages.length === 0 && isAdmin && (
-                    <button onClick={() => triggerFileUpload('thumbnail')} className="flex-1 min-h-[50vh] border-2 border-dashed border-zinc-800 hover:border-red-900 rounded-lg flex flex-col items-center justify-center gap-4 text-zinc-600 hover:text-red-500 transition-all group">
-                       <UploadCloud size={64} className="group-hover:scale-110 transition-transform"/>
-                       <span className="font-mono tracking-widest text-sm">UPLOAD COVER ART</span>
+                    <button onClick={() => triggerFileUpload('thumbnail')} className="flex-1 min-h-[40vh] border-2 border-dashed border-zinc-800 hover:border-red-600 rounded-xl flex flex-col items-center justify-center gap-4 text-zinc-600 hover:text-red-500 transition-all">
+                       <UploadCloud size={48} />
+                       <span className="font-mono text-xs uppercase tracking-widest">Subir Imagen de Portada</span>
                     </button>
                 )}
 
                 {contentImages.map((img, index) => (
-                  <div key={img.id} className="relative w-full h-auto bg-zinc-900/20 group">
-                    <Image src={img.image_url} alt={`Project asset ${index}`} width={1920} height={1200} className="w-full h-auto object-contain md:rounded-sm shadow-xl" priority={index === 0} />
+                  <div key={img.id} className="relative w-full group overflow-hidden rounded-lg">
+                    <Image src={img.image_url} alt={`Asset ${index}`} width={1200} height={800} className="w-full h-auto object-contain shadow-2xl" priority={index === 0} />
                     {isAdmin && (
                       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                          {(img as any).isThumbnail ? (
-                             <button onClick={() => triggerFileUpload('thumbnail')} className="bg-black/80 text-white p-2 rounded hover:bg-red-600 transition-colors border border-white/10" title="Cambiar Portada"><UploadCloud size={18} /></button>
+                             <button onClick={() => triggerFileUpload('thumbnail')} className="bg-black/80 text-white p-2 rounded-lg hover:bg-red-600 transition-colors border border-white/10"><UploadCloud size={16} /></button>
                          ) : (
-                             <button onClick={() => handleDeleteGalleryImage(img.id)} className="bg-black/80 text-white p-2 rounded hover:bg-red-600 transition-colors border border-white/10" title="Borrar Imagen"><Trash2 size={18} /></button>
+                             <button onClick={() => handleDeleteGalleryImage(img.id)} className="bg-black/80 text-white p-2 rounded-lg hover:bg-red-600 transition-colors border border-white/10"><Trash2 size={16} /></button>
                          )}
                       </div>
                     )}
-                    {(img as any).isThumbnail && <div className="absolute bottom-4 left-4 bg-red-600/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider pointer-events-none shadow-lg">Cover Art</div>}
+                    {(img as any).isThumbnail && <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Portada</div>}
                   </div>
                 ))}
 
                 {isAdmin && currentProject.thumbnail_url && (
-                   <button onClick={() => triggerFileUpload('gallery')} disabled={uploading} className="w-full py-16 border-2 border-dashed border-zinc-900 hover:border-red-900/50 rounded-lg flex flex-col items-center justify-center text-zinc-700 hover:text-red-500 transition-all mt-4 group">
-                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500" /> : <Plus size={40} strokeWidth={1} className="group-hover:scale-110 transition-transform" />}
-                      <span className="text-[10px] font-mono mt-4 uppercase tracking-[0.2em]">{uploading ? 'UPLOADING...' : 'ADD GALLERY IMAGE'}</span>
+                   <button onClick={() => triggerFileUpload('gallery')} disabled={uploading} className="w-full py-20 border-2 border-dashed border-zinc-900 hover:border-red-900/50 rounded-xl flex flex-col items-center justify-center text-zinc-700 hover:text-red-500 transition-all mt-4">
+                      {uploading ? <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" /> : <Plus size={32} />}
+                      <span className="text-[10px] font-mono mt-4 uppercase tracking-[0.2em]">{uploading ? 'Subiendo...' : 'Añadir a la Galería'}</span>
                    </button>
                 )}
             </div>
           </div>
 
-          {/* DERECHA: SIDEBAR */}
-          <div className={`w-full md:w-[400px] lg:w-[450px] bg-[#0A0A0A] border-l border-white/5 flex flex-col ${modernScrollbar}`}>
+          <div className={`w-full md:w-[400px] bg-[#0A0A0A] border-l border-white/5 flex flex-col ${modernScrollbar}`}>
              {isAdmin && (
-                 <div className="p-4 bg-zinc-900/50 border-b border-white/5 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-md">
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                       <div className={`w-2 h-2 rounded-full ${isCreationMode ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
-                       {isCreationMode ? 'Creating New Entity' : 'Edit Mode Active'}
+                 <div className="p-5 bg-red-600/10 border-b border-red-600/20 flex flex-col gap-4 sticky top-0 z-10 backdrop-blur-md">
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-red-500 uppercase tracking-widest font-bold">
+                       <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                       Modo Edición Activo
                     </div>
                     {isCreationMode && (
-                      <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-3 rounded text-xs font-bold transition-all shadow-lg shadow-red-900/20">
-                        <Check size={14} /> CONFIRM & CREATE DRAFT
+                      <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-xs font-black transition-all shadow-xl">
+                        <Check size={14} /> GUARDAR PROYECTO
                       </button>
                     )}
                  </div>
              )}
 
-             <div className="p-6 md:p-8 flex flex-col gap-8">
-                 {/* Header Proyecto */}
-                 <div className="flex items-start gap-4">
-                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-black border border-white/10 shrink-0" />
-                     <div className="flex-1 min-w-0">
-                         {isAdmin ? (
-                            <input value={currentProject.title} onChange={(e) => handleEdit('title', e.target.value)} placeholder="NOMBRE DEL PROYECTO" className="w-full bg-transparent text-xl font-bold text-white border-b border-zinc-800 focus:border-red-500 focus:outline-none py-1 placeholder-zinc-700" />
-                         ) : (
-                            <h1 className="text-xl md:text-2xl font-bold text-white leading-tight break-words">{currentProject.title}</h1>
-                         )}
-                         <div className="text-xs text-zinc-500 mt-1 font-mono">by Daniel Rayo</div>
-                     </div>
-                 </div>
-
-                 <div className="h-[1px] bg-white/5 w-full" />
-
-                 {/* FECHA (Opcional) */}
-                 <div className="space-y-2">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                        <Calendar size={12}/> Date
-                    </h3>
+             <div className="p-8 flex flex-col gap-10">
+                 <div className="flex flex-col gap-4">
+                    <div className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.4em]">Project_Details</div>
                     {isAdmin ? (
-                         <input 
-                            type="date"
-                            value={currentProject.creation_date || ''}
-                            onChange={(e) => handleEdit('creation_date', e.target.value)}
-                            className="bg-black/30 border border-zinc-800 p-2 text-xs text-white rounded focus:border-red-500 focus:outline-none w-full font-mono uppercase"
-                         />
+                       <input value={currentProject.title} onChange={(e) => handleEdit('title', e.target.value)} placeholder="Título del proyecto" className="w-full bg-transparent text-3xl font-black text-white border-b border-zinc-800 focus:border-red-600 focus:outline-none py-2 placeholder-zinc-800" />
                     ) : (
-                        <p className="text-xs text-zinc-400 font-mono">
-                            {currentProject.creation_date || 'DATE_UNKNOWN'}
-                        </p>
+                       <h1 className="text-3xl font-black text-white leading-none tracking-tighter uppercase">{currentProject.title}</h1>
                     )}
                  </div>
 
-                 {/* SOFTWARE USED (Selector Visual) */}
-                 <div className="space-y-3">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                        <Monitor size={12}/> Software Used
-                    </h3>
-                    
-                    {/* Modo Admin: Grid de selección */}
+                 <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2"><Calendar size={12}/> Fecha</h3>
+                        {isAdmin ? (
+                             <input type="date" value={currentProject.creation_date || ''} onChange={(e) => handleEdit('creation_date', e.target.value)} className="bg-zinc-900 border border-zinc-800 p-2 text-xs text-white rounded-lg focus:border-red-600 focus:outline-none w-full font-mono uppercase" />
+                        ) : (
+                            <p className="text-sm text-white font-mono">{currentProject.creation_date || 'N/A'}</p>
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2"><Monitor size={12}/> Rol</h3>
+                        <p className="text-sm text-white font-mono">3D Artist</p>
+                    </div>
+                 </div>
+
+                 <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Stack Tecnológico</h3>
                     {isAdmin && (
-                        <div className="grid grid-cols-5 gap-2 bg-black/20 p-3 rounded-lg border border-white/5">
+                        <div className="grid grid-cols-5 gap-2 bg-zinc-900/50 p-3 rounded-xl border border-white/5">
                             {SOFTWARE_LIST.map((soft) => {
                                 const isSelected = currentProject.tags?.includes(soft.name);
                                 return (
-                                    <button 
-                                        key={soft.name}
-                                        onClick={() => toggleSoftware(soft.name)}
-                                        className={`flex flex-col items-center justify-center p-2 rounded transition-all aspect-square
-                                            ${isSelected 
-                                                ? 'bg-red-900/30 border border-red-500 text-red-400 shadow-[0_0_10px_rgba(220,38,38,0.2)]' 
-                                                : 'bg-zinc-900/50 border border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800'}
-                                        `}
-                                        title={soft.name}
-                                    >
+                                    <button key={soft.name} onClick={() => toggleSoftware(soft.name)} className={`flex items-center justify-center p-2 rounded-lg transition-all aspect-square ${isSelected ? 'bg-red-600 text-white shadow-lg' : 'bg-zinc-950 text-zinc-600 hover:text-zinc-300'}`} title={soft.name}>
                                         <soft.icon size={20} />
                                     </button>
                                 )
                             })}
                         </div>
                     )}
-
-                    {/* Modo Vista: Lista de Iconos Activos */}
-                    {!isAdmin && (
-                        <div className="flex flex-wrap gap-3">
-                            {SOFTWARE_LIST.filter(s => currentProject.tags?.includes(s.name)).map(soft => (
-                                <div key={soft.name} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-red-500/50 transition-colors" title={soft.name}>
-                                    <soft.icon size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                 </div>
-
-                 {/* DESCRIPCIÓN */}
-                 <div className="space-y-2">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Briefing</h3>
-                    {isAdmin ? (
-                      <textarea value={currentProject.description || ''} onChange={(e) => handleEdit('description', e.target.value)} placeholder="Escribe la descripción..." className="w-full h-32 bg-black/30 p-3 rounded text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-red-500 resize-none leading-relaxed" />
-                    ) : (
-                      <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{currentProject.description}</p>
-                    )}
-                 </div>
-
-                 {/* OTROS TAGS (No software) */}
-                 <div className="space-y-4">
-                    <div className="space-y-2">
-                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"><Layers size={12}/> Other Tags</h3>
-                        
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {currentProject.tags?.filter(t => !SOFTWARE_LIST.some(s => s.name === t)).map((tag, index) => (
-                            <span key={index} className="flex items-center gap-1 text-[10px] uppercase font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
-                              {tag}
-                              {isAdmin && <button onClick={() => removeTag(tag)} className="hover:text-red-500 ml-1"><X size={12} /></button>}
-                            </span>
-                          ))}
-                        </div>
-
-                        {isAdmin && (
-                          <div className="relative">
-                            <input 
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyDown={handleTagKeyDown}
-                              className="w-full bg-black/30 border border-zinc-800 p-2 text-xs text-white focus:outline-none focus:border-red-500 rounded"
-                              placeholder="Escribe tag y pulsa Enter..."
-                            />
-                          </div>
-                        )}
+                    <div className="flex flex-wrap gap-3">
+                        {SOFTWARE_LIST.filter(s => currentProject.tags?.includes(s.name)).map(soft => (
+                            <div key={soft.name} className="p-2.5 bg-zinc-900 rounded-xl border border-white/5 text-zinc-400" title={soft.name}>
+                                <soft.icon size={20} />
+                            </div>
+                        ))}
                     </div>
                  </div>
-                 
-                 <div className="mt-auto pt-8 text-[10px] text-zinc-700 font-mono text-center">PUBLISHED VIA SYSTEM_ADMIN_V1</div>
+
+                 <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Descripción del Proyecto</h3>
+                    {isAdmin ? (
+                      <textarea value={currentProject.description || ''} onChange={(e) => handleEdit('description', e.target.value)} placeholder="Breve briefing..." className="w-full h-40 bg-zinc-900/50 p-4 rounded-xl text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-red-600 resize-none leading-relaxed" />
+                    ) : (
+                      <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap">{currentProject.description}</p>
+                    )}
+                 </div>
+
+                 <div className="mt-auto pt-10 border-t border-white/5 text-[9px] text-zinc-700 font-mono text-center uppercase tracking-[0.2em]">
+                    Copyright © {new Date().getFullYear()} Daniel Rayo
+                 </div>
              </div>
           </div>
         </motion.div>

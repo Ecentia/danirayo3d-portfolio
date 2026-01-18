@@ -1,123 +1,138 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useAdmin, CURRENT_SLUG } from '@/context/AdminContext';
 import { supabase } from '@/lib/supabase';
-import { Pencil, Terminal, Cpu } from 'lucide-react'; 
+import { useAdmin, CURRENT_SLUG } from '@/context/AdminContext';
+import { Terminal, Cpu, Zap, Edit3 } from 'lucide-react';
 
 export default function AboutMe() {
   const { isAdmin, registerChange } = useAdmin();
-  
-  // Estado local para la UI inmediata
-  const [content, setContent] = useState({
-    title: 'ARQUITECTO DE REALIDADES',
-    description: 'Soy Daniel Rayo. Mi código no solo compila, respira...'
-  });
+  const [bio, setBio] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // 1. CARGAR DATOS AL INICIO
+  // --- CARGA DE DATOS MULTI-PORTFOLIO ---
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBio = async () => {
       const { data } = await supabase
         .from('portfolio_content')
-        .select('title, description')
+        .select('content')
         .eq('client_slug', CURRENT_SLUG)
-        .eq('section_id', 'about_me') // Identificador único para esta sección
+        .eq('section_id', 'about_bio')
         .single();
-      
+
       if (data) {
-        setContent({ title: data.title, description: data.description });
+        setBio(data.content);
+      } else {
+        setBio("Game Developer y Artista 3D especializado en la creación de mundos inmersivos.");
       }
+      setLoading(false);
     };
-    fetchData();
+
+    fetchBio();
   }, []);
 
-  // 2. MANEJAR EL INPUT (Solo actualiza estado local y avisa al contexto)
-  const handleLocalChange = (field: 'title' | 'description', value: string) => {
-    setContent(prev => ({ ...prev, [field]: value }));
-    // Registramos que 'about_me' tiene un cambio pendiente
-    registerChange('about_me', { [field]: value });
+  const handleBioChange = (newContent: string) => {
+    setBio(newContent);
+    registerChange('about_bio', { content: newContent });
   };
 
   return (
-    <section className="relative w-full py-32 bg-black text-white overflow-hidden">
-        {/* --- DECORACIÓN DE FONDO --- */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black via-black/90 to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(20,0,0,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(20,0,0,0.5)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 pointer-events-none"></div>
-        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-red-900/10 blur-[150px] rounded-full pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto px-6 relative z-20">
+    <section id="trayectoria" className="relative w-full py-32 bg-[#050505] overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-600/20 to-transparent" />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
-          {/* Cabecera decorativa */}
-          <div className="flex items-center gap-2 mb-12 opacity-50 font-mono text-xs text-red-500 tracking-[0.3em]">
-             <Cpu size={14} /><span>SYSTEM_MODULE: PROFILE_DATA</span>
-             <div className="h-[1px] flex-grow bg-gradient-to-r from-red-900 to-transparent"></div>
+          {/* LADO IZQUIERDO: LOGO IDENTITARIO */}
+          <div className="lg:col-span-5 relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative aspect-square md:aspect-[4/5] bg-zinc-900/40 border border-white/5 rounded-3xl overflow-hidden group flex items-center justify-center"
+            >
+              <div className="absolute inset-0 scanlines opacity-20 z-10 pointer-events-none" />
+              
+              {/* SUSTITUCIÓN: FAVICON EN LUGAR DE ICONO USER */}
+              <div className="relative w-32 h-32 md:w-48 md:h-48 z-20">
+                <img 
+                  src="/favicon.ico" 
+                  alt="Logo" 
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(220,38,38,0.5)] group-hover:scale-110 transition-transform duration-700"
+                />
+              </div>
+
+              {/* Badges de Información */}
+              <div className="absolute bottom-6 left-6 right-6 z-20">
+                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4">
+                  <div className="p-2 bg-red-600/20 rounded-lg">
+                    <Zap size={16} className="text-red-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1">Status</span>
+                    <span className="text-xs font-black text-white uppercase tracking-wider leading-none">Disponible</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-            
-            {/* --- TÍTULO --- */}
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-5 relative"
-            >
+          {/* LADO DERECHO: CONTENIDO EDITABLE */}
+          <div className="lg:col-span-7 space-y-10">
+            <div className="space-y-4">
+              <h2 className="text-red-600 font-mono text-xs tracking-[0.5em] uppercase flex items-center gap-3">
+                <Terminal size={14} /> // PROFILE_MANIFESTO
+              </h2>
+              <h3 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
+                CREANDO <span className="text-zinc-800">MUNDOS</span> <br />
+                PÍXEL A <span className="text-red-600">PÍXEL</span>
+              </h3>
+            </div>
+
+            <div className="relative">
               {isAdmin ? (
-                <div className="relative group">
-                   <textarea 
-                      value={content.title}
-                      onChange={(e) => handleLocalChange('title', e.target.value)}
-                      className="w-full bg-black/50 text-5xl font-black text-white border-l-4 border-red-600 p-4 focus:outline-none focus:bg-red-950/20 uppercase resize-none font-sans"
-                      rows={3}
-                   />
-                   <div className="absolute top-0 right-0 bg-red-600 text-xs px-2 py-1 text-black font-bold flex gap-1 items-center pointer-events-none">
-                     <Pencil size={12}/> EDIT MODE
-                   </div>
+                <div className="group relative">
+                  <textarea
+                    value={bio}
+                    onChange={(e) => handleBioChange(e.target.value)}
+                    className="w-full bg-zinc-900/30 border border-white/10 rounded-2xl p-6 text-zinc-400 text-lg leading-relaxed font-sans focus:border-red-600/50 outline-none min-h-[250px] resize-none"
+                  />
+                  <div className="absolute -top-3 -left-3 p-1.5 bg-red-600 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit3 size={12} />
+                  </div>
                 </div>
               ) : (
-                <h2 className="text-5xl md:text-7xl font-black text-white leading-[0.9] uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(255,0,0,0.3)]">
-                  {content.title}<span className="text-red-600">.</span>
-                </h2>
+                <p className="text-zinc-400 text-xl md:text-2xl leading-relaxed font-medium">
+                  {loading ? "Cargando..." : bio}
+                </p>
               )}
-            </motion.div>
+            </div>
 
-            {/* --- DESCRIPCIÓN --- */}
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:col-span-7"
-            >
-               <div className="bg-red-950/5 border border-red-900/30 p-8 md:p-12 relative backdrop-blur-sm">
-                 {/* Esquinas decorativas */}
-                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-red-500"></div>
-                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-red-500"></div>
-                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-red-500"></div>
-                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-red-500"></div>
-
-                 {isAdmin ? (
-                    <div className="relative group">
-                       <textarea 
-                          value={content.description}
-                          onChange={(e) => handleLocalChange('description', e.target.value)}
-                          className="w-full h-64 bg-black text-red-100 font-mono text-lg border border-red-900/50 p-6 focus:outline-none focus:border-red-500 focus:shadow-[0_0_20px_rgba(255,0,0,0.1)] resize-none"
-                       />
-                       <div className="absolute bottom-4 right-4 text-red-500 opacity-50 pointer-events-none">
-                         <Terminal size={20} />
-                       </div>
-                    </div>
-                  ) : (
-                    <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed tracking-wide">
-                      {content.description}
-                    </p>
-                  )}
-               </div>
-            </motion.div>
-            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-white/5">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-zinc-900 rounded-xl border border-white/5">
+                  <Cpu size={20} className="text-red-600" />
+                </div>
+                <div>
+                  <h4 className="text-white font-black text-xs uppercase tracking-widest mb-1">Entornos High-End</h4>
+                  <p className="text-zinc-500 text-[10px] font-mono uppercase">Optimización Unreal/Unity</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-zinc-900 rounded-xl border border-white/5">
+                  <Zap size={20} className="text-red-600" />
+                </div>
+                <div>
+                  <h4 className="text-white font-black text-xs uppercase tracking-widest mb-1">Game Design</h4>
+                  <p className="text-zinc-500 text-[10px] font-mono uppercase">Experiencias Jugables</p>
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
+      </div>
     </section>
   );
 }

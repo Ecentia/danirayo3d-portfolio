@@ -1,93 +1,77 @@
-@import "tailwindcss";
-
-@theme {
-  --color-rayo-red: #ff0000;
-  --color-rayo-dark: #080808;
-  --font-orbitron: var(--font-orbitron);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  background: #000;
-  color: white;
-  cursor: crosshair; /* Cursor de precisión */
+  --lego-yellow: #facc15;
+  --lego-red: #ef4444;
+  --lego-blue: #3b82f6;
+  --lego-bg: #1a1a1a;
 }
 
+html,
 body {
-  background-color: #000;
-  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* CRÍTICO: Bloqueamos el scroll nativo del navegador */
+  background-color: var(--lego-bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* Fuente 'Code' para developer vibes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Efecto de Escaneo tipo CRT (Espectacular) */
-.scanlines {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 50%,
-    rgba(255, 0, 0, 0.02) 50%
-  );
-  background-size: 100% 4px;
-  z-index: 50;
-  pointer-events: none;
-}
-
-/* Resplandor rojo ambiental */
-.red-glow {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-  z-index: -1;
-  filter: blur(80px);
-}
-
-/* --- APP MODE OVERRIDES --- */
-@media (max-width: 768px) {
-  html, body {
-    /* Evita el rebote elástico típico de iOS */
-    overscroll-behavior-y: none;
-    /* Ajuste para el notch del iPhone */
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Ocultar scrollbar pero permitir scroll */
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
-}
-
-/* Animación de escaneo para el modo robot */
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.robot-scan {
+/* Contenedor del Mundo 3D */
+#canvas-container {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(255, 0, 0, 0.2), transparent);
-  animation: scanline 2s linear infinite;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%); /* Vignette sutil */
 }
 
-@media (max-width: 1024px) {
-  html, body {
-    /* Desactiva el rebote elástico blanco de iOS */
-    overscroll-behavior-y: none;
-    /* Evita la selección de texto para que parezca UI nativa */
-    user-select: none;
-    -webkit-user-select: none;
-    /* Evita el highlight azul al tocar botones */
-    -webkit-tap-highlight-color: transparent;
-  }
+/* Contenedor de la Interfaz (HUD) */
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  pointer-events: none; /* MAGIA: Permite hacer clic en el juego a través de la UI */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+}
 
-  /* Ocultar scrollbar pero permitir scroll */
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
+/* Clase para hacer interactivos los botones dentro del HUD */
+.interactive {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Efecto de carga */
+.loader-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  color: white;
+}
+
+/* Utilidades para textos estilo juego */
+.pixel-text {
+  text-shadow: 2px 2px 0px #000;
+  font-weight: bold;
+  letter-spacing: 0.05em;
 }

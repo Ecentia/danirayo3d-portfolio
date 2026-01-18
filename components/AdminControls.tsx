@@ -1,43 +1,80 @@
 'use client';
 
 import { useAdmin } from '@/context/AdminContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Save, Loader2, ShieldCheck, Zap } from 'lucide-react';
 
 export default function AdminControls() {
-  const { isAdmin, saveAllChanges, logout, isSaving, hasChanges } = useAdmin();
+  const { 
+    isAdmin, 
+    hasChanges, 
+    saveAllChanges, 
+    isSaving, 
+    isModalOpen 
+  } = useAdmin();
 
-  // Si no es admin, este componente no renderiza nada
-  if (!isAdmin) return null;
+  // Si no eres admin o hay un modal abierto, no mostramos nada
+  if (!isAdmin || isModalOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      
-      {/* Botón Guardar: Solo aparece si hay cambios pendientes */}
+    <AnimatePresence>
       {hasChanges && (
-        <button
-          onClick={saveAllChanges}
-          disabled={isSaving}
-          className="group flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded shadow-[0_0_20px_rgba(8,145,178,0.4)] hover:shadow-cyan-500/50 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed backdrop-blur-md border border-cyan-400/30"
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-8 right-8 z-[150]"
         >
-          {isSaving ? (
-             <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          ) : (
-            <>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span className="font-bold tracking-widest text-sm font-mono">SAVE_CHANGES</span>
-            </>
-          )}
-        </button>
+          <div className="relative group">
+            {/* Brillo de alerta de cambios */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-900 rounded-2xl blur opacity-40 group-hover:opacity-75 animate-pulse transition duration-1000"></div>
+            
+            <button
+              onClick={saveAllChanges}
+              disabled={isSaving}
+              className="relative flex items-center gap-3 bg-zinc-950 border border-white/10 px-6 py-4 rounded-xl text-white shadow-2xl transition-all active:scale-95 disabled:opacity-70"
+            >
+              <div className="flex flex-col items-start mr-2">
+                <span className="text-[8px] font-mono text-red-500 uppercase tracking-[0.3em] leading-none mb-1">
+                  System_Status
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  {isSaving ? 'Sincronizando...' : 'Cambios Pendientes'}
+                </span>
+              </div>
+
+              <div className={`p-2 rounded-lg ${isSaving ? 'bg-zinc-800' : 'bg-red-600'} transition-colors`}>
+                {isSaving ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Save size={18} />
+                )}
+              </div>
+            </button>
+            
+            {/* Badge de seguridad */}
+            <div className="absolute -top-2 -left-2 bg-zinc-900 border border-white/10 p-1.5 rounded-lg shadow-lg">
+              <ShieldCheck size={12} className="text-red-500" />
+            </div>
+          </div>
+        </motion.div>
       )}
 
-      {/* Botón Salir */}
-      <button
-        onClick={logout}
-        className="group flex items-center justify-center gap-2 bg-black/80 hover:bg-red-950/80 text-gray-400 hover:text-red-400 px-6 py-3 rounded shadow-lg backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all active:scale-95"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span className="font-mono text-xs tracking-widest">LOGOUT</span>
-      </button>
-      
-    </div>
+      {/* Indicador de Modo Admin activo (Informativo) */}
+      {!hasChanges && (
+        <motion.div 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }}
+          className="fixed bottom-8 right-8 z-[140] pointer-events-none"
+        >
+          <div className="flex items-center gap-2 px-4 py-2 bg-zinc-950/50 backdrop-blur-md border border-white/5 rounded-full">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.2em]">
+              Admin_Session_Active
+            </span>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
