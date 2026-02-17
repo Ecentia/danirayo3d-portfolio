@@ -9,12 +9,15 @@
 :root {
   background: #000;
   color: white;
-  cursor: crosshair; /* Cursor de precisión */
+  cursor: crosshair;
 }
 
+/* --- FIX: Desactivar scroll horizontal globalmente --- */
+html,
 body {
   background-color: #000;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Crucial para evitar scroll lateral */
+  max-width: 100vw; /* Asegura que nada exceda el viewport */
 }
 
 /* Efecto de Escaneo tipo CRT (Espectacular) */
@@ -46,14 +49,12 @@ body {
 
 /* --- APP MODE OVERRIDES --- */
 @media (max-width: 768px) {
-  html, body {
-    /* Evita el rebote elástico típico de iOS */
+  html,
+  body {
     overscroll-behavior-y: none;
-    /* Ajuste para el notch del iPhone */
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Ocultar scrollbar pero permitir scroll */
   ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
@@ -62,30 +63,36 @@ body {
 
 /* Animación de escaneo para el modo robot */
 @keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .robot-scan {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(255, 0, 0, 0.2), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 0, 0, 0.2),
+    transparent
+  );
   animation: scanline 2s linear infinite;
   pointer-events: none;
 }
 
 @media (max-width: 1024px) {
-  html, body {
-    /* Desactiva el rebote elástico blanco de iOS */
+  html,
+  body {
     overscroll-behavior-y: none;
-    /* Evita la selección de texto para que parezca UI nativa */
     user-select: none;
     -webkit-user-select: none;
-    /* Evita el highlight azul al tocar botones */
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Ocultar scrollbar pero permitir scroll */
   ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
