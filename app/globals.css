@@ -3,98 +3,67 @@
 @theme {
   --color-rayo-red: #ff0000;
   --color-rayo-dark: #080808;
-  --font-orbitron: var(--font-orbitron);
 }
 
 :root {
-  background: #000;
+  /* ELIMINADO: background: #000; -> Ya no lo definimos aquí */
   color: white;
   cursor: crosshair;
 }
 
-/* --- FIX: Desactivar scroll horizontal globalmente --- */
 html,
 body {
-  background-color: #000;
-  overflow-x: hidden; /* Crucial para evitar scroll lateral */
-  max-width: 100vw; /* Asegura que nada exceda el viewport */
+  /* IMPORTANTE: Fondo transparente para que se vean las capas de atrás */
+  background-color: transparent;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
-/* Efecto de Escaneo tipo CRT (Espectacular) */
+/* --- TUS EFECTOS (Asegurándonos de los z-index) --- */
+
+/* 1. La Grid (Capa -2) */
+.cyber-grid {
+  position: fixed;
+  inset: 0;
+  background-size: 50px 50px;
+  background-image:
+    linear-gradient(to right, rgba(255, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 0, 0, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+  pointer-events: none;
+  z-index: -40; /* Muy atrás */
+}
+
+/* 2. El Ruido (Capa -1) */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -30; /* Encima de la grid */
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* 3. Vignette (Capa Superior de fondo) */
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, #030000 120%);
+  pointer-events: none;
+  z-index: -20;
+}
+
+/* Scanlines (Capa superior de pantalla) */
 .scanlines {
   position: fixed;
   inset: 0;
   background: linear-gradient(
     to bottom,
     transparent 50%,
-    rgba(255, 0, 0, 0.02) 50%
+    rgba(0, 0, 0, 0.3) 50%
   );
   background-size: 100% 4px;
-  z-index: 50;
+  z-index: 9999; /* Siempre encima de todo */
   pointer-events: none;
-}
-
-/* Resplandor rojo ambiental */
-.red-glow {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-  z-index: -1;
-  filter: blur(80px);
-}
-
-/* --- APP MODE OVERRIDES --- */
-@media (max-width: 768px) {
-  html,
-  body {
-    overscroll-behavior-y: none;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
-}
-
-/* Animación de escaneo para el modo robot */
-@keyframes scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-.robot-scan {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(255, 0, 0, 0.2),
-    transparent
-  );
-  animation: scanline 2s linear infinite;
-  pointer-events: none;
-}
-
-@media (max-width: 1024px) {
-  html,
-  body {
-    overscroll-behavior-y: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
+  opacity: 0.4;
 }

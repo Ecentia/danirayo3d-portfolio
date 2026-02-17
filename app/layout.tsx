@@ -4,11 +4,10 @@ import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
 import { UiProvider } from "@/context/UiContext";
 import AdminControls from "@/components/AdminControls";
-
-// Componentes SOLO de Escritorio (Layout Global)
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WelcomeScreen from "@/components/layout/WelcomeScreen";
+import BackgroundEffects from "@/components/layout/BackgroundEffects";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,7 +109,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#000000",
+  themeColor: "#030000",
 };
 
 export default function RootLayout({
@@ -120,30 +119,62 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white selection:bg-red-500/30 overflow-x-hidden`}>
+      {/* Body transparente para dejar ver el fondo */}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased text-white selection:bg-red-500/30 overflow-x-hidden min-h-screen relative`}>
+        
+        {/* --- SISTEMA DE CAPAS DE FONDO (MANUAL) --- */}
+        
+        {/* CAPA 1: FONDO CON PROFUNDIDAD (ACTUALIZADO) 
+            En lugar de negro plano, usamos un degradado radial.
+            El centro tiene un tinte rojo sangre muy oscuro (#1a0505) que se funde a negro.
+        */}
+        <div 
+          className="fixed inset-0 z-[-50]" 
+          style={{
+            background: "radial-gradient(circle at 50% 30%, #1a0505 0%, #050101 50%, #000000 100%)"
+          }}
+        />
+        
+        {/* CAPA 2: Luces Volumétricas (Tu componente animado) */}
+        <BackgroundEffects />
+        
+        {/* CAPA 3: Grid Tecnológico */}
+        <div className="cyber-grid" />
+        
+        {/* CAPA 4: Ruido de Cine */}
+        <div className="noise-overlay" />
+        
+        {/* CAPA 5: Viñeta (Oscurece esquinas extra) */}
+        <div className="vignette" />
+        
+        {/* ------------------------------------------- */}
+
         <AdminProvider>
-          <UiProvider> {/* <--- ENVOLVER AQUÍ */}
+          <UiProvider>
             
-            {/* Pantalla de carga inicial */}
             <WelcomeScreen />
 
-            {/* --- ELEMENTOS DE ESCRITORIO --- */}
-            <div className="hidden md:block">
-              <Header />
-            </div>
+            {/* Scanlines (Efecto TV - Capa superior visual) */}
+            <div className="scanlines" />
 
-            {/* --- CONTENIDO PRINCIPAL --- */}
-            {children}
+            {/* Contenido Principal */}
+            <div className="relative">
+                <div className="hidden md:block">
+                  <Header />
+                </div>
 
-            {/* --- FOOTER DE ESCRITORIO --- */}
-            <div className="hidden md:block">
-              <Footer />
+                <main className="min-h-screen">
+                   {children}
+                </main>
+
+                <div className="hidden md:block">
+                  <Footer />
+                </div>
             </div>
             
-            {/* Controles de Admin */}
             <AdminControls />
             
-          </UiProvider> {/* <--- CIERRE */}
+          </UiProvider>
         </AdminProvider>
       </body>
     </html>
