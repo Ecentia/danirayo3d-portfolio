@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { FullProjectData, Project, GalleryImage } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
+import { useUi } from '@/context/UiContext';
 
 // --- ICONOS DE SOFTWARE (React Icons) ---
 import { 
@@ -78,12 +79,18 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isCreationMode, setIsCreationMode] = useState(false);
-  
+  const { setProjectModalOpen } = useUi();
   const [tagInput, setTagInput] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<'thumbnail' | 'gallery'>('thumbnail');
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Efecto para sincronizar el estado global de UI
+    useEffect(() => {
+      setProjectModalOpen(isOpen);
+      return () => setProjectModalOpen(false);
+    }, [isOpen, setProjectModalOpen]);
 
   const { isAdmin, registerChange, registerNewProject, notify } = useAdmin();
 

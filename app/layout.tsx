@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
+import { UiProvider } from "@/context/UiContext";
 import AdminControls from "@/components/AdminControls";
 
 // Componentes SOLO de Escritorio (Layout Global)
@@ -119,28 +120,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white selection:bg-red-500/30 overflow-x-hidden`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white selection:bg-red-500/30 overflow-x-hidden`}>
         <AdminProvider>
-          {/* Pantalla de carga inicial */}
-          <WelcomeScreen />
+          <UiProvider> {/* <--- ENVOLVER AQUÍ */}
+            
+            {/* Pantalla de carga inicial */}
+            <WelcomeScreen />
 
-          {/* --- ELEMENTOS DE ESCRITORIO --- */}
-          <div className="hidden md:block">
-            <Header />
-          </div>
+            {/* --- ELEMENTOS DE ESCRITORIO --- */}
+            <div className="hidden md:block">
+              <Header />
+            </div>
 
-          {/* --- CONTENIDO PRINCIPAL --- */}
-          {children}
+            {/* --- CONTENIDO PRINCIPAL --- */}
+            {children}
 
-          {/* --- FOOTER DE ESCRITORIO --- */}
-          <div className="hidden md:block">
-            <Footer />
-          </div>
-          
-          {/* Controles de Admin */}
-          <AdminControls />
+            {/* --- FOOTER DE ESCRITORIO --- */}
+            <div className="hidden md:block">
+              <Footer />
+            </div>
+            
+            {/* Controles de Admin */}
+            <AdminControls />
+            
+          </UiProvider> {/* <--- CIERRE */}
         </AdminProvider>
       </body>
     </html>

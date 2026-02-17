@@ -12,6 +12,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAdmin } from '@/context/AdminContext';
+import { useUi } from '@/context/UiContext';
 import { Settings, Menu, X, ArrowRight, Zap } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -23,6 +24,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const { isAdmin } = useAdmin();
+  const { isProjectModalOpen } = useUi(); // <-- Consumimos el contexto UI
   const { scrollY } = useScroll();
 
   // --- FÍSICA DE FLUIDEZ EXTREMA ---
@@ -54,126 +56,135 @@ export default function Header() {
 
   return (
     <>
-      <motion.header
-        style={{
-          width,
-          y,
-          backgroundColor,
-          backdropFilter,
-          borderRadius,
-          borderColor,
-          paddingTop: paddingY,
-          paddingBottom: paddingY,
-        }}
-        className="fixed top-0 left-0 right-0 z-[100] mx-auto border border-transparent min-w-[340px] max-w-[1400px] overflow-hidden"
+      {/* WRAPPER DE VISIBILIDAD GLOBAL 
+         Este div controla si el header se muestra o se esconde por el Modal.
+         Movemos las propiedades de posicionamiento 'fixed' aquí para evitar conflictos de transform.
+      */}
+      <motion.div
+        initial={{ y: 0 }}
+        animate={{ y: isProjectModalOpen ? '-150%' : '0%' }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} // Curva "Expo" suave
+        className="fixed top-0 left-0 right-0 z-[100] flex justify-center pointer-events-none"
       >
-        <div className="w-full h-full px-6 md:px-8 flex items-center justify-between">
-          
-          {/* --- 1. LOGO: VISIBILIDAD INTELIGENTE --- */}
-          <Link href="/" className="group flex items-center gap-3 relative z-20 outline-none">
-            <div className="relative w-8 h-8 flex items-center justify-center">
-               <div className="absolute inset-0 bg-red-600/40 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-               <Image 
-                  src="/favicon.ico" 
-                  alt="Logo" 
-                  width={28} 
-                  height={28} 
-                  className="relative z-10 filter grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
-                />
-            </div>
-            {/* Ocultamos el texto en pantallas muy pequeñas o al hacer scroll muy agresivo si se desea, 
-                pero aquí lo mantenemos elegante */}
-            <motion.div className="flex flex-col whitespace-nowrap">
-              <span className="text-white font-black tracking-tight text-sm leading-none">
-                DANIEL <span className="text-red-600">RAYO</span>
-              </span>
-            </motion.div>
-          </Link>
-
-          {/* --- 2. NAVEGACIÓN CENTRAL: FLOTANTE --- */}
-          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <ul className="flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <li key={link.name} className="relative">
-                  <Link
-                    href={link.href}
-                    onMouseEnter={() => setHoveredTab(link.name)}
-                    onMouseLeave={() => setHoveredTab(null)}
-                    className={`relative z-10 block px-5 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 ${
-                      hoveredTab === link.name ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                  {hoveredTab === link.name && (
-                    <motion.div
-                      layoutId="nav-glow"
-                      className="absolute inset-0 bg-white/5 rounded-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* --- 3. BOTÓN HYPER-ACTION --- */}
-          <div className="flex items-center gap-4 relative z-20">
-            {isAdmin && (
-              <Link href="/admin" className="text-zinc-600 hover:text-white transition-colors">
-                <Settings size={16} />
-              </Link>
-            )}
-
-            <Link href="#contacto" className="hidden sm:block">
-              <motion.button 
-                whileHover="hover"
-                initial="initial"
-                className="group relative h-9 px-6 bg-zinc-950 border border-zinc-800 rounded-full overflow-hidden shadow-lg flex items-center justify-center"
-              >
-                {/* Capa Roja de Fondo (Barrido) */}
-                <motion.div 
-                  variants={{ initial: { x: '-110%' }, hover: { x: '0%' } }}
-                  transition={{ type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.5 }}
-                  className="absolute inset-0 bg-red-600"
-                />
-                
-                <div className="relative z-10 flex items-center overflow-hidden h-full">
-                  {/* Texto 1: HABLEMOS */}
-                  <motion.span 
-                    variants={{ initial: { y: 0 }, hover: { y: '-150%' } }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className="block text-[10px] font-black uppercase tracking-[0.2em] text-white"
-                  >
-                    Hablemos
-                  </motion.span>
-                  
-                  {/* Texto 2: CONTACTAR + ICONO */}
-                  <motion.div
-                    variants={{ initial: { y: '150%' }, hover: { y: 0 } }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className="absolute inset-0 flex items-center justify-center gap-2 w-full"
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-[0.0em] text-white">Contactar</span>
-             
-                  </motion.div>
-                </div>
-              </motion.button>
+        <motion.header
+          style={{
+            width,
+            y, // Esta 'y' es la del scroll (física), no choca con la 'y' del wrapper padre
+            backgroundColor,
+            backdropFilter,
+            borderRadius,
+            borderColor,
+            paddingTop: paddingY,
+            paddingBottom: paddingY,
+          }}
+          // Importante: Quitamos 'fixed' y añadimos 'pointer-events-auto' para que los botones funcionen
+          className="pointer-events-auto mx-auto border border-transparent min-w-[340px] max-w-[1400px] overflow-hidden"
+        >
+          <div className="w-full h-full px-6 md:px-8 flex items-center justify-between">
+            
+            {/* --- 1. LOGO: VISIBILIDAD INTELIGENTE --- */}
+            <Link href="/" className="group flex items-center gap-3 relative z-20 outline-none">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                 <div className="absolute inset-0 bg-red-600/40 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                 <Image 
+                    src="/favicon.ico" 
+                    alt="Logo" 
+                    width={28} 
+                    height={28} 
+                    className="relative z-10 filter grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
+                  />
+              </div>
+              <motion.div className="flex flex-col whitespace-nowrap">
+                <span className="text-white font-black tracking-tight text-sm leading-none">
+                  DANIEL <span className="text-red-600">RAYO</span>
+                </span>
+              </motion.div>
             </Link>
 
-            {/* Menú Móvil Trigger */}
-            <button 
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 text-white hover:text-red-600 transition-colors"
-            >
-              <Menu size={24} strokeWidth={1.5} />
-            </button>
+            {/* --- 2. NAVEGACIÓN CENTRAL: FLOTANTE --- */}
+            <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <ul className="flex items-center gap-1">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.name} className="relative">
+                    <Link
+                      href={link.href}
+                      onMouseEnter={() => setHoveredTab(link.name)}
+                      onMouseLeave={() => setHoveredTab(null)}
+                      className={`relative z-10 block px-5 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 ${
+                        hoveredTab === link.name ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                    {hoveredTab === link.name && (
+                      <motion.div
+                        layoutId="nav-glow"
+                        className="absolute inset-0 bg-white/5 rounded-full"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* --- 3. BOTÓN HYPER-ACTION --- */}
+            <div className="flex items-center gap-4 relative z-20">
+              {isAdmin && (
+                <Link href="/admin" className="text-zinc-600 hover:text-white transition-colors">
+                  <Settings size={16} />
+                </Link>
+              )}
+
+              <Link href="#contacto" className="hidden sm:block">
+                <motion.button 
+                  whileHover="hover"
+                  initial="initial"
+                  className="group relative h-9 px-6 bg-zinc-950 border border-zinc-800 rounded-full overflow-hidden shadow-lg flex items-center justify-center"
+                >
+                  {/* Capa Roja de Fondo (Barrido) */}
+                  <motion.div 
+                    variants={{ initial: { x: '-110%' }, hover: { x: '0%' } }}
+                    transition={{ type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.5 }}
+                    className="absolute inset-0 bg-red-600"
+                  />
+                  
+                  <div className="relative z-10 flex items-center overflow-hidden h-full">
+                    {/* Texto 1: HABLEMOS */}
+                    <motion.span 
+                      variants={{ initial: { y: 0 }, hover: { y: '-150%' } }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="block text-[10px] font-black uppercase tracking-[0.2em] text-white"
+                    >
+                      Hablemos
+                    </motion.span>
+                    
+                    {/* Texto 2: CONTACTAR + ICONO */}
+                    <motion.div
+                      variants={{ initial: { y: '150%' }, hover: { y: 0 } }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="absolute inset-0 flex items-center justify-center gap-2 w-full"
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-[0.0em] text-white">Contactar</span>
+                    </motion.div>
+                  </div>
+                </motion.button>
+              </Link>
+
+              {/* Menú Móvil Trigger */}
+              <button 
+                onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden p-2 text-white hover:text-red-600 transition-colors"
+              >
+                <Menu size={24} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.header>
+        </motion.header>
+      </motion.div>
 
       {/* --- 4. MENÚ MÓVIL: SISTEMA INMERSIVO --- */}
       <AnimatePresence>
@@ -219,7 +230,7 @@ export default function Header() {
             <div className="mt-auto flex justify-between items-end">
                <Image src="/favicon.ico" alt="Logo" width={32} height={32} className="opacity-20 grayscale" />
                <div className="text-right text-[10px] font-mono text-zinc-500">
-                  <p>MADRID — ES</p>
+                  <p>SEVILLA — ES</p>
                   <p>{new Date().getFullYear()} © DANIEL RAYO</p>
                </div>
             </div>
