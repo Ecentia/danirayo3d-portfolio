@@ -6,17 +6,18 @@
 }
 
 :root {
-  /* ELIMINADO: background: #000; -> Ya no lo definimos aquí */
   color: white;
   cursor: crosshair;
 }
 
 html,
 body {
-  /* IMPORTANTE: Fondo transparente para que se vean las capas de atrás */
-  background-color: transparent;
+  background-color: transparent; /* Seguimos dejando que el Layout maneje el fondo */
   overflow-x: hidden;
   max-width: 100vw;
+  /* Añadimos suavizado de fuentes para que el texto blanco se vea mejor sobre oscuro */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* --- TUS EFECTOS (Asegurándonos de los z-index) --- */
@@ -48,7 +49,8 @@ body {
 .vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, #030000 120%);
+  /* Cambiamos el final del gradiente de #030000 a un transparente oscuro */
+  background: radial-gradient(circle at center, transparent 40%, #09090b 140%);
   pointer-events: none;
   z-index: -20;
 }

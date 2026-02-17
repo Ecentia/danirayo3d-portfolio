@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}", // Escanea la carpeta app
-    "./components/**/*.{js,ts,jsx,tsx,mdx}", // Escanea la carpeta components
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -12,8 +12,16 @@ export default {
       },
       colors: {
         rayo: {
-          black: "#050505",
-          dark: "#0a0a0a",
+          // ELIMINAMOS EL NEGRO PURO
+          // black: "#050505", -> Viejo
+          // dark: "#0a0a0a",  -> Viejo
+
+          // NUEVA PALETA "OBSIDIANA"
+          black: "#09090b", // Un negro rico (Zinc-950), no puro.
+          dark: "#121217", // Un gris muy oscuro para tarjetas/secciones.
+          surface: "#1e1e24", // Para bordes o elementos elevados.
+
+          // Mantenemos tus rojos
           red: "#FF2E2E",
           crimson: "#D40000",
           muted: "#3d1111",

@@ -16,7 +16,6 @@ export default function Experience() {
   const [editingItem, setEditingItem] = useState<ExperienceItem | null>(null);
 
   const fetchExperience = async () => {
-    // Recuerda que cambiamos el orden a created_at o display_order según tu preferencia
     const { data } = await supabase
       .from('experience')
       .select('*')
@@ -31,14 +30,15 @@ export default function Experience() {
   const handleDelete = async (id: string) => { await deleteItem('experience', id); fetchExperience(); };
 
   return (
-    <section className="relative w-full py-32 bg-black overflow-hidden">
-       {/* Fondo decorativo sutil */}
-       <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-[10%] top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-red-900/20 to-transparent" />
-          <div className="absolute right-[10%] top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-red-900/20 to-transparent" />
-       </div>
+    // CAMBIO: bg-black -> bg-[#09090b] (Obsidiana)
+    <section className="relative w-full py-32 bg-[#09090b] text-white overflow-hidden">
+        {/* Fondo decorativo sutil */}
+        <div className="absolute inset-0 pointer-events-none">
+           <div className="absolute left-[10%] top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-red-900/20 to-transparent" />
+           <div className="absolute right-[10%] top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-red-900/20 to-transparent" />
+        </div>
 
-       <div className="max-w-5xl mx-auto px-6 relative z-10">
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
           
           {/* HEADER SECCIÓN */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-6">
@@ -47,14 +47,14 @@ export default function Experience() {
                    // SYSTEM_LOGS
                 </h2>
                 <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                   TRAYECTORIA <span className="text-zinc-700">DATA</span>
+                   TRAYECTORIA <span className="text-white/10">DATA</span>
                 </h3>
              </div>
              
              {isAdmin && (
                 <button 
                   onClick={openNewModal}
-                  className="group flex items-center gap-3 bg-red-600/10 border border-red-600/50 text-red-500 px-6 py-3 hover:bg-red-600 hover:text-white transition-all duration-300"
+                  className="group flex items-center gap-3 bg-red-600/10 border border-red-600/50 text-red-500 px-6 py-3 hover:bg-red-600 hover:text-white transition-all duration-300 rounded-sm"
                 >
                    <Plus size={16} className="group-hover:rotate-90 transition-transform"/> 
                    <span className="font-mono text-xs font-bold tracking-widest">ADD_NEW_NODE</span>
@@ -62,28 +62,27 @@ export default function Experience() {
              )}
           </div>
 
-          {/* TIMELINE CONTAINER (Layout Corregido) */}
+          {/* TIMELINE CONTAINER */}
           <div className="relative">
              
              {/* LÍNEA VERTICAL CENTRAL (El "Spine") */}
-             {/* Usamos absolute left-4 md:left-8 para fijarla visualmente */}
              <div className="absolute left-[19px] md:left-[31px] top-4 bottom-0 w-[2px] bg-zinc-900">
                 <div className="absolute inset-0 bg-gradient-to-b from-red-600 via-red-900/50 to-transparent w-full h-full" />
              </div>
 
              <div className="space-y-16">
                 {items.map((item, index) => (
-                   <motion.div 
+                    <motion.div 
                       key={item.id}
                       initial={{ opacity: 0, x: -30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true, margin: "-50px" }}
                       transition={{ delay: index * 0.1, duration: 0.6 }}
                       className="relative flex gap-8 md:gap-12"
-                   >
-                      {/* COLUMNA IZQUIERDA: EL "NODO" (Siempre centrado en la línea) */}
+                    >
+                      {/* COLUMNA IZQUIERDA: EL "NODO" */}
                       <div className="flex flex-col items-center flex-shrink-0">
-                         {/* El Punto/Nodo Espectacular */}
+                         {/* El Punto/Nodo */}
                          <div className="relative w-10 h-10 md:w-16 md:h-16 flex items-center justify-center bg-black border border-zinc-800 rounded-full z-10 group-hover:border-red-500 transition-colors duration-500 shadow-[0_0_20px_rgba(0,0,0,1)]">
                             {/* Icono interior */}
                             <div className="text-zinc-500 group-hover:text-red-500 transition-colors">
@@ -94,9 +93,10 @@ export default function Experience() {
                          </div>
                       </div>
 
-                      {/* COLUMNA DERECHA: LA TARJETA (Flexible) */}
+                      {/* COLUMNA DERECHA: LA TARJETA (Glass Style) */}
                       <div className="flex-1 group">
-                         <div className="relative bg-zinc-900/40 backdrop-blur-md border border-white/5 p-6 md:p-8 hover:border-red-500/30 transition-all duration-500 hover:bg-zinc-900/60 overflow-hidden">
+                         {/* CAMBIO: bg-zinc-900/40 -> bg-white/5 con backdrop-blur */}
+                         <div className="relative bg-white/5 backdrop-blur-md border border-white/10 p-6 md:p-8 hover:border-red-500/30 transition-all duration-500 hover:bg-white/[0.08] overflow-hidden rounded-sm">
                             
                             {/* Decoración Cyberpunk en esquinas */}
                             <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -108,8 +108,8 @@ export default function Experience() {
                             {/* Controles Admin */}
                             {isAdmin && (
                                <div className="absolute top-4 right-4 flex gap-2 z-20">
-                                  <button onClick={() => openEditModal(item)} className="p-2 text-zinc-500 hover:text-white bg-black hover:bg-zinc-800 transition-colors"><Pencil size={14}/></button>
-                                  <button onClick={() => handleDelete(item.id)} className="p-2 text-zinc-500 hover:text-red-500 bg-black hover:bg-zinc-800 transition-colors"><Trash2 size={14}/></button>
+                                  <button onClick={() => openEditModal(item)} className="p-2 text-zinc-500 hover:text-white bg-black/40 hover:bg-zinc-800 transition-colors rounded-sm backdrop-blur-sm"><Pencil size={14}/></button>
+                                  <button onClick={() => handleDelete(item.id)} className="p-2 text-zinc-500 hover:text-red-500 bg-black/40 hover:bg-zinc-800 transition-colors rounded-sm backdrop-blur-sm"><Trash2 size={14}/></button>
                                </div>
                             )}
 
@@ -119,7 +119,7 @@ export default function Experience() {
                                   <span className={`px-2 py-1 ${item.type === 'work' ? 'bg-blue-900/20 text-blue-400 border border-blue-900/30' : 'bg-green-900/20 text-green-400 border border-green-900/30'}`}>
                                      {item.type === 'work' ? 'PROFESSIONAL_EXP' : 'ACADEMIC_RECORD'}
                                   </span>
-                                  <span className="text-zinc-600">//</span>
+                                  <span className="text-white/10">//</span>
                                   <span className="text-red-500 flex items-center gap-1">
                                      <Calendar size={12}/> 
                                      {item.start_date} — {item.end_date || <span className="animate-pulse font-bold text-red-400">PRESENT</span>}
@@ -145,24 +145,24 @@ export default function Experience() {
                             </div>
                          </div>
                       </div>
-                   </motion.div>
+                    </motion.div>
                 ))}
 
                 {items.length === 0 && (
-                   <div className="ml-20 p-8 border border-dashed border-zinc-800 text-zinc-600 font-mono text-sm">
-                      [SYSTEM MESSAGE]: NO DATA STREAMS FOUND. PLEASE INITIALIZE NEW NODE.
-                   </div>
+                    <div className="ml-20 p-8 border border-dashed border-zinc-800 text-zinc-600 font-mono text-sm bg-white/5 backdrop-blur-sm">
+                       [SYSTEM MESSAGE]: NO DATA STREAMS FOUND. PLEASE INITIALIZE NEW NODE.
+                    </div>
                 )}
              </div>
           </div>
-       </div>
+        </div>
 
-       {/* Modal System */}
-       <ExperienceModal 
+        {/* Modal System */}
+        <ExperienceModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
           itemToEdit={editingItem}
-       />
+        />
     </section>
   );
 }

@@ -50,7 +50,8 @@ export default function ProjectsGrid() {
   };
 
   return (
-    <section className="py-24 bg-black relative z-10 overflow-hidden">
+    // CAMBIO: bg-black -> bg-transparent para dejar ver el fondo del Layout
+    <section className="py-24 bg-transparent relative z-10 overflow-hidden">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12">
         
         {/* CABECERA DE SECCIÓN TÉCNICA */}
@@ -62,7 +63,7 @@ export default function ProjectsGrid() {
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
-            Selección <span className="text-zinc-800">Visual</span>
+            Selección <span className="text-white/20">Visual</span>
           </h2>
         </div>
 
@@ -71,7 +72,7 @@ export default function ProjectsGrid() {
           className="flex w-auto -ml-6" 
           columnClassName="pl-6 bg-clip-padding"
         >
-          {/* BOTÓN AÑADIR (ADMIN) - ESTILO HEADER */}
+          {/* BOTÓN AÑADIR (ADMIN) - ESTILO GLASS */}
           {isAdmin && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -80,7 +81,8 @@ export default function ProjectsGrid() {
             >
               <button 
                 onClick={handleOpenCreate}
-                className="w-full aspect-square border border-white/5 bg-zinc-900/20 rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-zinc-900/40 transition-all group relative overflow-hidden"
+                // CAMBIO: bg-zinc-900/20 -> bg-white/5 con backdrop-blur
+                className="w-full aspect-square border border-white/10 bg-white/5 backdrop-blur-md rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-white/10 transition-all group relative overflow-hidden"
               >
                 {/* Micro-esquinas tácticas */}
                 <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>

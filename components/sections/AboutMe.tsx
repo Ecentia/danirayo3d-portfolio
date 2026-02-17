@@ -39,9 +39,14 @@ export default function AboutMe() {
   };
 
   return (
-    <section className="relative w-full py-32 bg-black text-white overflow-hidden">
+    // CAMBIO 1: bg-black -> bg-[#09090b] (Obsidiana)
+    <section className="relative w-full py-32 bg-[#09090b] text-white overflow-hidden">
+        
         {/* --- DECORACIÓN DE FONDO --- */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black via-black/90 to-transparent z-10 pointer-events-none"></div>
+        {/* Actualizado el gradiente superior para fundirse con el nuevo color base */}
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#09090b] via-[#09090b]/90 to-transparent z-10 pointer-events-none"></div>
+        
+        {/* Mantenemos tu grid roja pero sobre el nuevo fondo oscuro */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(20,0,0,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(20,0,0,0.5)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 pointer-events-none"></div>
         <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-red-900/10 blur-[150px] rounded-full pointer-events-none"></div>
 
@@ -65,10 +70,11 @@ export default function AboutMe() {
             >
               {isAdmin ? (
                 <div className="relative group">
+                   {/* Input actualizado a estilo glass */}
                    <textarea 
                       value={content.title}
                       onChange={(e) => handleLocalChange('title', e.target.value)}
-                      className="w-full bg-black/50 text-5xl font-black text-white border-l-4 border-red-600 p-4 focus:outline-none focus:bg-red-950/20 uppercase resize-none font-sans"
+                      className="w-full bg-white/5 text-5xl font-black text-white border-l-4 border-red-600 p-4 focus:outline-none focus:bg-white/10 uppercase resize-none font-sans backdrop-blur-sm transition-colors"
                       rows={3}
                    />
                    <div className="absolute top-0 right-0 bg-red-600 text-xs px-2 py-1 text-black font-bold flex gap-1 items-center pointer-events-none">
@@ -90,19 +96,21 @@ export default function AboutMe() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="lg:col-span-7"
             >
-               <div className="bg-red-950/5 border border-red-900/30 p-8 md:p-12 relative backdrop-blur-sm">
-                 {/* Esquinas decorativas */}
-                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-red-500"></div>
-                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-red-500"></div>
-                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-red-500"></div>
-                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-red-500"></div>
+               {/* CAMBIO 2: Estilo "Smoked Glass" en lugar de fondo sólido rojizo */}
+               <div className="bg-white/5 border border-white/10 p-8 md:p-12 relative backdrop-blur-md rounded-sm">
+                 {/* Esquinas decorativas (Mantenidas) */}
+                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-red-500/50"></div>
+                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-red-500/50"></div>
+                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-red-500/50"></div>
+                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-red-500/50"></div>
 
                  {isAdmin ? (
                     <div className="relative group">
+                       {/* Input descripción actualizado */}
                        <textarea 
                           value={content.description}
                           onChange={(e) => handleLocalChange('description', e.target.value)}
-                          className="w-full h-64 bg-black text-red-100 font-mono text-lg border border-red-900/50 p-6 focus:outline-none focus:border-red-500 focus:shadow-[0_0_20px_rgba(255,0,0,0.1)] resize-none"
+                          className="w-full h-64 bg-black/20 text-red-100 font-mono text-lg border border-white/10 p-6 focus:outline-none focus:border-red-500/50 focus:bg-black/40 resize-none transition-colors"
                        />
                        <div className="absolute bottom-4 right-4 text-red-500 opacity-50 pointer-events-none">
                          <Terminal size={20} />

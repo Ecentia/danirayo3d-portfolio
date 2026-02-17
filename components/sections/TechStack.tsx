@@ -9,10 +9,6 @@ import {
 import { Monitor, Video } from 'lucide-react';
 
 // --- ICONOS CUSTOM (SUBSTANCE) ARREGLADOS ---
-// Se ha eliminado el sistema de <mask> que causaba problemas de visibilidad.
-// Ahora usan fillRule="evenodd" para combinar el fondo y las letras en un solo path.
-// Esto garantiza que hereden el color (currentColor) correctamente.
-
 const SubstanceDesignerIcon = (props: any) => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="1.8em" height="1.8em" {...props}>
     <path 
@@ -59,7 +55,8 @@ const TECH_CATEGORIES = [
 
 export default function TechStack() {
   return (
-    <section className="relative w-full py-32 bg-black overflow-hidden border-t border-red-900/20">
+    // CAMBIO 1: bg-black -> bg-[#09090b] (Obsidiana)
+    <section className="relative w-full py-32 bg-[#09090b] overflow-hidden border-t border-red-900/20">
       <div className="max-w-7xl mx-auto px-10 relative z-10">
         
         {/* Header estilo Rayo */}
@@ -92,7 +89,10 @@ export default function TechStack() {
                 {cat.skills.map((skill, sIdx) => (
                   <div 
                     key={sIdx}
-                    className="group flex items-center gap-4 p-4 border border-white/5 bg-zinc-900/20 hover:border-red-600/50 hover:bg-red-950/10 transition-all duration-500 cursor-default"
+                    // CAMBIO 2: Glass Effect
+                    // Antes: bg-zinc-900/20 
+                    // Ahora: bg-white/5 backdrop-blur-sm
+                    className="group flex items-center gap-4 p-4 border border-white/5 bg-white/5 backdrop-blur-sm hover:border-red-600/50 hover:bg-red-950/10 transition-all duration-500 cursor-default rounded-sm"
                   >
                     {/* Icono: Zinc por defecto, Rojo al hover */}
                     <skill.icon 
