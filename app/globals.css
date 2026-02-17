@@ -46,7 +46,8 @@ body {
 
 /* --- APP MODE OVERRIDES --- */
 @media (max-width: 768px) {
-  html, body {
+  html,
+  body {
     /* Evita el rebote elástico típico de iOS */
     overscroll-behavior-y: none;
     /* Ajuste para el notch del iPhone */
@@ -62,20 +63,30 @@ body {
 
 /* Animación de escaneo para el modo robot */
 @keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .robot-scan {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(255, 0, 0, 0.2), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 0, 0, 0.2),
+    transparent
+  );
   animation: scanline 2s linear infinite;
   pointer-events: none;
 }
 
 @media (max-width: 1024px) {
-  html, body {
+  html,
+  body {
     /* Desactiva el rebote elástico blanco de iOS */
     overscroll-behavior-y: none;
     /* Evita la selección de texto para que parezca UI nativa */
@@ -90,4 +101,10 @@ body {
     width: 0px;
     background: transparent;
   }
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
 }
