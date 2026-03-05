@@ -45,14 +45,14 @@ export default function MobileContact() {
            </Link>
 
            {/* 3. EMAIL */}
-           <Link href="mailto:danielrayo247@gmail.com" className="group">
+           <Link href="mailto:drayo3d.contact@gmail.com" className="group">
               <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 flex items-center gap-5 hover:border-red-600 transition-colors">
                  <div className="w-12 h-12 bg-zinc-800 text-white rounded-full flex items-center justify-center border border-white/5">
                     <Mail size={24} />
                  </div>
                  <div>
                     <h3 className="text-lg font-bold text-white">Email</h3>
-                    <p className="text-xs text-zinc-400">danielrayo247@gmail.com</p>
+                    <p className="text-xs text-zinc-400">drayo3d.contact@gmail.com</p>
                  </div>
               </div>
            </Link>

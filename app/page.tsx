@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 
 // Componentes de contenido (Web)
-import ActorRobot from '@/components/ActorRobot';
 import AboutMe from '@/components/sections/AboutMe';
 import ProjectsGrid from '@/components/sections/ProjectGrid';
 import TechStack from '@/components/sections/TechStack';
@@ -63,7 +62,6 @@ function ExperienceScene({ targetPosition, setTargetPosition }: { targetPosition
       </mesh>
 
       <Suspense fallback={<Html center><span className="text-red-600 font-mono animate-pulse tracking-widest uppercase">System_Boot...</span></Html>}>
-          <ActorRobot position={[-4.5, -1.5, 0]} targetPosition={targetPosition} scale={0.7} />
           <ContactShadows opacity={0.6} scale={10} blur={2.5} far={2} color="#000000" />
       </Suspense>
 
@@ -121,7 +119,7 @@ export default function Home() {
             >
               <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent to-red-600"></div>
               <span className="text-red-500 font-bold text-xs md:text-lg tracking-[0.4em] uppercase">
-                3D Artist & Game Developer
+                3D Workflow Artist 
               </span>
               <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent to-red-600"></div>
             </motion.div>

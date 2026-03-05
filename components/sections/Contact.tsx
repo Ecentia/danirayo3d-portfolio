@@ -38,7 +38,7 @@ export default function Contact() {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText("danielrayo247@gmail.com");
+    navigator.clipboard.writeText("drayo3d.contact@gmail.com");
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
@@ -84,7 +84,7 @@ export default function Contact() {
                      </div>
                      <div className="flex-1">
                         <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Email</div>
-                        <div className="text-lg text-white font-medium">danielrayo247@gmail.com</div>
+                        <div className="text-lg text-white font-medium">drayo3d.contact@gmail.com</div>
                      </div>
                      <button 
                         onClick={copyToClipboard}

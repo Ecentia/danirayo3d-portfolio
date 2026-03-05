@@ -6,7 +6,6 @@ import { UiProvider } from "@/context/UiContext";
 import AdminControls from "@/components/AdminControls";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import WelcomeScreen from "@/components/layout/WelcomeScreen";
 import BackgroundEffects from "@/components/layout/BackgroundEffects";
 
 const geistSans = Geist({
@@ -24,11 +23,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://danirayo3d.es"),
   
   title: {
-    default: "DaniRayo3D | Daniel Rayo - Artista 3D & Game Developer",
+    default: "DaniRayo3D | Daniel Rayo - Artista 3D",
     template: "%s | DaniRayo3D Portfolio",
   },
   
-  description: "Portfolio oficial de Daniel Rayo (DaniRayo3D / Malegro 32). Game Developer y Artista 3D especializado en entornos, personajes y experiencias interactivas.",
+  description: "Portfolio oficial de Daniel Rayo (DaniRayo3D / Malegro 32). Artista 3D especializado en entornos, personajes y experiencias interactivas.",
   
   // Palabras clave corregidas: Solo Game Dev y 3D
   keywords: [
@@ -42,7 +41,7 @@ export const metadata: Metadata = {
     "Daniel 3D",
     
     // Profesión & Rol
-    "Game Developer",
+    "Diseñador 3D",
     "Desarrollador de Videojuegos",
     "3D Artist", 
     "Artista 3D", 
@@ -81,7 +80,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "DaniRayo3D | Game Developer & Artista 3D",
+    title: "DaniRayo3D | Artista 3D",
     description: "Descubre los proyectos 3D y videojuegos de Daniel Rayo (Malegro 32).",
     url: "https://danirayo3d.es",
     siteName: "DaniRayo3D Portfolio",
@@ -100,7 +99,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DaniRayo3D | Daniel Rayo",
-    description: "Portfolio de Game Developer y Artista 3D.",
+    description: "Portfolio de Artista 3D.",
   },
 };
 
@@ -152,7 +151,7 @@ export default function RootLayout({
         <AdminProvider>
           <UiProvider>
             
-            <WelcomeScreen />
+            
 
             {/* Scanlines (Efecto TV - Capa superior visual) */}
             <div className="scanlines" />

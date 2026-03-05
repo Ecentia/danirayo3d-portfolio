@@ -69,7 +69,7 @@ export default function Hero() {
   };
 
   const titleText = "DANIEL RAYO";
-  const subtitleText = "> 3D Artist & Game Developer".split("");
+  const subtitleText = "> 3D Artist ".split("");
 
   return (
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-rayo-black perspective-1000">
