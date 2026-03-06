@@ -64,14 +64,14 @@ export default function Contact() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-[1px] bg-red-600"></div>
-                <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase">Contacto</span>
+                <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase">CONTACT</span>
               </div>
               <h3 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6 uppercase">
-                 Hablemos de <br/>
-                 <span className="text-white/20">tu proyecto.</span>
+                 LET'S DISCUSS <br/>
+                 <span className="text-white/20">YOUR PROJECT.</span>
               </h3>
               <p className="text-zinc-400 text-lg leading-relaxed max-w-md font-light">
-                 ¿Tienes una idea en mente? Estoy disponible para colaboraciones freelance y nuevos retos en la industria del 3D y videojuegos.
+                 Do you have an idea in mind? I am available for freelance collaborations and new challenges in the 3D industry.
               </p>
             </div>
 
@@ -119,9 +119,9 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
                    <div className="space-y-6">
                       <div className="group">
-                         <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">Nombre</label>
+                         <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">Name</label>
                          <input 
-                            type="text" name="name" required placeholder="Tu nombre"
+                            type="text" name="name" required placeholder="Your name"
                             // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500 para que se vea mejor
                             className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all"
                          />
@@ -130,16 +130,16 @@ export default function Contact() {
                       <div className="group">
                          <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">Email</label>
                          <input 
-                            type="email" name="email" required placeholder="ejemplo@correo.com"
+                            type="email" name="email" required placeholder="example@gmail.com"
                             // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500
                             className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all"
                          />
                       </div>
 
                       <div className="group">
-                         <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">Mensaje</label>
+                         <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">Message</label>
                          <textarea 
-                            name="message" required rows={4} placeholder="Cuéntame sobre tu proyecto..."
+                            name="message" required rows={4} placeholder="Tell me about your project..."
                             // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500
                             className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all resize-none"
                          ></textarea>
@@ -154,10 +154,10 @@ export default function Contact() {
                          ${formStatus === 'submitting' ? 'opacity-70 cursor-wait' : ''}
                       `}
                    >
-                      {formStatus === 'idle' && <>Enviar Mensaje <ArrowRight size={18} /></>}
-                      {formStatus === 'submitting' && <span className="animate-pulse">Enviando...</span>}
-                      {formStatus === 'success' && <>¡Mensaje Enviado! <CheckCircle size={18} /></>}
-                      {formStatus === 'error' && <>Error - Reintentar <AlertTriangle size={18} /></>}
+                      {formStatus === 'idle' && <>Send Message <ArrowRight size={18} /></>}
+                      {formStatus === 'submitting' && <span className="animate-pulse">Sending...</span>}
+                      {formStatus === 'success' && <>¡Message Sent! <CheckCircle size={18} /></>}
+                      {formStatus === 'error' && <>Error - Retry <AlertTriangle size={18} /></>}
                    </button>
                 </form>
 
@@ -172,8 +172,8 @@ export default function Contact() {
                          <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mb-6 border border-green-500/20">
                             <CheckCircle size={40} />
                          </div>
-                         <h4 className="text-white font-bold text-2xl mb-2">¡Mensaje Recibido!</h4>
-                         <p className="text-zinc-400">Gracias por contactar. Te responderé lo antes posible.</p>
+                         <h4 className="text-white font-bold text-2xl mb-2">Message received!</h4>
+                         <p className="text-zinc-400">Thank you for contacting me. I will get back to you as soon as possible.</p>
                       </motion.div>
                    )}
                 </AnimatePresence>

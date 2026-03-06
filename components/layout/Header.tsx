@@ -16,8 +16,8 @@ import { useUi } from '@/context/UiContext';
 import { Settings, Menu, X, ArrowRight, Zap } from 'lucide-react';
 
 const NAV_LINKS = [
-  { name: 'Proyectos', href: '#proyectos' },
-  { name: 'Trayectoria', href: '#trayectoria' },
+  { name: 'Projects', href: '#proyectos' },
+  { name: 'Career', href: '#trayectoria' },
 ];
 
 export default function Header() {
@@ -159,7 +159,7 @@ export default function Header() {
                       transition={{ duration: 0.4, ease: "easeInOut" }}
                       className="block text-[10px] font-black uppercase tracking-[0.2em] text-white"
                     >
-                      Hablemos
+                      Let's Talk
                     </motion.span>
                     
                     {/* Texto 2: CONTACTAR + ICONO */}
@@ -168,7 +168,7 @@ export default function Header() {
                       transition={{ duration: 0.4, ease: "easeInOut" }}
                       className="absolute inset-0 flex items-center justify-center gap-2 w-full"
                     >
-                      <span className="text-[10px] font-black uppercase tracking-[0.0em] text-white">Contactar</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.0em] text-white">CONTACT</span>
                     </motion.div>
                   </div>
                 </motion.button>
@@ -196,7 +196,7 @@ export default function Header() {
             className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex flex-col p-8"
           >
             <div className="flex justify-between items-center mb-20">
-              <span className="text-[10px] font-mono text-zinc-600 tracking-widest uppercase">// NAVEGACIÓN_SISTEMA</span>
+              <span className="text-[10px] font-mono text-zinc-600 tracking-widest uppercase">// SYSTEM_NAVEGATION</span>
               <button 
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full text-zinc-400 hover:text-white hover:border-red-600 transition-colors"

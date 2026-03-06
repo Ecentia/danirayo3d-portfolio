@@ -65,11 +65,11 @@ useEffect(() => {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-[1px] bg-red-600"></div>
             <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase flex items-center gap-2">
-               <LayoutGrid size={12} /> Galería_Proyectos
+               <LayoutGrid size={12} /> Projects_Gallery
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
-            Selección <span className="text-white/20">Visual</span>
+            Visual <span className="text-white/20">Selection</span>
           </h2>
         </div>
 
@@ -98,7 +98,7 @@ useEffect(() => {
                   <Plus size={24} />
                 </div>
                 <span className="font-mono text-[9px] tracking-[0.3em] text-zinc-500 group-hover:text-white uppercase transition-colors">
-                  Nueva_Entidad
+                  NEW_ENTITY
                 </span>
               </button>
             </motion.div>

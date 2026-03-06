@@ -134,7 +134,7 @@ export default function Home() {
                 <button className="relative group px-12 py-4 md:px-16 md:py-5 bg-black/20 border border-white/10 hover:border-red-600 overflow-hidden transition-all duration-500 backdrop-blur-sm rounded-sm">
                   <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
                   <span className="relative z-10 text-white font-black text-sm md:text-xl tracking-[0.2em] flex items-center gap-3">
-                    EXPLORAR <span className="text-red-500 group-hover:text-white transition-colors">↓</span>
+                    EXPLORE <span className="text-red-500 group-hover:text-white transition-colors">↓</span>
                   </span>
                 </button>
               </Link>

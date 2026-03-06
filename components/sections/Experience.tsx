@@ -47,7 +47,7 @@ export default function Experience() {
                    // SYSTEM_LOGS
                 </h2>
                 <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                   TRAYECTORIA <span className="text-white/10">DATA</span>
+                   EXPERIENCE <span className="text-white/10">DATA</span>
                 </h3>
              </div>
              
