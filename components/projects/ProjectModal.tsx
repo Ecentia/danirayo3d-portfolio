@@ -9,14 +9,9 @@ import { FullProjectData, Project, GalleryImage } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
 import { useUi } from '@/context/UiContext';
 
-// --- ICONOS DE SOFTWARE (React Icons) ---
-import { 
-  SiAdobeaftereffects, SiBlender, SiAutodeskmaya, SiAdobephotoshop, 
-  SiUnity, SiAdobepremierepro, 
-  SiAseprite, SiKrita 
-} from 'react-icons/si';
-
-// --- ICONOS CUSTOM CORREGIDOS (Con Máscaras de Recorte y tamaño ajustado) ---
+import { ICON_MAP } from '@/components/sections/TechStack';
+import { CURRENT_SLUG } from '@/context/AdminContext';
+import { TechItem } from '@/types/database';
 
 // Substance 3D Designer (Sb) - Aumentado a 1.3em
 const SubstanceDesignerIcon = (props: any) => (
@@ -50,19 +45,7 @@ const SubstancePainterIcon = (props: any) => (
   </svg>
 );
 
-// Mapeo de programas
-const SOFTWARE_LIST = [
-  { name: 'After Effects', icon: SiAdobeaftereffects },
-  { name: 'Blender', icon: SiBlender },
-  { name: 'Maya', icon: SiAutodeskmaya },
-  { name: 'Photoshop', icon: SiAdobephotoshop },
-  { name: 'Substance 3D Painter', icon: SubstancePainterIcon },
-  { name: 'Substance 3D Designer', icon: SubstanceDesignerIcon },
-  { name: 'Unity', icon: SiUnity },
-  { name: 'Premiere', icon: SiAdobepremierepro },
-  { name: 'Aseprite', icon: SiAseprite },
-  { name: 'Krita', icon: SiKrita },
-];
+
 
 // --- ESTILOS (Scrollbar Visible y Roja) ---
 const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-red-900/40 hover:[&::-webkit-scrollbar-thumb]:bg-red-600 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
@@ -85,12 +68,20 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<'thumbnail' | 'gallery'>('thumbnail');
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const [availableTech, setAvailableTech] = useState<TechItem[]>([]);
 
   // Efecto para sincronizar el estado global de UI
-    useEffect(() => {
-      setProjectModalOpen(isOpen);
-      return () => setProjectModalOpen(false);
-    }, [isOpen, setProjectModalOpen]);
+  useEffect(() => {
+      const fetchTech = async () => {
+        const { data } = await supabase
+          .from('tech_stack')
+          .select('*')
+          .eq('client_slug', CURRENT_SLUG)
+          .order('display_order', { ascending: true });
+        if (data) setAvailableTech(data);
+      };
+      if (isOpen) fetchTech();
+    }, [isOpen]);
 
   const { isAdmin, registerChange, registerNewProject, notify } = useAdmin();
 
@@ -391,29 +382,30 @@ useEffect(() => {
                     )}
                  </div>
 
-                 {/* SOFTWARE USED (Selector Visual) */}
+               {/* SOFTWARE USED (Selector Visual Dinámico) */}
                  <div className="space-y-3">
                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                         <Monitor size={12}/> Software Used
                     </h3>
                     
-                    {/* Modo Admin: Grid de selección */}
+                    {/* Modo Admin: Grid de selección dinámico */}
                     {isAdmin && (
                         <div className="grid grid-cols-5 gap-2 bg-black/20 p-3 rounded-lg border border-white/5">
-                            {SOFTWARE_LIST.map((soft) => {
-                                const isSelected = currentProject.tags?.includes(soft.name);
+                            {availableTech.map((tech) => {
+                                const isSelected = currentProject.tags?.includes(tech.name);
+                                const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
                                 return (
                                     <button 
-                                        key={soft.name}
-                                        onClick={() => toggleSoftware(soft.name)}
+                                        key={tech.id}
+                                        onClick={(e) => { e.preventDefault(); toggleSoftware(tech.name); }}
                                         className={`flex flex-col items-center justify-center p-2 rounded transition-all aspect-square
                                             ${isSelected 
                                                 ? 'bg-red-900/30 border border-red-500 text-red-400 shadow-[0_0_10px_rgba(220,38,38,0.2)]' 
                                                 : 'bg-zinc-900/50 border border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800'}
                                         `}
-                                        title={soft.name}
+                                        title={tech.name}
                                     >
-                                        <soft.icon size={20} />
+                                        <IconComponent size={20} />
                                     </button>
                                 )
                             })}
@@ -423,11 +415,13 @@ useEffect(() => {
                     {/* Modo Vista: Lista de Iconos Activos */}
                     {!isAdmin && (
                         <div className="flex flex-wrap gap-3">
-                            {SOFTWARE_LIST.filter(s => currentProject.tags?.includes(s.name)).map(soft => (
-                                <div key={soft.name} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-red-500/50 transition-colors" title={soft.name}>
-                                    <soft.icon size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
+                            {availableTech.filter(tech => currentProject.tags?.includes(tech.name)).map(tech => {
+                                const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
+                                return (
+                                <div key={tech.id} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-red-500/50 transition-colors" title={tech.name}>
+                                    <IconComponent size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     )}
                  </div>
@@ -448,10 +442,11 @@ useEffect(() => {
                         <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"><Layers size={12}/> Other Tags</h3>
                         
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {currentProject.tags?.filter(t => !SOFTWARE_LIST.some(s => s.name === t)).map((tag, index) => (
+                          {/* Comprobamos si el tag NO está en la lista de software */}
+                          {currentProject.tags?.filter(tag => !availableTech.some(tech => tech.name === tag)).map((tag, index) => (
                             <span key={index} className="flex items-center gap-1 text-[10px] uppercase font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
                               {tag}
-                              {isAdmin && <button onClick={() => removeTag(tag)} className="hover:text-red-500 ml-1"><X size={12} /></button>}
+                              {isAdmin && <button onClick={(e) => { e.preventDefault(); removeTag(tag); }} className="hover:text-red-500 ml-1"><X size={12} /></button>}
                             </span>
                           ))}
                         </div>
