@@ -56,15 +56,11 @@ export default function Header() {
 
   return (
     <>
-      {/* WRAPPER DE VISIBILIDAD GLOBAL 
-         Este div controla si el header se muestra o se esconde por el Modal.
-         Movemos las propiedades de posicionamiento 'fixed' aquí para evitar conflictos de transform.
-      */}
-      <motion.div
-        initial={{ y: 0 }}
-        animate={{ y: isProjectModalOpen ? '-150%' : '0%' }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} // Curva "Expo" suave
-        className="fixed top-0 left-0 right-0 z-[100] flex justify-center pointer-events-none"
+      {/* WRAPPER DE VISIBILIDAD GLOBAL */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[100] flex justify-center pointer-events-none transition-all duration-500 ${
+          isProjectModalOpen ? 'opacity-0 -translate-y-10 invisible' : 'opacity-100 translate-y-0 visible'
+        }`}
       >
         <motion.header
           style={{
@@ -184,7 +180,7 @@ export default function Header() {
             </div>
           </div>
         </motion.header>
-      </motion.div>
+      </div>
 
       {/* --- 4. MENÚ MÓVIL: SISTEMA INMERSIVO --- */}
       <AnimatePresence>

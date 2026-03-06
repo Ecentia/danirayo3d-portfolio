@@ -13,8 +13,8 @@ interface ExperienceModalProps {
 }
 
 const MONTHS = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];
 
 export default function ExperienceModal({ isOpen, onClose, itemToEdit }: ExperienceModalProps) {
