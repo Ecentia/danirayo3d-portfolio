@@ -13,7 +13,7 @@ import {
   SiAdobeaftereffects, SiAdobepremierepro, SiDavinciresolve, SiKdenlive, SiObsstudio, SiNuke,
   
   // 🎨 Arte 2D, Texturas y Concept Art
-  SiAdobephotoshop, SiAdobeillustrator, SiAdobelightroom, SiKrita, SiAseprite, SiFigma, SiGimp, SiInkscape,
+  SiAdobephotoshop, SiAdobeillustrator, SiAdobelightroom, SiKrita, SiAseprite, SiFigma, SiGimp, SiInkscape, 
   
   // 🕹️ Hardware, Plataformas y Estudios
   SiNvidia, SiAmd, SiSteam, SiEpicgames, SiWacom,
@@ -21,6 +21,8 @@ import {
   // 📁 Gestión, Repositorios y Portfolio
   SiArtstation, SiBehance, SiNotion, SiTrello, SiJira, SiGithub, SiDiscord
 } from 'react-icons/si';
+
+
 
 import { Monitor, Video, Plus, Trash2, X, Database } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -38,7 +40,9 @@ const SubstancePainterIcon = (props: any) => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="1.8em" height="1.8em" {...props}><path fillRule="evenodd" d="M90.75,0h331a90.75,90.75,0,0,1,90.75,90.75V408.91a90.75,90.75,0,0,1-90.75,90.75h-331A90.75,90.75,0,0,1,0,408.91V90.75A90.75,90.75,0,0,1,90.75,0ZM110.85,350.39V130.71c0-1.6.68-2.4,2.06-2.4q5.49,0,13.06-.17t16.33-.35l18.57-.34q9.8-.18,19.42-.18,26.13,0,44,6.54A76.18,76.18,0,0,1,253,151.34a67.28,67.28,0,0,1,15.64,24.24,80.35,80.35,0,0,1,4.82,27.67q0,27.51-12.72,45.38a72,72,0,0,1-34.38,26,137.05,137.05,0,0,1-48.13,8.08q-7.57,0-10.66-.18c-2.06-.11-5.16-.17-9.28-.17v67.73a2.74,2.74,0,0,1-2.32,3.09,2.49,2.49,0,0,1-.77,0H113.25C111.65,353.14,110.85,352.23,110.85,350.39Zm47.44-180.83v71.17q4.46.35,8.25.34h11.34a81.19,81.19,0,0,0,24.58-3.44A37.11,37.11,0,0,0,220,226.29q6.7-7.9,6.7-22a34.81,34.81,0,0,0-5-18.9,32.14,32.14,0,0,0-15-12.21,63.8,63.8,0,0,0-25.09-4.29q-8.25,0-14.61.17t-8.77.51ZM401,319.11V347.3q0,3.78-2.75,4.47a122.82,122.82,0,0,1-13.75,3.44A88.75,88.75,0,0,1,368,356.58q-22.35,0-35.06-11.69t-12.72-37.47V222.16H299.92c-1.83,0-2.75-1-2.75-3.09V185c0-1.83,1-2.75,3.1-2.75h20.28q.34-5.84.86-13.58c.35-5.15.8-10.31,1.38-15.47s1.08-9.34,1.54-12.54a6.09,6.09,0,0,1,1-1.89,3.74,3.74,0,0,1,1.72-1.21L368,132.44a2.87,2.87,0,0,1,1.89.09c.46.23.52.83.52,2q-.69,7.91-1,21.49t-.69,26.29h32c1.38,0,2.07.92,2.07,2.75v34.73a2.12,2.12,0,0,1-1.72,2.4H368.34v73.57q0,11.7,4,16.68t14.61,5c2.06,0,4-.05,5.85-.17s3.66-.29,5.5-.52a2.21,2.21,0,0,1,1.89.17A2.44,2.44,0,0,1,401,319.11Z"/></svg>
 );
 const ZbrushIcon = (props: any) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="1.8em" height="1.8em" {...props}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.57l-5.41 7.21h5.18v1.64H6.88v-1.3l5.41-7.21H7.31V7.27h9.33v1.3z"/></svg>
+  <svg viewBox="1050 1730 450 350" fill="currentColor" width="1.8em" height="1.8em" {...props}>
+    <path d="M1175 1977 c-72 -71 -70 -144 5 -195 32 -22 43 -24 116 -19 44 2 91 10 102 16 56 30 -5 183 -90 227 -50 26 -86 18 -133 -29z" />
+  </svg>
 );
 
 // --- MAPA MAESTRO DE ICONOS ---
@@ -133,52 +137,89 @@ export default function TechStack() {
     fetchTech();
   };
 
-  return (
-    <section className="relative w-full py-32 bg-[#09090b] overflow-hidden border-t border-red-900/20">
-      <div className="max-w-7xl mx-auto px-10 relative z-10">
+ return (
+    <section className="relative w-full py-32 lg:py-48 bg-[#030305] overflow-hidden" id="tech-stack">
+      
+      {/* --- NUEVO FONDO ESPECTACULAR: MATRIZ DE PUNTOS Y NÚCLEO VOLUMÉTRICO --- */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Patrón de matriz de puntos (Dot Matrix) */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:24px_24px]" />
         
-        <div className="flex items-center gap-4 mb-10">
-          <h2 className="text-red-600 font-mono text-2xl tracking-[0.3em] uppercase">
-            // SOFTWARE_ARSENAL
-          </h2>
-          <div className="h-[1px] flex-grow bg-gradient-to-r from-red-900/50 to-transparent"></div>
-        </div>
+        {/* Núcleo central que respira */}
+        <motion.div 
+          animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-red-900/20 blur-[150px] rounded-full mix-blend-screen"
+        />
+        
+        {/* Viñeta para oscurecer los bordes */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#030305_100%)]" />
+      </div>
 
-        {/* Acciones de Admin */}
-        {isAdmin && (
-            <div className="flex gap-4 mb-10">
+      <div className="max-w-7xl mx-auto px-6 relative z-20">
+        
+        {/* --- CABECERA DE SECCIÓN --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24 pb-8 border-b border-white/[0.05]">
+          <div className="space-y-4">
+             <motion.div 
+               initial={{opacity: 0, x: -20}} whileInView={{opacity: 1, x: 0}} viewport={{once:true}} transition={{duration: 0.8}}
+               className="flex items-center gap-3 text-red-500 font-mono text-xs md:text-sm tracking-[0.4em] uppercase"
+             >
+                <Monitor size={16} className="animate-pulse drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-800 font-bold">SOFTWARE_MODULES</span>
+             </motion.div>
+             <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-2xl">
+                Tech <span className="text-transparent bg-clip-text bg-gradient-to-b from-zinc-500 to-zinc-800">Arsenal</span>
+             </h2>
+          </div>
+
+          {/* Acciones de Admin */}
+          {isAdmin && (
+            <div className="flex flex-wrap gap-4 mt-6 md:mt-0">
               {techList.length === 0 && (
-                 <button onClick={handleSeedDB} className="flex items-center gap-2 bg-blue-600/20 text-blue-400 border border-blue-500/50 px-4 py-2 rounded text-xs font-mono hover:bg-blue-600 hover:text-white transition-all">
-                    <Database size={14} /> CARGAR PROGRAMAS POR DEFECTO
+                 <button onClick={handleSeedDB} className="flex items-center gap-2 bg-zinc-900 text-zinc-400 border border-zinc-700 px-5 py-3 rounded-full text-xs font-mono hover:bg-zinc-800 hover:text-white transition-all shadow-lg hover:border-zinc-500">
+                    <Database size={14} /> CARGAR DEFAULT_SYS
                  </button>
               )}
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-red-600/20 text-red-400 border border-red-500/50 px-4 py-2 rounded text-xs font-mono hover:bg-red-600 hover:text-white transition-all shadow-lg hover:shadow-red-600/50">
-                 <Plus size={14} /> AÑADIR NUEVO SOFTWARE
-              </button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsModalOpen(true)} 
+                className="group flex items-center gap-3 bg-red-600 text-white px-6 py-3 rounded-full text-xs font-bold tracking-tight hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)]"
+              >
+                 <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" /> 
+                 <span>ADD SOFTWARE NODE</span>
+              </motion.button>
             </div>
-        )}
+          )}
+        </div>
 
-        {/* Grid de Programas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+        {/* --- GRID DE PROGRAMAS --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 relative z-20">
           {CATEGORIES.map((cat, idx) => {
             const catItems = techList.filter(t => t.category === cat.id);
-            if (catItems.length === 0 && !isAdmin) return null; // Ocultar categoría vacía si no es admin
+            if (catItems.length === 0 && !isAdmin) return null;
 
             return (
               <motion.div 
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: idx * 0.15, duration: 0.8, ease: "easeOut" }}
                 className="space-y-8"
               >
-                <div className="flex items-center gap-4 border-b border-red-900/20 pb-4">
-                  <span className="text-red-500">{cat.icon}</span>
-                  <h3 className="text-sm font-black text-white tracking-widest uppercase italic">{cat.id}</h3>
+                {/* Título de Categoría Limpio y Elegante */}
+                <div className="flex items-center gap-4 border-b border-white/[0.05] pb-4">
+                  <div className="text-red-500 drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
+                    {cat.icon}
+                  </div>
+                  <h3 className="text-lg font-black text-white tracking-[0.2em] uppercase">
+                    {cat.id}
+                  </h3>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <AnimatePresence>
                     {catItems.map((item) => {
                       const IconComponent = ICON_MAP[item.icon_key] || Monitor;
@@ -188,22 +229,31 @@ export default function TechStack() {
                           layout
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="group flex items-center gap-4 p-4 border border-white/5 bg-white/5 backdrop-blur-sm hover:border-red-600/50 hover:bg-red-950/10 transition-all duration-500 rounded-sm relative"
+                          exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+                          className="group relative bg-[#0a0a0c]/80 backdrop-blur-xl border border-white/[0.05] p-5 rounded-2xl transition-all duration-500 overflow-hidden flex items-center gap-5 hover:-translate-y-1.5 shadow-xl hover:shadow-[0_15px_40px_-10px_rgba(220,38,38,0.4)] hover:border-red-500/40 hover:bg-[#0f0f13]"
                         >
+                          {/* Reflejo de luz diagonal al hover */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                          {/* Línea de circuito inferior */}
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent group-hover:w-full transition-all duration-700 ease-out" />
+
                           {isAdmin && (
-                            <button onClick={() => handleDelete(item.id)} className="absolute -left-3 -top-3 bg-black border border-white/10 text-zinc-500 hover:text-red-500 p-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition-all z-10">
-                                <Trash2 size={12}/>
+                            <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 bg-black/80 backdrop-blur border border-zinc-800 text-zinc-500 hover:text-red-500 hover:border-red-900 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-20 hover:scale-110">
+                                <Trash2 size={14}/>
                             </button>
                           )}
-                          <IconComponent size={24} className="text-zinc-400 group-hover:text-red-500 transition-colors duration-300" />
-                          <span className="text-xs font-mono text-zinc-500 group-hover:text-white uppercase tracking-wider font-bold">
-                            {item.name}
-                          </span>
+
+                          {/* Caja del Icono Flotante */}
+                          <div className="w-14 h-14 rounded-xl bg-gradient-to-b from-zinc-800/50 to-black/50 border border-white/10 flex items-center justify-center shadow-inner group-hover:border-red-500/50 transition-all duration-500 relative z-10 group-hover:bg-red-950/20">
+                            <IconComponent size={28} className="text-zinc-400 group-hover:text-white group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] transition-all duration-500 group-hover:scale-110" />
+                          </div>
                           
-                          <div className="ml-auto flex gap-1">
-                            <div className="w-1 h-3 bg-red-600 opacity-20 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="w-1 h-3 bg-red-600 opacity-10 group-hover:opacity-60 transition-opacity"></div>
+                          {/* Texto del Programa */}
+                          <div className="flex flex-col relative z-10 flex-1 min-w-0">
+                            <span className="text-base font-extrabold text-zinc-300 group-hover:text-white truncate transition-colors tracking-tight">
+                              {item.name}
+                            </span>
                           </div>
                         </motion.div>
                       )
@@ -216,48 +266,61 @@ export default function TechStack() {
         </div>
       </div>
 
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none opacity-50"></div>
-
-      {/* MODAL AÑADIR SOFTWARE (Solo Admin) */}
-      {isAdmin && isModalOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-           <motion.div 
-             initial={{ scale: 0.9, opacity: 0 }} 
-             animate={{ scale: 1, opacity: 1 }}
-             className="bg-[#09090b] border border-red-900/50 p-6 rounded-sm max-w-md w-full relative"
-           >
-              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">
-                 <X size={20} />
+      {/* --- MODAL AÑADIR SOFTWARE (Solo Admin) --- */}
+      <AnimatePresence>
+        {isAdmin && isModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }} 
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-[#050507] border border-red-900/40 p-8 rounded-3xl max-w-md w-full relative shadow-[0_0_60px_rgba(220,38,38,0.15)]"
+            >
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full hover:bg-red-900/50">
+                 <X size={18} />
               </button>
-              <h3 className="text-red-500 font-mono mb-6 tracking-widest text-sm">AÑADIR SOFTWARE</h3>
               
-              <form onSubmit={handleAddTech} className="flex flex-col gap-4">
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="w-10 h-10 rounded-full bg-red-900/20 flex items-center justify-center text-red-500 border border-red-500/20">
+                    <Database size={18} />
+                 </div>
+                 <h3 className="text-white font-black tracking-tighter text-2xl uppercase">Insert Node</h3>
+              </div>
+              
+              <form onSubmit={handleAddTech} className="flex flex-col gap-6">
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Nombre del Programa</label>
-                    <input autoFocus required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm text-white focus:border-red-500 focus:outline-none" placeholder="Ej: ZBrush" />
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Node_Name</label>
+                    <input autoFocus required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-red-500/50" placeholder="e.g. Marvelous Designer" />
                  </div>
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Categoría</label>
-                    <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm text-white focus:border-red-500 focus:outline-none">
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Partition_Category</label>
+                    <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-red-500/50">
                        <option value="3D & TEXTURING">3D & TEXTURING</option>
                        <option value="POST & CREATIVE">POST & CREATIVE</option>
                     </select>
                  </div>
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Icono (React Icons)</label>
-                    <select value={formData.icon_key} onChange={(e) => setFormData({...formData, icon_key: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm text-white focus:border-red-500 focus:outline-none">
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Icon_Key_Hash</label>
+                    <select value={formData.icon_key} onChange={(e) => setFormData({...formData, icon_key: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-red-500/50">
                        {Object.keys(ICON_MAP).map(key => (
                          <option key={key} value={key}>{key.replace('Si', '').replace('Icon', '')}</option>
                        ))}
                     </select>
                  </div>
-                 <button type="submit" className="mt-4 bg-red-600 text-white font-bold uppercase tracking-widest py-3 hover:bg-red-500 transition-colors">
-                    Guardar Programa
+                 
+                 <button type="submit" className="mt-2 bg-gradient-to-r from-red-700 to-red-600 text-white font-bold tracking-widest py-4 rounded-xl hover:from-red-600 hover:to-red-500 transition-all active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.3)] uppercase">
+                    Initialize Node
                  </button>
               </form>
-           </motion.div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
