@@ -56,9 +56,6 @@ export default function MobileHome({ onNavigate }: { onNavigate: (v: any) => voi
                 Daniel <span className="text-red-600">Rayo</span>
               </h1>
               <div className="flex items-center gap-2 mt-2">
-                <span className="px-2 py-0.5 bg-white/10 border border-white/5 rounded text-[9px] font-bold text-white uppercase tracking-wider">
-                  Developer
-                </span>
                 <span className="px-2 py-0.5 bg-red-600/20 border border-red-600/30 rounded text-[9px] font-bold text-red-500 uppercase tracking-wider">
                   3D Artist
                 </span>

@@ -18,7 +18,7 @@ interface AdminContextType {
   registerNewProject: (data: any) => void;
   registerNewExperience: (data: any) => void;
   saveAllChanges: () => Promise<void>;
-  deleteItem: (table: 'projects' | 'experience', id: string) => Promise<void>;
+  deleteItem: (table: 'projects' | 'experience' | 'tech_stack', id: string) => Promise<void>;
   deleteProject: (id: string) => Promise<void>; // Alias para compatibilidad con tus componentes
   notify: (message: string, type?: ToastType) => void;
   hasChanges: boolean;
@@ -75,7 +75,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   // --- BORRADO ---
-  const deleteItem = async (table: 'projects' | 'experience', id: string) => {
+  const deleteItem = async (table: 'projects' | 'experience' | 'tech_stack', id: string) => {
     if (!confirm("⚠️ ¿Eliminar este elemento permanentemente?")) return;
     try {
         const { error } = await supabase.from(table).delete().eq('id', id);

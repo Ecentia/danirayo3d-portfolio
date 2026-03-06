@@ -11,7 +11,7 @@ export interface Project {
 
 export interface ExperienceItem {
   id: string;
-  type: 'work' | 'education';
+  type: "work" | "education";
   title: string;
   organization: string;
   start_date: string;
@@ -24,6 +24,15 @@ export interface GalleryImage {
   id: string;
   project_id: string;
   image_url: string;
+  display_order: number;
+}
+
+export interface TechItem {
+  id: string;
+  client_slug: string;
+  name: string;
+  category: string;
+  icon_key: string;
   display_order: number;
 }
 
