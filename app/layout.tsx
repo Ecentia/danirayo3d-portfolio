@@ -26,22 +26,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://danirayo3d.es"),
 
-  // --- TITLE ---
-  // El template se usa en páginas internas (e.g. "Proyectos | DaniRayo3D")
   title: {
     default: "DaniRayo3D | Daniel Rayo – Artista 3D · 3D Artist · Sevilla",
     template: "%s | DaniRayo3D – Artista 3D",
   },
 
-  // --- DESCRIPTION ---
-  // ~155 caracteres. Primera frase = lo más importante (aparece en snippet de Google).
-  // Incluye identidad, especialidad, ciudad (SEO local) y CTA implícito.
   description:
     "Daniel Rayo (DaniRayo3D) — Artista 3D freelance en Sevilla, España. Especializado en modelado 3D, entornos, personajes, texturizado y renders. Disponible para proyectos en Blender y Unreal Engine. 3D Artist based in Seville, Spain, open to freelance and remote work worldwide.",
 
-  // --- KEYWORDS ---
-  // Google dice que no las usa directamente para ranking, pero otros motores SÍ.
-  // Inclúyelas de todas formas: no perjudican y algunos scrapers las usan.
   keywords: [
     // ——— IDENTIDAD ———
     "Daniel Rayo",
@@ -181,12 +173,10 @@ export const metadata: Metadata = {
     "Modelos 3D personalizados",
   ],
 
-  // --- AUTORES Y CREADORES ---
   authors: [{ name: "Daniel Rayo", url: "https://danirayo3d.es" }],
   creator: "Daniel Rayo",
   publisher: "Daniel Rayo",
 
-  // --- ROBOTS ---
   robots: {
     index: true,
     follow: true,
@@ -199,14 +189,12 @@ export const metadata: Metadata = {
     },
   },
 
-  // --- ICONOS ---
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
 
-  // --- OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Discord...) ---
   openGraph: {
     title: "DaniRayo3D | Daniel Rayo – Artista 3D · 3D Artist",
     description:
@@ -215,7 +203,7 @@ export const metadata: Metadata = {
     siteName: "DaniRayo3D – Portfolio Artista 3D",
     images: [
       {
-        url: "/og-image.jpg", // ⚠️ Reemplaza con tu imagen OG real (1200x630px recomendado)
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "DaniRayo3D – Daniel Rayo, Artista 3D · 3D Artist – Portfolio",
@@ -227,37 +215,25 @@ export const metadata: Metadata = {
     type: "website",
   },
 
-  // --- TWITTER / X CARD ---
   twitter: {
     card: "summary_large_image",
     title: "DaniRayo3D | Daniel Rayo – Artista 3D",
     description:
       "Portfolio de Daniel Rayo: modelado 3D, entornos, personajes. Blender · Unreal Engine · Sevilla, Spain.",
-    images: ["/og-image.jpg"], // ⚠️ Misma imagen OG
-    // creator: "@TuTwitterHandle", // ← Añade tu @handle si tienes Twitter/X
+    images: ["/og-image.jpg"],
   },
 
-  // --- CANONICAL & IDIOMAS ALTERNATIVOS ---
-  // Esto le dice a Google qué URL es la "oficial" y que existe versión en inglés
   alternates: {
     canonical: "https://danirayo3d.es",
     languages: {
       "es-ES": "https://danirayo3d.es",
-      "en-US": "https://danirayo3d.es/en", // Descomenta si creas ruta /en
+      "en-US": "https://danirayo3d.es/en",
     },
   },
 
-  // --- VERIFICACIÓN DE PROPIEDAD (rellena cuando tengas los códigos) ---
-  // verification: {
-  //   google: "TU_CÓDIGO_GOOGLE_SEARCH_CONSOLE",
-  //   yandex: "TU_CÓDIGO_YANDEX",
-  // },
-
-  // --- CATEGORÍA (ayuda a clasificadores de IA y scrapers) ---
   category: "Art & Design",
 };
 
-// --- VIEWPORT ---
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -268,13 +244,11 @@ export const viewport: Viewport = {
 
 // ================================================================
 // JSON-LD — DATOS ESTRUCTURADOS PARA GOOGLE
-// Aparece en rich results: Knowledge Panel, sitelinks, breadcrumbs
 // ================================================================
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
-    // --- Persona / Profesional ---
     {
       "@type": "Person",
       "@id": "https://danirayo3d.es/#daniel-rayo",
@@ -304,15 +278,11 @@ const jsonLd = {
         addressCountry: "ES",
       },
       sameAs: [
-        // ⚠️ Añade tus perfiles reales:
-        // "https://www.artstation.com/danirayo3d",
-        // "https://www.linkedin.com/in/danielrayo3d",
-        // "https://www.instagram.com/danirayo3d",
-        // "https://twitter.com/TuHandle",
-        // "https://danirayo3d.artstation.com",
+        "https://www.artstation.com/d_rayo3d",
+        "https://www.linkedin.com/in/daniel-rodriguez-rayo-67a5132aa/",
+        "https://www.instagram.com/d_rayo.3d/",
       ],
     },
-    // --- Sitio Web ---
     {
       "@type": "WebSite",
       "@id": "https://danirayo3d.es/#website",
@@ -322,7 +292,6 @@ const jsonLd = {
         "Portfolio oficial de Daniel Rayo (DaniRayo3D). Artista 3D freelance en Sevilla, España. Trabajos de modelado 3D, entornos, personajes y renders.",
       inLanguage: ["es-ES", "en"],
       author: { "@id": "https://danirayo3d.es/#daniel-rayo" },
-      // Habilita el cuadro de búsqueda en los resultados de Google:
       potentialAction: {
         "@type": "SearchAction",
         target: {
@@ -332,7 +301,6 @@ const jsonLd = {
         "query-input": "required name=search_term_string",
       },
     },
-    // --- Servicio Profesional (Freelance) ---
     {
       "@type": "Service",
       name: "Servicios de Artista 3D Freelance",
@@ -374,7 +342,6 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -384,8 +351,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased text-white selection:bg-red-500/30 overflow-x-hidden min-h-screen relative`}
       >
-        {/* --- SISTEMA DE CAPAS DE FONDO --- */}
-
         {/* CAPA 1: Fondo con degradado radial */}
         <div
           className="fixed inset-0 z-[-50]"
