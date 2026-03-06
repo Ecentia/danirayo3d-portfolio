@@ -115,9 +115,12 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     loadProject(projectId);
   };
 
-  useEffect(() => {
+useEffect(() => {
     if (isOpen) {
+      // 1. Bloqueamos el scroll tanto en el body como en el html
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
       if (initialProjectId) {
         setIsCreationMode(false);
         loadProject(initialProjectId);
@@ -135,10 +138,19 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
         });
       }
     } else {
-      document.body.style.overflow = 'unset';
+      // 2. Restauramos el scroll limpiando el estilo en línea (mejor que 'unset')
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      
       setCurrentProject(null);
       setTagInput('');
     }
+
+    // 3. Función de limpieza de seguridad por si el componente se desmonta de golpe
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
   }, [isOpen, initialProjectId]);
 
   // --- HANDLERS ---
