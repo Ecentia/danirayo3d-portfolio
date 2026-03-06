@@ -102,7 +102,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       // 1. Insertar Nuevos Proyectos
       for (const draft of newProjects) {
           const { id: tempId, gallery, ...cleanData } = draft;
-          const { data: inserted, error } = await supabase.from('projects').insert([{ ...cleanData, display_order: 0 }]).select().single();
+          const { data: inserted, error } = await supabase.from('projects').insert([{ ...cleanData, display_order: 0, client_slug: CURRENT_SLUG }]).select().single();
           if (error) throw error;
           
           if (gallery?.length > 0 && inserted) {
@@ -114,8 +114,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       // 2. Insertar Nueva Experiencia
-      if (newExperience.length > 0) {
-        const cleanExperience = newExperience.map(({ id, ...rest }) => rest);
+if (newExperience.length > 0) {
+        const cleanExperience = newExperience.map(({ id, ...rest }) => ({
+            ...rest,
+            client_slug: CURRENT_SLUG
+        }));
         const { error } = await supabase.from('experience').insert(cleanExperience);
         if (error) throw error;
       }
