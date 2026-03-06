@@ -154,7 +154,7 @@ export default function RootLayout({
             
 
             {/* Scanlines (Efecto TV - Capa superior visual) */}
-            <div className="scanlines" />
+  
 
             {/* Contenido Principal */}
             <div className="relative">

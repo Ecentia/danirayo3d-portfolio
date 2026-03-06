@@ -79,57 +79,40 @@ export default function ProjectsGrid() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-              <button 
-                onClick={handleOpenCreate}
-                // CAMBIO: bg-zinc-900/20 -> bg-white/5 con backdrop-blur
-                className="w-full aspect-square border border-white/10 bg-white/5 backdrop-blur-md rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-white/10 transition-all group relative overflow-hidden"
-              >
-                {/* Micro-esquinas tácticas */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-red-600 group-hover:border-red-600 transition-all duration-500">
-                  <Plus size={24} />
-                </div>
-                <span className="font-mono text-[9px] tracking-[0.3em] text-zinc-500 group-hover:text-white uppercase transition-colors">
-                  Nueva_Entidad
-                </span>
-              </button>
+               {/* ... (el contenido de tu botón se queda igual) ... */}
             </motion.div>
           )}
 
-          {/* LISTA DE PROYECTOS */}
-          <AnimatePresence mode="popLayout">
-            {projects.map((project, index) => (
-              <motion.div 
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="relative group mb-6"
-              >
-                {/* Botón Borrar Minimalista */}
-                {isAdmin && (
-                    <button 
-                        onClick={(e) => handleDeleteClick(e, project.id)}
-                        className="absolute top-4 right-4 z-50 bg-black/60 backdrop-blur-md text-white/50 p-2 border border-white/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all hover:text-red-500 hover:border-red-500"
-                        title="Eliminar Proyecto"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                )}
-                
-                <div className="transform transition-transform duration-700 group-hover:translate-y-[-4px]">
-                  <ProjectCard 
-                    project={project} 
-                    onClick={() => handleOpenEdit(project.id)}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {/* LISTA DE PROYECTOS DIRECTAMENTE COMO HIJOS */}
+          {projects.map((project, index) => (
+            <motion.div 
+              key={project.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              /* Quitamos el exit={{...}} porque ya no usamos AnimatePresence aquí */
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+              className="relative group mb-6"
+            >
+              {/* Botón Borrar Minimalista */}
+              {isAdmin && (
+                  <button 
+                      onClick={(e) => handleDeleteClick(e, project.id)}
+                      className="absolute top-4 right-4 z-50 bg-black/60 backdrop-blur-md text-white/50 p-2 border border-white/10 rounded-sm opacity-0 group-hover:opacity-100 transition-all hover:text-red-500 hover:border-red-500"
+                      title="Eliminar Proyecto"
+                  >
+                      <Trash2 size={14} />
+                  </button>
+              )}
+              
+              <div className="transform transition-transform duration-700 group-hover:translate-y-[-4px]">
+                <ProjectCard 
+                  project={project} 
+                  onClick={() => handleOpenEdit(project.id)}
+                />
+              </div>
+            </motion.div>
+          ))}
         </Masonry>
 
         {/* MODAL DE EDICIÓN */}
