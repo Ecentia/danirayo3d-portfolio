@@ -21,7 +21,7 @@ export default function ProjectsGrid() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isAdmin, deleteProject } = useAdmin();
+  const { isAdmin, deleteProject, isSaving } = useAdmin();
 
   const fetchProjects = async () => {
     const { data } = await supabase
@@ -31,7 +31,13 @@ export default function ProjectsGrid() {
     if (data) setProjects(data);
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  // Se ejecuta al cargar la página y automáticamente después de darle a Guardar
+useEffect(() => { 
+  // Cuando isSaving vuelve a ser 'false' (termina de guardar), recargamos los proyectos
+  if (!isSaving) {
+    fetchProjects(); 
+  }
+}, [isSaving]);
 
   const handleOpenCreate = () => {
     setSelectedProjectId(null);
@@ -72,14 +78,29 @@ export default function ProjectsGrid() {
           className="flex w-auto -ml-6" 
           columnClassName="pl-6 bg-clip-padding"
         >
-          {/* BOTÓN AÑADIR (ADMIN) - ESTILO GLASS */}
+         {/* BOTÓN AÑADIR (ADMIN) - ESTILO GLASS */}
           {isAdmin && (
             <motion.div 
+              key="admin-add-btn" /* <--- ¡ESTA ES LA LÍNEA CLAVE! */
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-               {/* ... (el contenido de tu botón se queda igual) ... */}
+              <button 
+                onClick={handleOpenCreate}
+                className="w-full aspect-square border border-white/10 bg-white/5 backdrop-blur-md rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-white/10 transition-all group relative overflow-hidden"
+              >
+                {/* Micro-esquinas tácticas */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-red-600 group-hover:border-red-600 transition-all duration-500">
+                  <Plus size={24} />
+                </div>
+                <span className="font-mono text-[9px] tracking-[0.3em] text-zinc-500 group-hover:text-white uppercase transition-colors">
+                  Nueva_Entidad
+                </span>
+              </button>
             </motion.div>
           )}
 
