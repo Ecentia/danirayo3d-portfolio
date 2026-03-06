@@ -107,6 +107,9 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   };
 
 useEffect(() => {
+    // 💡 NUEVO: Sincronizamos el estado de la prop 'isOpen' con el Contexto Global
+    setProjectModalOpen(isOpen);
+
     if (isOpen) {
       // 1. Bloqueamos el scroll tanto en el body como en el html
       document.body.style.overflow = 'hidden';
@@ -141,8 +144,10 @@ useEffect(() => {
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
+      // 💡 NUEVO: Por seguridad, si el modal se desmonta abruptamente, devolvemos el Header
+      setProjectModalOpen(false); 
     };
-  }, [isOpen, initialProjectId]);
+  }, [isOpen, initialProjectId, setProjectModalOpen]); // <-- Añade setProjectModalOpen a las dependencias
 
   // --- HANDLERS ---
   const handleEdit = (field: keyof Project | 'creation_date', value: any) => {
