@@ -25,6 +25,9 @@ import { CURRENT_SLUG } from "@/context/AdminContext";
 export default function AdminSettings() {
   const router = useRouter();
 
+  // ✅ ESTADO CRÍTICO: Bloquea el renderizado hasta confirmar la sesión
+  const [isAuthorizing, setIsAuthorizing] = useState(true);
+
   // Estados para el usuario actual
   const [currentEmail, setCurrentEmail] = useState<string>("Cargando...");
 
@@ -51,32 +54,37 @@ export default function AdminSettings() {
   // Verificar sesión y cargar estado de mantenimiento al montar
   useEffect(() => {
     const initSettings = async () => {
-      // 1. Verificar sesión
+      // 1. Verificar sesión inmediatamente
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (!session) {
+        // Si no hay sesión, redirigimos y NO quitamos el estado isAuthorizing
         router.push("/admin");
         return;
       }
+
       setCurrentEmail(session.user.email || "Desconocido");
 
       // 2. Cargar estado de mantenimiento desde la base de datos de forma segura
       try {
         const slug = CURRENT_SLUG || "danirayo";
-        const { data: maintenanceData, error } = await supabase
+        const { data: maintenanceData } = await supabase
           .from("portfolio_content")
-          .select("description") // ✅ Solo pedimos la columna description
+          .select("description")
           .eq("client_slug", slug)
           .eq("section_id", "maintenance")
           .maybeSingle();
 
-        // Si la descripción es "true", activamos el modo
         if (maintenanceData && maintenanceData.description === "true") {
           setMaintenanceMode(true);
         }
       } catch (e) {
         console.error("Error cargando estado de mantenimiento", e);
+      } finally {
+        // ✅ Solo permitimos el renderizado una vez validado todo
+        setIsAuthorizing(false);
       }
     };
     initSettings();
@@ -91,14 +99,12 @@ export default function AdminSettings() {
     setTimeout(() => setMessage(null), 5000);
   };
 
-  // 1. Actualizar Email (Real en Supabase)
+  // 1. Actualizar Email
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingEmail(true);
     setMessage(null);
-
     const { error } = await supabase.auth.updateUser({ email: newEmail });
-
     if (error) {
       showNotification(`Error: ${error.message}`, "error");
     } else {
@@ -106,20 +112,18 @@ export default function AdminSettings() {
         "Identidad actualizada en el núcleo de Supabase.",
         "success",
       );
-      setCurrentEmail(newEmail); // Actualizamos la UI inmediatamente
+      setCurrentEmail(newEmail);
       setNewEmail("");
     }
     setLoadingEmail(false);
   };
 
-  // 2. Actualizar Contraseña (Real en Supabase)
+  // 2. Actualizar Contraseña
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingPass(true);
     setMessage(null);
-
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-
     if (error) {
       showNotification(`Error: ${error.message}`, "error");
     } else {
@@ -136,7 +140,6 @@ export default function AdminSettings() {
   const handleForceSync = () => {
     setIsSyncing(true);
     showNotification("Iniciando sincronización forzada del núcleo...", "info");
-
     setTimeout(() => {
       router.refresh();
       setIsSyncing(false);
@@ -144,50 +147,49 @@ export default function AdminSettings() {
     }, 1500);
   };
 
-  // 4. Activar / Desactivar Modo Mantenimiento (Guardado en DB) - CORREGIDO
+  // 4. Activar / Desactivar Modo Mantenimiento
   const toggleMaintenance = async () => {
     const newState = !maintenanceMode;
-    setMaintenanceMode(newState); // Actualización optimista en la UI
-
+    setMaintenanceMode(newState);
     try {
       const slug = CURRENT_SLUG || "danirayo";
-
       const { error } = await supabase.from("portfolio_content").upsert(
         {
           client_slug: slug,
           section_id: "maintenance",
-          // ✅ Guardamos el estado como string en la columna description, que sabemos que existe
           description: newState ? "true" : "false",
-          title: "Mantenimiento del Sistema", // Le ponemos un título por si lo miras en la BD
+          title: "System Maintenance",
         },
-        {
-          onConflict: "client_slug, section_id",
-        },
+        { onConflict: "client_slug, section_id" },
       );
-
-      if (error) {
-        console.error("Detalle del error Supabase:", error);
-        throw error;
-      }
-
+      if (error) throw error;
       showNotification(
-        newState
-          ? "LOCK ACTIVADO. Los usuarios verán la pantalla de mantenimiento."
-          : "LOCK DESACTIVADO. Sistema abierto al público.",
+        newState ? "LOCK ACTIVADO" : "LOCK DESACTIVADO",
         newState ? "success" : "info",
       );
     } catch (error: any) {
-      showNotification(
-        `Error de conexión: ${error.message || "Falló al actualizar DB"}`,
-        "error",
-      );
-      setMaintenanceMode(!newState); // Revertir visualmente si falla
+      showNotification(`Error de conexión: ${error.message}`, "error");
+      setMaintenanceMode(!newState);
     }
   };
 
+  // ✅ RENDER DE SEGURIDAD: Pantalla de carga mientras se verifica el acceso
+  if (isAuthorizing) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          className="text-red-600 font-mono text-xs tracking-[0.5em] uppercase"
+        >
+          AUTHENTICATING_ACCESS...
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-transparent flex flex-col items-center justify-center p-4 relative z-10 overflow-hidden font-mono">
-      {/* Efecto de luz volumétrica roja de fondo */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-red-600/10 blur-[120px] rounded-full pointer-events-none z-[-1]" />
 
       <motion.div
@@ -196,7 +198,6 @@ export default function AdminSettings() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full max-w-4xl relative"
       >
-        {/* Botón Volver */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-neutral-400 hover:text-red-500 transition-colors mb-6 group"
@@ -210,7 +211,6 @@ export default function AdminSettings() {
           </span>
         </Link>
 
-        {/* Cabecera tipo Terminal */}
         <div className="flex items-center gap-4 mb-8">
           <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-red-600"></div>
           <span className="text-red-500 font-bold text-xs tracking-[0.3em] uppercase flex items-center gap-2 animate-pulse">
@@ -220,7 +220,6 @@ export default function AdminSettings() {
           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-red-600"></div>
         </div>
 
-        {/* Notificaciones Globales (Framer Motion) */}
         <AnimatePresence mode="wait">
           {message && (
             <motion.div
@@ -249,12 +248,9 @@ export default function AdminSettings() {
         </AnimatePresence>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* ========================================================= */}
-          {/* PANEL 1: CAMBIAR IDENTIDAD (EMAIL)                        */}
-          {/* ========================================================= */}
+          {/* PANEL 1: EMAIL */}
           <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-sm shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden group/card flex flex-col justify-between">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-600/50 to-transparent opacity-50 group-hover/card:opacity-100 transition-opacity duration-500" />
-
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <Mail className="text-red-500" size={24} strokeWidth={1.5} />
@@ -267,7 +263,6 @@ export default function AdminSettings() {
                 <span className="text-neutral-300">{currentEmail}</span>
               </p>
             </div>
-
             <form
               onSubmit={handleUpdateEmail}
               className="flex flex-col gap-4 mt-auto"
@@ -304,12 +299,9 @@ export default function AdminSettings() {
             </form>
           </div>
 
-          {/* ========================================================= */}
-          {/* PANEL 2: CAMBIAR CREDENCIALES (PASSWORD)                  */}
-          {/* ========================================================= */}
+          {/* PANEL 2: PASSWORD */}
           <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-sm shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden group/card flex flex-col justify-between">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-600/50 to-transparent opacity-50 group-hover/card:opacity-100 transition-opacity duration-500" />
-
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <Lock className="text-red-500" size={24} strokeWidth={1.5} />
@@ -318,11 +310,9 @@ export default function AdminSettings() {
                 </h2>
               </div>
               <p className="text-xs text-neutral-500 mb-6">
-                Establish a new secure encryption key for the system access.
-                Minimum 6 characters.
+                Establish a new secure encryption key. Minimum 6 characters.
               </p>
             </div>
-
             <form
               onSubmit={handleUpdatePassword}
               className="flex flex-col gap-4 mt-auto"
@@ -345,7 +335,6 @@ export default function AdminSettings() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-
               <button
                 disabled={loadingPass}
                 className="relative group/btn w-full py-3 bg-black border border-white/10 hover:border-red-600 disabled:opacity-50 overflow-hidden transition-all duration-500 rounded-sm"
@@ -370,21 +359,16 @@ export default function AdminSettings() {
             </form>
           </div>
 
-          {/* ========================================================= */}
-          {/* PANEL 3: SYSTEM OVERRIDES (NUEVO PANEL DE OPCIONES)       */}
-          {/* ========================================================= */}
+          {/* PANEL 3: SYSTEM OVERRIDES */}
           <div className="md:col-span-2 bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-sm shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden group/card mt-2">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-600/50 to-transparent opacity-50 group-hover/card:opacity-100 transition-opacity duration-500" />
-
             <div className="flex items-center gap-3 mb-6">
               <Server className="text-red-500" size={24} strokeWidth={1.5} />
               <h2 className="text-white font-bold tracking-widest uppercase text-sm">
                 System Overrides
               </h2>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Opción 1: Sincronización */}
               <div className="flex flex-col gap-3 p-4 bg-white/5 rounded-sm border border-white/5">
                 <div>
                   <h3 className="text-white text-xs font-bold tracking-widest mb-1">
@@ -412,7 +396,6 @@ export default function AdminSettings() {
                 </button>
               </div>
 
-              {/* Opción 2: Modo Mantenimiento (Toggle CONECTADO) */}
               <div className="flex flex-col gap-3 p-4 bg-white/5 rounded-sm border border-white/5">
                 <div>
                   <h3 className="text-white text-xs font-bold tracking-widest mb-1 flex items-center justify-between">
@@ -424,8 +407,7 @@ export default function AdminSettings() {
                     </span>
                   </h3>
                   <p className="text-neutral-500 text-[10px] leading-relaxed">
-                    Locks the frontend from public access. Only admins can
-                    enter.
+                    Locks the public frontend. Only admins can enter.
                   </p>
                 </div>
                 <button
@@ -439,7 +421,6 @@ export default function AdminSettings() {
                 </button>
               </div>
 
-              {/* Opción 3: Debug Mode (Toggle) */}
               <div className="flex flex-col gap-3 p-4 bg-white/5 rounded-sm border border-white/5">
                 <div>
                   <h3 className="text-white text-xs font-bold tracking-widest mb-1 flex items-center justify-between">
@@ -451,16 +432,14 @@ export default function AdminSettings() {
                     </span>
                   </h3>
                   <p className="text-neutral-500 text-[10px] leading-relaxed">
-                    Reveals system logs and 3D Canvas performance metrics.
+                    Reveals system logs and performance metrics.
                   </p>
                 </div>
                 <button
                   onClick={() => {
                     setDebugMode(!debugMode);
                     showNotification(
-                      debugMode
-                        ? "Debug mode disabled."
-                        : "Debug mode active. Watch console.",
+                      debugMode ? "Debug mode disabled." : "Debug mode active.",
                       "info",
                     );
                   }}
