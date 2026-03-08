@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image'; // <-- Importamos Image de next/image
 import { 
   // 🧊 3D, Render & Escultura
   SiBlender, SiAutodeskmaya, SiHoudini, SiAutodesk, SiSketchfab,
@@ -22,8 +23,6 @@ import {
   SiArtstation, SiBehance, SiNotion, SiTrello, SiJira, SiGithub, SiDiscord
 } from 'react-icons/si';
 
-
-
 import { Monitor, Video, Plus, Trash2, X, Database } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAdmin, CURRENT_SLUG } from '@/context/AdminContext';
@@ -39,10 +38,23 @@ const MarvelousDesignerIcon = (props: any) => (
 const SubstancePainterIcon = (props: any) => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="1.8em" height="1.8em" {...props}><path fillRule="evenodd" d="M90.75,0h331a90.75,90.75,0,0,1,90.75,90.75V408.91a90.75,90.75,0,0,1-90.75,90.75h-331A90.75,90.75,0,0,1,0,408.91V90.75A90.75,90.75,0,0,1,90.75,0ZM110.85,350.39V130.71c0-1.6.68-2.4,2.06-2.4q5.49,0,13.06-.17t16.33-.35l18.57-.34q9.8-.18,19.42-.18,26.13,0,44,6.54A76.18,76.18,0,0,1,253,151.34a67.28,67.28,0,0,1,15.64,24.24,80.35,80.35,0,0,1,4.82,27.67q0,27.51-12.72,45.38a72,72,0,0,1-34.38,26,137.05,137.05,0,0,1-48.13,8.08q-7.57,0-10.66-.18c-2.06-.11-5.16-.17-9.28-.17v67.73a2.74,2.74,0,0,1-2.32,3.09,2.49,2.49,0,0,1-.77,0H113.25C111.65,353.14,110.85,352.23,110.85,350.39Zm47.44-180.83v71.17q4.46.35,8.25.34h11.34a81.19,81.19,0,0,0,24.58-3.44A37.11,37.11,0,0,0,220,226.29q6.7-7.9,6.7-22a34.81,34.81,0,0,0-5-18.9,32.14,32.14,0,0,0-15-12.21,63.8,63.8,0,0,0-25.09-4.29q-8.25,0-14.61.17t-8.77.51ZM401,319.11V347.3q0,3.78-2.75,4.47a122.82,122.82,0,0,1-13.75,3.44A88.75,88.75,0,0,1,368,356.58q-22.35,0-35.06-11.69t-12.72-37.47V222.16H299.92c-1.83,0-2.75-1-2.75-3.09V185c0-1.83,1-2.75,3.1-2.75h20.28q.34-5.84.86-13.58c.35-5.15.8-10.31,1.38-15.47s1.08-9.34,1.54-12.54a6.09,6.09,0,0,1,1-1.89,3.74,3.74,0,0,1,1.72-1.21L368,132.44a2.87,2.87,0,0,1,1.89.09c.46.23.52.83.52,2q-.69,7.91-1,21.49t-.69,26.29h32c1.38,0,2.07.92,2.07,2.75v34.73a2.12,2.12,0,0,1-1.72,2.4H368.34v73.57q0,11.7,4,16.68t14.61,5c2.06,0,4-.05,5.85-.17s3.66-.29,5.5-.52a2.21,2.21,0,0,1,1.89.17A2.44,2.44,0,0,1,401,319.11Z"/></svg>
 );
-const ZbrushIcon = (props: any) => (
-  <svg viewBox="1050 1730 450 350" fill="currentColor" width="1.8em" height="1.8em" {...props}>
-    <path d="M1175 1977 c-72 -71 -70 -144 5 -195 32 -22 43 -24 116 -19 44 2 91 10 102 16 56 30 -5 183 -90 227 -50 26 -86 18 -133 -29z" />
-  </svg>
+
+// --- LOGO ZBRUSH CORREGIDO CON TONO GRIS ---
+const ZbrushIcon = ({ size = 28, className = '', ...props }: any) => (
+  <div 
+    className={`relative flex items-center justify-center ${className}`} 
+    style={{ width: size, height: size }}
+    {...props}
+  >
+    <Image 
+      src="/zbrush-logo.webp" 
+      alt="ZBrush" 
+      fill 
+      // Aquí está la magia: opacity-[0.65] clava el tono gris (zinc-400) del resto de iconos
+      // y group-hover:opacity-100 lo vuelve blanco puro al pasar el ratón o tocarlo
+      className="object-contain opacity-[0.65] group-hover:opacity-100 transition-opacity duration-500" 
+    />
+  </div>
 );
 
 // --- MAPA MAESTRO DE ICONOS ---
@@ -66,8 +78,6 @@ export const ICON_MAP: Record<string, React.FC<any>> = {
   // Portfolios & Gestión
   SiArtstation, SiBehance, SiNotion, SiTrello, SiJira, SiGithub, SiDiscord
 };
-
-
 
 const CATEGORIES = [
   { id: "3D & TEXTURING", icon: <Monitor size={18} /> },
@@ -142,17 +152,14 @@ export default function TechStack() {
       
       {/* --- NUEVO FONDO ESPECTACULAR: MATRIZ DE PUNTOS Y NÚCLEO VOLUMÉTRICO --- */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Patrón de matriz de puntos (Dot Matrix) */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:24px_24px]" />
         
-        {/* Núcleo central que respira */}
         <motion.div 
           animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-red-900/20 blur-[150px] rounded-full mix-blend-screen"
         />
         
-        {/* Viñeta para oscurecer los bordes */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#030305_100%)]" />
       </div>
 
@@ -232,10 +239,8 @@ export default function TechStack() {
                           exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
                           className="group relative bg-[#0a0a0c]/80 backdrop-blur-xl border border-white/[0.05] p-5 rounded-2xl transition-all duration-500 overflow-hidden flex items-center gap-5 hover:-translate-y-1.5 shadow-xl hover:shadow-[0_15px_40px_-10px_rgba(220,38,38,0.4)] hover:border-red-500/40 hover:bg-[#0f0f13]"
                         >
-                          {/* Reflejo de luz diagonal al hover */}
                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                          {/* Línea de circuito inferior */}
                           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent group-hover:w-full transition-all duration-700 ease-out" />
 
                           {isAdmin && (
@@ -244,12 +249,10 @@ export default function TechStack() {
                             </button>
                           )}
 
-                          {/* Caja del Icono Flotante */}
                           <div className="w-14 h-14 rounded-xl bg-gradient-to-b from-zinc-800/50 to-black/50 border border-white/10 flex items-center justify-center shadow-inner group-hover:border-red-500/50 transition-all duration-500 relative z-10 group-hover:bg-red-950/20">
                             <IconComponent size={28} className="text-zinc-400 group-hover:text-white group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] transition-all duration-500 group-hover:scale-110" />
                           </div>
                           
-                          {/* Texto del Programa */}
                           <div className="flex flex-col relative z-10 flex-1 min-w-0">
                             <span className="text-base font-extrabold text-zinc-300 group-hover:text-white truncate transition-colors tracking-tight">
                               {item.name}

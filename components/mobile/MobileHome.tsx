@@ -2,18 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion'; // <-- Importamos Variants
 import { supabase } from '@/lib/supabase';
-import { CURRENT_SLUG } from '@/context/AdminContext'; // Usamos la misma constante que AboutMe
+import { CURRENT_SLUG } from '@/context/AdminContext';
 import TechStack from '@/components/sections/TechStack';
-import { ArrowRight, Terminal } from 'lucide-react';
+import { ArrowRight, Sparkles, Box, Code2 } from 'lucide-react';
 
 export default function MobileHome({ onNavigate }: { onNavigate: (v: any) => void }) {
-  // Estado local independiente para la versión móvil
-  const [description, setDescription] = useState<string>('Cargando perfil...');
-  const [title, setTitle] = useState<string>('ARQUITECTO DE REALIDADES');
+  const [description, setDescription] = useState<string>('');
+  const [title, setTitle] = useState<string>('SYNCHRONIZING...');
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. LÓGICA COPIADA Y ADAPTADA DE AboutMe.tsx
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -21,95 +20,181 @@ export default function MobileHome({ onNavigate }: { onNavigate: (v: any) => voi
           .from('portfolio_content')
           .select('title, description')
           .eq('client_slug', CURRENT_SLUG)
-          .eq('section_id', 'about_me') // Misma ID que usa la web
+          .eq('section_id', 'about_me')
           .single();
         
-        if (data) {
-          setTitle(data.title);
-          setDescription(data.description);
-        } else {
-          // Fallback por si no carga
-          setDescription('Soy Daniel Rayo. Mi código no solo compila, respira...');
-        }
+        setTimeout(() => {
+          if (data) {
+            setTitle(data.title);
+            setDescription(data.description);
+          } else {
+            setTitle('REALITY ARCHITECT');
+            setDescription("I'm Daniel Rayo. My code doesn't just compile, it breathes...");
+          }
+          setIsLoaded(true);
+        }, 600);
       } catch (error) {
-        console.error("Error cargando perfil móvil:", error);
+        console.error("Error loading mobile profile:", error);
+        setIsLoaded(true);
       }
     };
     fetchData();
   }, []);
 
+  // --- ANIMACIONES FRAMER MOTION CON TIPADO ESTRICTO ---
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      filter: 'blur(0px)',
+      transition: { type: "spring", stiffness: 70, damping: 15 } 
+    }
+  };
+
   return (
-    <div className="flex flex-col pb-32 w-full overflow-x-hidden">
+    <div className="flex flex-col min-h-[100dvh] w-full max-w-[100vw] overflow-x-clip bg-[#030303] relative selection:bg-red-500/30">
       
-      {/* --- HEADER PERFIL --- */}
-      <div className="pt-8 px-6 pb-6">
-        <div className="flex items-center gap-5">
-           <div className="relative shrink-0">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative z-10">
-                <Image src="/favicon.ico" alt="Profile" fill className="object-cover" />
-              </div>
-              <div className="absolute -inset-2 bg-red-600/20 blur-xl rounded-full z-0"></div>
-           </div>
-           
-           <div className="flex flex-col justify-center">
-              <h1 className="text-3xl font-black text-white uppercase italic leading-none tracking-tighter">
-                Daniel <span className="text-red-600">Rayo</span>
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="px-2 py-0.5 bg-red-600/20 border border-red-600/30 rounded text-[9px] font-bold text-red-500 uppercase tracking-wider">
-                  3D Artist
-                </span>
-              </div>
-           </div>
-        </div>
-      </div>
+      {/* Efectos de fondo */}
+      <div className="absolute top-[-10%] left-[-20%] w-[70vw] h-[70vw] bg-red-600/15 blur-[100px] rounded-full mix-blend-screen animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
+      <div className="absolute bottom-[10%] right-[-20%] w-[60vw] h-[60vw] bg-red-900/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none z-0" />
 
-      {/* --- DESCRIPCIÓN NATIVA (Sin importar componente externo) --- */}
-      <div className="px-4 w-full">
-        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5 backdrop-blur-sm relative overflow-hidden group">
-           {/* Icono decorativo */}
-           <Terminal className="absolute top-4 right-4 text-white/5 w-8 h-8 group-hover:text-red-500/20 transition-colors" />
-
-           <h2 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-             Bio_Data
-           </h2>
-           
-           {/* Renderizado de texto limpio adaptado a móvil */}
-           <div className="space-y-4">
-              <h3 className="text-lg font-black text-white uppercase leading-none opacity-90">
-                {title}
-              </h3>
-              <p className="text-sm text-zinc-300 leading-relaxed font-light">
-                {description}
-              </p>
-           </div>
-
-           <button 
-             onClick={() => onNavigate('PROJECTS')}
-             className="w-full mt-6 py-3 bg-white text-black text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors"
-           >
-             Ver Proyectos <ArrowRight size={14} />
-           </button>
-        </div>
-      </div>
-
-      {/* --- TECH STACK (Software Arsenal) --- */}
-      <div className="mt-8 px-2 w-full">
-        <div className="flex items-center gap-2 px-4 mb-3 opacity-80">
-            <span className="w-1 h-3 bg-red-600"></span>
-            <h2 className="text-[10px] font-bold text-white uppercase tracking-widest">Software Arsenal</h2>
-        </div>
+      <motion.div 
+        // Ajustamos los márgenes aquí: pt-8 en lugar de 10, px-6 para mejor padding lateral, y gap-6
+        className="flex flex-col w-full h-full flex-grow pt-8 pb-24 px-6 gap-6 relative z-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
         
-        {/* Contenedor corregido para evitar el descuadre */}
-        <div className="w-full overflow-hidden rounded-xl bg-black/20 border border-white/5 py-4">
-           {/* Usamos transformaciones para asegurar que el grid de iconos (que es ancho) quepa en pantallas estrechas */}
-           <div className="scale-[0.80] sm:scale-90 origin-top w-[125%] sm:w-[110%] -ml-[12.5%] sm:-ml-[5%]">
-              <TechStack />
-           </div>
-        </div>
-      </div>
+        {/* AVATAR PREMIUM */}
+        <motion.div variants={itemVariants} className="flex flex-col items-center text-center mt-2">
+          <div className="relative mb-5">
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-red-600 via-transparent to-zinc-800 animate-[spin_4s_linear_infinite]" />
+            <div className="w-28 h-28 relative z-10 rounded-full overflow-hidden bg-black p-[3px]">
+              <div className="w-full h-full relative rounded-full overflow-hidden bg-zinc-900">
+                <Image 
+                  src="/favicon.ico" 
+                  alt="Daniel Rayo" 
+                  fill 
+                  className="object-cover scale-110 hover:scale-100 transition-transform duration-700" 
+                />
+              </div>
+            </div>
+            
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.8, type: "spring" }}
+              className="absolute -bottom-2 -right-2 bg-red-600 text-white p-2 rounded-full shadow-[0_0_15px_rgba(255,0,0,0.5)] z-20"
+            >
+              <Box size={14} className="fill-white/20" />
+            </motion.div>
+          </div>
 
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 uppercase tracking-tighter mb-2">
+            Daniel <span className="text-red-500">Rayo</span>
+          </h1>
+          
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-zinc-900/80 border border-white/5 rounded-full backdrop-blur-md shadow-xl">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.2em]">
+              3D Artist
+            </span>
+          </div>
+        </motion.div>
+
+
+        {/* TARJETA DE BIO */}
+        <motion.div variants={itemVariants} className="w-full relative group">
+          <div className="absolute inset-0 bg-red-600/5 blur-2xl rounded-3xl transition-all duration-500 group-hover:bg-red-600/10" />
+
+          <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+            <div className="flex items-center gap-2 mb-5">
+              <Sparkles size={16} className="text-red-500" />
+              <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">About Me</h2>
+            </div>
+             
+            <div className="space-y-4 min-h-[110px] flex flex-col justify-center">
+              <AnimatePresence mode="wait">
+                {!isLoaded ? (
+                  <motion.div 
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col gap-3"
+                  >
+                    <div className="h-6 w-3/4 bg-white/5 rounded-lg animate-pulse" />
+                    <div className="h-4 w-full bg-white/5 rounded-md animate-pulse" />
+                    <div className="h-4 w-5/6 bg-white/5 rounded-md animate-pulse" />
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="content"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3"
+                  >
+                    <h3 className="text-xl font-bold text-white leading-tight tracking-tight">
+                      {title}
+                    </h3>
+                    <p className="text-sm text-zinc-400 leading-relaxed font-light">
+                      {description}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <button 
+              onClick={() => onNavigate('PROJECTS')}
+              className="w-full mt-8 relative overflow-hidden bg-zinc-100 text-black py-4 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all duration-300 hover:bg-white active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+            >
+              <div className="absolute inset-0 -translate-x-full hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/5 to-transparent skew-x-12 z-0" />
+              <span className="relative z-10">View Projects</span>
+              <ArrowRight size={16} className="relative z-10" />
+            </button>
+          </div>
+        </motion.div>
+
+
+        {/* SOFTWARE ARSENAL */}
+        <motion.div variants={itemVariants} className="w-full mt-2">
+          <div className="flex items-center gap-3 mb-5 px-1">
+            <Code2 size={16} className="text-zinc-500" />
+            <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Tech Stack</h2>
+            <div className="h-[1px] flex-grow bg-gradient-to-r from-white/10 to-transparent" />
+          </div>
+          
+          <div className="w-full relative">
+            {/* Máscara suavizada en los bordes */}
+            <div 
+              className="w-full overflow-x-auto scrollbar-hide flex items-center py-2"
+              style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}
+            >
+               <div className="min-w-fit px-8 hover:scale-105 transition-transform duration-500">
+                 <TechStack />
+               </div>
+            </div>
+          </div>
+        </motion.div>
+
+      </motion.div>
     </div>
   );
 }

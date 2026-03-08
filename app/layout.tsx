@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://danirayo3d.es"),
 
   title: {
-    default: "DaniRayo3D | Daniel Rayo – Artista 3D · 3D Artist · Sevilla",
+    default: "Daniel Rayo | 3D Artist",
     template: "%s | DaniRayo3D – Artista 3D",
   },
 
