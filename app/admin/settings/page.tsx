@@ -61,16 +61,22 @@ export default function AdminSettings() {
       }
       setCurrentEmail(session.user.email || "Desconocido");
 
-      // 2. Cargar estado de mantenimiento desde la base de datos
-      const { data: maintenanceData } = await supabase
-        .from("portfolio_content")
-        .select("*")
-        .eq("client_slug", CURRENT_SLUG || "danirayo")
-        .eq("section_id", "maintenance")
-        .single();
+      // 2. Cargar estado de mantenimiento desde la base de datos de forma segura
+      try {
+        const slug = CURRENT_SLUG || "danirayo";
+        const { data: maintenanceData, error } = await supabase
+          .from("portfolio_content")
+          .select("description") // ✅ Solo pedimos la columna description
+          .eq("client_slug", slug)
+          .eq("section_id", "maintenance")
+          .maybeSingle();
 
-      if (maintenanceData && maintenanceData.content?.active) {
-        setMaintenanceMode(true);
+        // Si la descripción es "true", activamos el modo
+        if (maintenanceData && maintenanceData.description === "true") {
+          setMaintenanceMode(true);
+        }
+      } catch (e) {
+        console.error("Error cargando estado de mantenimiento", e);
       }
     };
     initSettings();
@@ -91,7 +97,7 @@ export default function AdminSettings() {
     setLoadingEmail(true);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
 
     if (error) {
       showNotification(`Error: ${error.message}`, "error");
@@ -138,27 +144,44 @@ export default function AdminSettings() {
     }, 1500);
   };
 
-  // 4. Activar / Desactivar Modo Mantenimiento (Guardado en DB)
+  // 4. Activar / Desactivar Modo Mantenimiento (Guardado en DB) - CORREGIDO
   const toggleMaintenance = async () => {
     const newState = !maintenanceMode;
-    setMaintenanceMode(newState); // Optimistic update
+    setMaintenanceMode(newState); // Actualización optimista en la UI
 
-    const { error } = await supabase.from("portfolio_content").upsert({
-      client_slug: CURRENT_SLUG || "danirayo",
-      section_id: "maintenance",
-      content: { active: newState },
-    });
+    try {
+      const slug = CURRENT_SLUG || "danirayo";
 
-    if (error) {
-      showNotification("Error al cambiar el estado del sistema.", "error");
-      setMaintenanceMode(!newState); // Revertir si falla
-    } else {
+      const { error } = await supabase.from("portfolio_content").upsert(
+        {
+          client_slug: slug,
+          section_id: "maintenance",
+          // ✅ Guardamos el estado como string en la columna description, que sabemos que existe
+          description: newState ? "true" : "false",
+          title: "Mantenimiento del Sistema", // Le ponemos un título por si lo miras en la BD
+        },
+        {
+          onConflict: "client_slug, section_id",
+        },
+      );
+
+      if (error) {
+        console.error("Detalle del error Supabase:", error);
+        throw error;
+      }
+
       showNotification(
         newState
           ? "LOCK ACTIVADO. Los usuarios verán la pantalla de mantenimiento."
           : "LOCK DESACTIVADO. Sistema abierto al público.",
         newState ? "success" : "info",
       );
+    } catch (error: any) {
+      showNotification(
+        `Error de conexión: ${error.message || "Falló al actualizar DB"}`,
+        "error",
+      );
+      setMaintenanceMode(!newState); // Revertir visualmente si falla
     }
   };
 

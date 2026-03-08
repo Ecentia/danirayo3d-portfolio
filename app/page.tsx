@@ -140,14 +140,14 @@ export default function Home() {
 
   React.useEffect(() => {
     const checkSystemState = async () => {
-      // 1. Mirar si el candado está puesto en la base de datos
+      // 1. Mirar si el candado está puesto en la base de datos (Buscando en description)
       const { data: maintenanceData } = await supabase
         .from("portfolio_content")
-        .select("*")
+        .select("description")
         .eq("section_id", "maintenance")
-        .single();
+        .maybeSingle();
 
-      const isLocked = maintenanceData?.content?.active === true;
+      const isLocked = maintenanceData?.description === "true";
 
       if (isLocked) {
         // 2. Si está puesto, comprobamos si la persona que entra es el ADMIN
@@ -166,7 +166,7 @@ export default function Home() {
     checkSystemState();
   }, []);
 
-  // Mientras comprueba la base de datos, mostramos pantalla negra (muy rápida)
+  // Mientras comprueba la base de datos, mostramos pantalla negra
   if (checking) return <div className="min-h-screen bg-[#050505]"></div>;
 
   // Si está en mantenimiento y NO es admin, mostramos la pantalla de bloqueo
