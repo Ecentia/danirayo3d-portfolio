@@ -1,10 +1,34 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ServerCog, ShieldAlert, Lock } from "lucide-react";
 import Link from "next/link";
+// ✅ Importamos la versión móvil
+import MobileMaintenance from "./mobile/MobileMaintenance";
 
 export default function MaintenanceScreen() {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkSize();
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
+
+  // Evitar hidration mismatch mostrando un fondo neutro un instante
+  if (isMobile === null) return <div className="fixed inset-0 bg-black" />;
+
+  // ✅ Si es móvil, devolvemos el nuevo componente
+  if (isMobile) {
+    return <MobileMaintenance />;
+  }
+
+  // 🖥️ Si es escritorio, devolvemos tu diseño original actualizado
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-black flex flex-col items-center justify-center p-4 relative z-[100] overflow-hidden font-mono text-white">
       {/* Efecto de luz volumétrica roja de fondo (Alerta) */}
@@ -70,7 +94,7 @@ export default function MaintenanceScreen() {
           </span>
         </motion.p>
 
-        {/* Barra de progreso de mentira (da la sensación de que se está trabajando) */}
+        {/* Barra de progreso */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -84,7 +108,7 @@ export default function MaintenanceScreen() {
           />
         </motion.div>
 
-        {/* Enlace oculto para que el Admin pueda entrar */}
+        {/* Admin Override */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

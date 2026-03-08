@@ -16,6 +16,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { CURRENT_SLUG } from "@/context/AdminContext";
+// ✅ Importamos el bloqueador
+import AdminMobileBlocker from "@/components/AdminMobileBlocker";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -24,11 +26,20 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isMaintenance, setIsMaintenance] = useState(false);
+
+  // ✅ Estado para el bloqueo de móvil
+  const [isMobile, setIsMobile] = useState(false);
+
   const router = useRouter();
 
-  // Comprobar si la web está en modo mantenimiento
+  // 1. Comprobar si la web está en modo mantenimiento y detectar tamaño de pantalla
   useEffect(() => {
-    const checkMaintenance = async () => {
+    const checkSystem = async () => {
+      // Detección de móvil (bloqueamos por debajo de 1024px)
+      const handleResize = () => setIsMobile(window.innerWidth < 1024);
+      handleResize();
+      window.addEventListener("resize", handleResize);
+
       try {
         const slug = CURRENT_SLUG || "danirayo";
         const { data } = await supabase
@@ -44,8 +55,10 @@ export default function AdminLogin() {
       } catch (e) {
         console.error("No se pudo comprobar el estado del sistema", e);
       }
+
+      return () => window.removeEventListener("resize", handleResize);
     };
-    checkMaintenance();
+    checkSystem();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -62,15 +75,16 @@ export default function AdminLogin() {
       setErrorMsg("Access denied: Invalid credentials or system locked.");
       setLoading(false);
     } else {
-      // Login exitoso: Redirigimos a la home y refrescamos
       router.push("/");
       router.refresh();
     }
   };
 
+  // ✅ RENDER DE SEGURIDAD PARA MÓVILES
+  if (isMobile) return <AdminMobileBlocker />;
+
   return (
     <div className="min-h-screen w-full bg-transparent flex flex-col items-center justify-center p-4 relative z-10 overflow-hidden font-mono">
-      {/* Efecto de luz volumétrica roja de fondo */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-red-600/10 blur-[100px] rounded-full pointer-events-none z-[-1]" />
 
       <motion.div
@@ -79,7 +93,6 @@ export default function AdminLogin() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full max-w-md relative flex flex-col items-center"
       >
-        {/* Decoración superior tipo "Terminal" */}
         <div className="flex items-center gap-4 mb-6 justify-center w-full">
           <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-red-600"></div>
           <span className="text-red-500 font-bold text-xs tracking-[0.3em] uppercase flex items-center gap-2 animate-pulse">
@@ -89,7 +102,6 @@ export default function AdminLogin() {
           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-red-600"></div>
         </div>
 
-        {/* ✅ PANEL DE AVISO DE MANTENIMIENTO */}
         <AnimatePresence>
           {isMaintenance && (
             <motion.div
@@ -113,7 +125,6 @@ export default function AdminLogin() {
           )}
         </AnimatePresence>
 
-        {/* Caja Principal del Formulario */}
         <div className="w-full bg-black/60 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-sm shadow-[0_0_40px_rgba(0,0,0,0.8)] relative overflow-hidden group/card">
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-600/50 to-transparent opacity-50 group-hover/card:opacity-100 transition-opacity duration-500" />
 
@@ -199,7 +210,7 @@ export default function AdminLogin() {
                     AUTHORIZE{" "}
                     <ArrowRight
                       size={16}
-                      className="text-red-500 group-hover/btn:text-white transition-colors"
+                      className="text-red-500 group-hover:text-white transition-colors"
                     />
                   </>
                 )}
