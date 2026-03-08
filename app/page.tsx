@@ -12,8 +12,8 @@ import {
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-
-// Componentes de contenido (Web)
+import MaintenanceScreen from "@/components/MaintenanceScreen";
+import { supabase } from "@/lib/supabase";
 import AboutMe from "@/components/sections/AboutMe";
 import ProjectsGrid from "@/components/sections/ProjectGrid";
 import TechStack from "@/components/sections/TechStack";
@@ -134,6 +134,47 @@ function ExperienceScene({
 export default function Home() {
   const [targetPos, setTargetPos] = useState(-4.5);
 
+  // ---- NUEVOS ESTADOS PARA EL MANTENIMIENTO ----
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  React.useEffect(() => {
+    const checkSystemState = async () => {
+      // 1. Mirar si el candado está puesto en la base de datos
+      const { data: maintenanceData } = await supabase
+        .from("portfolio_content")
+        .select("*")
+        .eq("section_id", "maintenance")
+        .single();
+
+      const isLocked = maintenanceData?.content?.active === true;
+
+      if (isLocked) {
+        // 2. Si está puesto, comprobamos si la persona que entra es el ADMIN
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        // Si NO hay sesión (visitante), le bloqueamos la vista
+        if (!session) {
+          setIsMaintenance(true);
+        }
+      }
+      setChecking(false); // Terminamos de comprobar
+    };
+
+    checkSystemState();
+  }, []);
+
+  // Mientras comprueba la base de datos, mostramos pantalla negra (muy rápida)
+  if (checking) return <div className="min-h-screen bg-[#050505]"></div>;
+
+  // Si está en mantenimiento y NO es admin, mostramos la pantalla de bloqueo
+  if (isMaintenance) {
+    return <MaintenanceScreen />;
+  }
+
+  // A PARTIR DE AQUÍ VA EL RESTO DE TU CÓDIGO NORMAL DE LA WEB...
   return (
     <>
       {/* ================================================= */}

@@ -11,11 +11,14 @@ import {
   ArrowRight,
   ShieldAlert,
   TerminalSquare,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // ✅ Nuevo estado para ver/ocultar contraseña
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
@@ -101,13 +104,22 @@ export default function AdminLogin() {
                 <Key size={18} />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 p-4 pl-10 text-white placeholder-neutral-600 focus:outline-none focus:border-red-600 focus:bg-red-950/10 transition-all rounded-sm text-sm tracking-wider"
+                className="w-full bg-black/50 border border-white/10 p-4 pl-10 pr-12 text-white placeholder-neutral-600 focus:outline-none focus:border-red-600 focus:bg-red-950/10 transition-all rounded-sm text-sm tracking-wider"
                 placeholder="Credentials"
                 required
               />
+              {/* ✅ Botón para ver/ocultar contraseña */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-500 hover:text-red-500 transition-colors focus:outline-none"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             {/* Manejador de Errores con Framer Motion */}
