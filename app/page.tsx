@@ -23,6 +23,7 @@ import Contact from "@/components/sections/Contact";
 // --- IMPORT DE LA APP MÓVIL ---
 // Asegúrate de haber creado este componente en la carpeta correcta
 import MobileShell from "@/components/mobile/MobileShell";
+import SketchfabGallery from "@/components/sections/SketchfabGallery";
 
 // --- CONFIGURACIÓN DE ANIMACIONES WEB ---
 const fadeInUp: Variants = {
@@ -288,6 +289,18 @@ export default function Home() {
             variants={revealSide("left")}
           >
             <ProjectsGrid />
+          </motion.div>
+        </div>
+
+        {/* 4. PROYECTOS */}
+        <div id="proyectos" className="scroll-mt-24">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={revealSide("left")}
+          >
+            <SketchfabGallery />
           </motion.div>
         </div>
 
