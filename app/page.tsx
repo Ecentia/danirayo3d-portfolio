@@ -1,15 +1,7 @@
 "use client";
 
 // --- IMPORTS DE ESCRITORIO ---
-import { Canvas } from "@react-three/fiber";
-import {
-  Environment,
-  ContactShadows,
-  Grid,
-  Sparkles,
-  Html,
-} from "@react-three/drei";
-import React, { useState, Suspense } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import MaintenanceScreen from "@/components/MaintenanceScreen";
@@ -19,6 +11,9 @@ import ProjectsGrid from "@/components/sections/ProjectGrid";
 import TechStack from "@/components/sections/TechStack";
 import Experience from "@/components/sections/Experience";
 import Contact from "@/components/sections/Contact";
+
+// --- IMPORT DEL NUEVO HERO ---
+import Hero from "@/components/Hero";
 
 // --- IMPORT DE LA APP MÓVIL ---
 // Asegúrate de haber creado este componente en la carpeta correcta
@@ -47,94 +42,7 @@ const revealSide = (direction: "left" | "right"): Variants => ({
   },
 });
 
-// --- ESCENA 3D (SOLO ESCRITORIO) ---
-function ExperienceScene({
-  targetPosition,
-  setTargetPosition,
-}: {
-  targetPosition: number;
-  setTargetPosition: (n: number) => void;
-}) {
-  const [hoverSide, setHoverSide] = useState<"left" | "right" | null>(null);
-
-  return (
-    <>
-      <color attach="background" args={["#050505"]} />
-      <Environment preset="city" />
-
-      <Grid
-        position={[0, -1.5, 0]}
-        args={[60, 60]}
-        cellSize={1}
-        cellThickness={1}
-        cellColor="#ff0000"
-        sectionSize={5}
-        sectionThickness={1.5}
-        sectionColor="#aa0000"
-        fadeDistance={40}
-      />
-      <Sparkles
-        count={150}
-        scale={20}
-        size={3}
-        speed={0.4}
-        opacity={0.3}
-        color="#ffffff"
-      />
-
-      <mesh
-        position={[-10, -1.5, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        onPointerOver={() => setHoverSide("left")}
-        onClick={() => setTargetPosition(-4.5)}
-      >
-        <planeGeometry args={[20, 100]} />
-        <meshBasicMaterial visible={false} />
-      </mesh>
-      <mesh
-        position={[10, -1.5, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        onPointerOver={() => setHoverSide("right")}
-        onClick={() => setTargetPosition(4.5)}
-      >
-        <planeGeometry args={[20, 100]} />
-        <meshBasicMaterial visible={false} />
-      </mesh>
-
-      <Suspense
-        fallback={
-          <Html center>
-            <span className="text-red-600 font-mono animate-pulse tracking-widest uppercase">
-              System_Boot...
-            </span>
-          </Html>
-        }
-      >
-        <ContactShadows
-          opacity={0.6}
-          scale={10}
-          blur={2.5}
-          far={2}
-          color="#000000"
-        />
-      </Suspense>
-
-      <ambientLight intensity={0.5} />
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={2}
-        color="#ffffff"
-        castShadow
-      />
-      <pointLight position={[-5, 2, -5]} intensity={5} color="#ff0000" />
-      <pointLight position={[5, 2, 5]} intensity={5} color="#00aaff" />
-    </>
-  );
-}
-
 export default function Home() {
-  const [targetPos, setTargetPos] = useState(-4.5);
-
   // ---- NUEVOS ESTADOS PARA EL MANTENIMIENTO ----
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -190,67 +98,8 @@ export default function Home() {
       {/* MUNDO 2: WEB ESCRITORIO (Visible >= 768px)        */}
       {/* ================================================= */}
       <main className="hidden md:block w-full min-h-screen relative z-0">
-        {/* 1. HERO SECTION 3D */}
-        <section className="relative h-screen w-full">
-          <div className="absolute inset-0 z-10">
-            <Canvas
-              shadows
-              camera={{ position: [0, 2, 10], fov: 35 }}
-              gl={{ antialias: true }}
-            >
-              <ExperienceScene
-                targetPosition={targetPos}
-                setTargetPosition={setTargetPos}
-              />
-            </Canvas>
-          </div>
-
-          <div className="absolute inset-0 z-20 flex flex-col justify-center items-center h-full text-center pointer-events-none select-none px-4">
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
-              className="glitch-text text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none mb-8 drop-shadow-2xl mix-blend-difference"
-              data-text="DANIEL RAYO"
-            >
-              DANIEL RAYO
-            </motion.h1>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 1 }}
-              className="flex items-center gap-4"
-            >
-              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent to-red-600"></div>
-              <span className="text-red-500 font-bold text-xs md:text-lg tracking-[0.4em] uppercase">
-                3D Workflow Artist
-              </span>
-              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent to-red-600"></div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="mt-24 pointer-events-auto"
-            >
-              <Link href="#proyectos" scroll={true}>
-                <button className="relative group px-12 py-4 md:px-16 md:py-5 bg-black/20 border border-white/10 hover:border-red-600 overflow-hidden transition-all duration-500 backdrop-blur-sm rounded-sm">
-                  <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                  <span className="relative z-10 text-white font-black text-sm md:text-xl tracking-[0.2em] flex items-center gap-3">
-                    EXPLORE{" "}
-                    <span className="text-red-500 group-hover:text-white transition-colors">
-                      ↓
-                    </span>
-                  </span>
-                </button>
-              </Link>
-            </motion.div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
-        </section>
+        {/* 1. HERO SECTION (NUEVO) */}
+        <Hero />
 
         {/* 2. ABOUT ME & TECH STACK */}
         <div id="sobre-mi" className="relative">
@@ -292,7 +141,7 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* 4. PROYECTOS */}
+        {/* 4. PROYECTOS (SKETCHFAB) */}
         <div id="proyectos" className="scroll-mt-24">
           <motion.div
             initial="hidden"
