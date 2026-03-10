@@ -11,6 +11,7 @@ import {
 } from "@react-three/drei";
 import { useRef, useState } from "react";
 import * as THREE from "three";
+import Link from "next/link";
 
 // --- COMPONENTE 3D: El "Casco/Orbe" Sci-Fi ---
 function SciFiHelmet() {
@@ -163,9 +164,11 @@ export default function Hero() {
         >
           <div className="absolute inset-0 w-full h-full bg-rayo-red/10 border border-rayo-red skew-x-[-10deg] group-hover:bg-rayo-red/80 transition-all duration-300 box-shadow-neon"></div>
           <div className="absolute inset-0 w-2 h-full bg-rayo-red/50 blur-md -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 skew-x-[-20deg]"></div>
-          <span className="relative z-10 text-rayo-red font-bold text-xl uppercase tracking-[0.2em] group-hover:text-white transition-colors">
-            Explore Portfolio
-          </span>
+          <Link href="#proyectos" scroll={true}>
+            <span className="relative z-10 text-rayo-red font-bold text-xl uppercase tracking-[0.2em] group-hover:text-white transition-colors">
+              Explore Portfolio
+            </span>
+          </Link>
         </motion.button>
       </div>
 
