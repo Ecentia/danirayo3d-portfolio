@@ -17,8 +17,10 @@ import { useUi } from "@/context/UiContext";
 import { Settings, Menu, X, ArrowRight } from "lucide-react";
 
 const NAV_LINKS = [
-  { name: "Projects", id: "01", href: "#proyectos" },
-  { name: "Career", id: "02", href: "#trayectoria" },
+  { name: "About Me", id: "01", href: "#about-me" },
+  { name: "Projects", id: "02", href: "#projects" },
+  { name: "Tech Arsenal", id: "03", href: "#tech-arsenal" },
+  { name: "Career", id: "04", href: "#career" },
 ];
 
 export default function Header() {
@@ -139,7 +141,7 @@ export default function Header() {
                 </Link>
               )}
 
-              <Link href="#contacto" className="hidden sm:block">
+              <Link href="#contact" className="hidden sm:block">
                 <motion.button
                   whileHover="hover"
                   initial="initial"
@@ -210,8 +212,7 @@ export default function Header() {
             <nav className="flex flex-col gap-6">
               {[
                 ...NAV_LINKS,
-                { name: "Estudio", id: "03", href: "#sobre-mi" },
-                { name: "Contact", id: "04", href: "#contacto" },
+                { name: "Contact", id: "05", href: "#contact" },
               ].map((link, i) => (
                 <motion.div
                   key={link.name}

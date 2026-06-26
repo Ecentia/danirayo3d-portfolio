@@ -375,15 +375,15 @@ export default function RootLayout({
         <AdminProvider>
           <UiProvider>
             <div className="relative">
-              <div className="hidden md:block">
+              {/* <div className="hidden md:block">
                 <Header />
-              </div>
+              </div> */}
 
               <main className="min-h-screen">{children}</main>
 
-              <div className="hidden md:block">
+              {/* <div className="hidden md:block">
                 <Footer />
-              </div>
+              </div> */}
             </div>
 
             <AdminControls />

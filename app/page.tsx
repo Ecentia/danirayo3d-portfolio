@@ -97,97 +97,9 @@ export default function Home() {
       {/* ================================================= */}
       {/* MUNDO 2: WEB ESCRITORIO (Visible >= 768px)        */}
       {/* ================================================= */}
-      <main className="hidden md:block w-full min-h-screen relative z-0">
+      <main className="hidden md:block w-full h-screen overflow-hidden relative z-0">
         {/* 1. HERO SECTION (NUEVO) */}
         <Hero />
-
-        {/* 2. ABOUT ME & TECH STACK */}
-        <div id="sobre-mi" className="relative">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <AboutMe />
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <TechStack />
-          </motion.div>
-        </div>
-
-        {/* 3. DIVISOR DE SECCIÓN */}
-        <div className="w-full py-20 flex justify-center items-center gap-4 opacity-20">
-          <div className="h-[1px] w-full max-w-xs bg-gradient-to-r from-transparent to-white"></div>
-          <div className="w-2 h-2 rotate-45 border border-white"></div>
-          <div className="h-[1px] w-full max-w-xs bg-gradient-to-l from-transparent to-white"></div>
-        </div>
-
-        {/* 4. PROYECTOS */}
-        <div id="proyectos" className="scroll-mt-24">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={revealSide("left")}
-          >
-            <ProjectsGrid />
-          </motion.div>
-        </div>
-
-        {/* 4. PROYECTOS (SKETCHFAB) */}
-        <div id="proyectos" className="scroll-mt-24">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={revealSide("left")}
-          >
-            <SketchfabGallery />
-          </motion.div>
-        </div>
-
-        {/* 5. TRAYECTORIA */}
-        <div id="trayectoria" className="scroll-mt-24">
-          <div className="w-full py-20 flex justify-center items-center gap-4 opacity-20">
-            <div className="h-[1px] w-full max-w-xs bg-gradient-to-r from-transparent to-red-600"></div>
-            <div className="w-2 h-2 rotate-45 border border-red-600"></div>
-            <div className="h-[1px] w-full max-w-xs bg-gradient-to-l from-transparent to-red-600"></div>
-          </div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={revealSide("right")}
-          >
-            <Experience />
-          </motion.div>
-        </div>
-
-        {/* 6. CONTACTO */}
-        <div id="contacto" className="scroll-mt-24 mb-20">
-          <div className="w-full py-10 flex justify-center items-center gap-4 opacity-20">
-            <div className="h-[1px] w-full max-w-xs bg-gradient-to-r from-transparent to-red-600"></div>
-            <div className="w-2 h-2 rotate-45 border border-red-600"></div>
-            <div className="h-[1px] w-full max-w-xs bg-gradient-to-l from-transparent to-red-600"></div>
-          </div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <Contact />
-          </motion.div>
-        </div>
 
         {/* ESTILOS GLOBALES EFECTO GLITCH CONSTANTE (Sin fondo negro) */}
         <style jsx global>{`
