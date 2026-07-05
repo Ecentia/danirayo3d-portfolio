@@ -3,9 +3,11 @@
 import { motion, Variants } from 'framer-motion';
 import { Instagram, Mail, ExternalLink, MapPin, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image'; // <-- Importamos el componente Image de Next.js
+import Image from 'next/image';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function MobileContact() {
+  const { isSpanish } = useLanguage();
   
   // --- VARIANTES FRAMER MOTION ---
   const containerVariants: Variants = {
@@ -41,7 +43,6 @@ export default function MobileContact() {
       name: 'ArtStation',
       handle: '/d_rayo3d',
       url: 'https://www.artstation.com/d_rayo3d',
-      // --- LOGO ARTSTATION DESDE TU ARCHIVO .WEBP ---
       icon: (
         <div className="relative w-[22px] h-[22px]">
           <Image 
@@ -57,7 +58,7 @@ export default function MobileContact() {
     },
     {
       id: 'email',
-      name: 'Email',
+      name: isSpanish ? 'Correo' : 'Email',
       handle: 'drayo3d.contact@gmail.com',
       url: 'mailto:drayo3d.contact@gmail.com',
       icon: <Mail size={22} />,
@@ -73,15 +74,15 @@ export default function MobileContact() {
       <div className="flex flex-col mb-10 px-1">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
-            Get In <span className="text-red-500">Touch</span>
+            {isSpanish ? <>Ponte en <span className="text-red-500">Contacto</span></> : <>Get In <span className="text-red-500">Touch</span></>}
           </h2>
           <span className="text-[9px] font-bold tracking-widest text-zinc-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
-             3 CHANNELS
+             {isSpanish ? "3 CANALES" : "3 CHANNELS"}
           </span>
         </div>
         <p className="text-xs text-zinc-500 font-mono mt-1 flex items-center gap-2">
            <Sparkles size={12} className="text-red-500/70" />
-           OFFICIAL COMMS LINKS
+           {isSpanish ? "ENLACES OFICIALES" : "OFFICIAL COMMS LINKS"}
         </p>
       </div>
 
@@ -133,12 +134,16 @@ export default function MobileContact() {
       >
          <div className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-green-400">Available for Freelance</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-green-400">
+              {isSpanish ? "Disponible para Freelance" : "Available for Freelance"}
+            </span>
          </div>
          
          <div className="flex items-center gap-1.5 text-zinc-600">
             <MapPin size={12} />
-            <p className="text-[10px] font-mono uppercase tracking-widest">Seville, Spain</p>
+            <p className="text-[10px] font-mono uppercase tracking-widest">
+              {isSpanish ? "Sevilla, España" : "Seville, Spain"}
+            </p>
          </div>
       </motion.div>
 

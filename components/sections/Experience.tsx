@@ -7,6 +7,18 @@ import { ExperienceItem } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
 import { Briefcase, GraduationCap, Plus, Trash2, Pencil, Calendar, ArrowRight } from 'lucide-react';
 import ExperienceModal from './ExperienceModal';
+import { useLanguage } from '@/context/LanguageContext';
+
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
 
 // Componente para la línea central animada ("Conducto de Energía")
 const AnimatedSpine = () => {
@@ -29,23 +41,44 @@ const AnimatedSpine = () => {
 
 export default function Experience() {
     const [items, setItems] = useState<ExperienceItem[]>([]);
-    const { isAdmin, deleteItem } = useAdmin();
+    const [loading, setLoading] = useState(true);
+    const { isAdmin, deleteItem, notify } = useAdmin();
+    const { isSpanish } = useLanguage();
+    
+    // Control del Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ExperienceItem | null>(null);
 
-    const fetchExperience = async () => {
-        const { data } = await supabase
-            .from('experience')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (data) setItems(data);
+    // Fetch a la base de datos
+    useEffect(() => {
+        const fetchExperience = async () => {
+            const { data } = await supabase
+                .from('experience')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (data) setItems(data);
+            setLoading(false);
+        };
+        fetchExperience();
+    }, []);
+
+    // Handlers
+    const openNewModal = () => {
+        setEditingItem(null);
+        setIsModalOpen(true);
     };
 
-    useEffect(() => { fetchExperience(); }, [isAdmin]);
+    const openEditModal = (item: ExperienceItem) => {
+        setEditingItem(item);
+        setIsModalOpen(true);
+    };
 
-    const openNewModal = () => { setEditingItem(null); setIsModalOpen(true); };
-    const openEditModal = (item: ExperienceItem) => { setEditingItem(item); setIsModalOpen(true); };
-    const handleDelete = async (id: string) => { await deleteItem('experience', id); fetchExperience(); };
+    const handleDelete = async (id: string) => {
+        if (!isAdmin || !confirm(isSpanish ? "¿Estás seguro de eliminar este nodo?" : "Are you sure you want to delete this node?")) return;
+        deleteItem('experience', id);
+        setItems(prev => prev.filter(item => item.id !== id));
+        notify(isSpanish ? "Nodo marcado para eliminación." : "Node marked for deletion.", "info");
+    };
 
     return (
         <section className="relative w-full py-40 bg-[#070708] text-white overflow-hidden">
@@ -79,7 +112,7 @@ export default function Experience() {
                         </motion.div>
                         
                         <h3 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none">
-                            Career <span className="text-zinc-800">Timeline</span>
+                            {isSpanish ? "Experiencia" : "Career"} <span className="text-zinc-800">{isSpanish ? "Profesional" : "Timeline"}</span>
                         </h3>
                     </div>
                     
@@ -91,7 +124,7 @@ export default function Experience() {
                             className="group flex items-center gap-3 bg-white text-black px-8 py-4 hover:bg-red-600 hover:text-white transition-all duration-300 rounded-full font-bold shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
                         >
                             <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300"/> 
-                            <span className="text-sm tracking-tight">Insert New Data Node</span>
+                            <span className="text-sm tracking-tight">{isSpanish ? "Añadir Nuevo Nodo" : "Insert New Data Node"}</span>
                         </motion.button>
                     )}
                 </div>
@@ -134,62 +167,56 @@ export default function Experience() {
                                         <div className="flex flex-col items-center flex-shrink-0 pt-1">
                                             <div className="relative w-[42px] h-[42px] md:w-[80px] md:h-[80px] flex items-center justify-center z-10">
                                                 
-                                                {/* Efecto de pulso de fondo (Glow) */}
-                                                <div className="absolute inset-0 bg-red-600 rounded-full scale-100 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 animate-pulse-slow" />
+                                                {/* Efecto de anillo orbital holográfico al pasar el ratón */}
+                                                <div className="absolute inset-0 border border-zinc-800 rounded-full group-hover:border-red-500/50 group-hover:scale-110 transition-all duration-500 ease-out z-0" />
                                                 
-                                                {/* Círculo central (Socket) */}
-                                                <div className="absolute inset-2 md:inset-4 bg-black border-2 border-zinc-800 rounded-full z-10 group-hover:border-red-500 transition-colors duration-500 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,1)]">
-                                                    <div className="text-zinc-600 group-hover:text-red-500 transition-colors duration-500 scale-100 group-hover:scale-110">
-                                                        {item.type === 'work' ? <Briefcase size={22} className="md:w-7 md:h-7"/> : <GraduationCap size={22} className="md:w-7 md:h-7"/>}
-                                                    </div>
+                                                <div className={`w-[32px] h-[32px] md:w-[56px] md:h-[56px] rounded-full border flex items-center justify-center transition-all duration-300 ${
+                                                    item.type === 'work' 
+                                                      ? 'border-red-500/30 bg-red-950/10 text-red-500 shadow-[inset_0_0_15px_rgba(239,68,68,0.1)] group-hover:border-red-500 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]' 
+                                                      : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 group-hover:border-white group-hover:text-white'
+                                                }`}>
+                                                    {item.type === 'work' ? <Briefcase size={22} className="md:w-7 md:h-7"/> : <GraduationCap size={22} className="md:w-7 md:h-7"/>}
                                                 </div>
-
-                                                {/* Anillo exterior decorativo */}
-                                                <svg className="absolute inset-0 w-full h-full -rotate-90 opacity-40 group-hover:opacity-100 group-hover:text-red-600 transition-all duration-700" viewBox="0 0 100 100">
-                                                    <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="10 6" />
-                                                </svg>
                                             </div>
                                         </div>
 
-                                        {/* --- COLUMNA DERECHA: LA TARJETA (CON EFECTO 3D TILT) --- */}
+                                        {/* --- COLUMNA DERECHA: LA TARJETA --- */}
                                         <motion.div 
-                                          className="flex-1"
-                                          style={{ rotateX, rotateY }} // Aplicamos la rotación 3D
+                                          style={{ rotateX, rotateY }}
+                                          className="flex-grow bg-zinc-950/40 border border-zinc-900 group-hover:border-white/10 group-hover:bg-[#0b0b0d]/70 transition-all duration-500 rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden backdrop-blur-sm"
                                         >
-                                            <div className="relative bg-[#0b0b0d] backdrop-blur-sm border border-zinc-900 p-8 md:p-10 rounded-2xl transition-all duration-500 group-hover:border-red-900/50 group-hover:shadow-[0_20px_50px_rgba(239,68,68,0.1)] overflow-hidden">
+                                            {/* Efecto Cyber Glitch en las esquinas */}
+                                            <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-red-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-red-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                            {/* CONTENIDO INTERNO */}
+                                            <div className="relative z-10">
                                                 
-                                                {/* DECORACIONES CYBERPUNK EN ESQUINAS (solo hover) */}
-                                                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-red-600 opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
-                                                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-600 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
+                                                {/* METADATOS TÉCNICOS */}
+                                                <div className="flex flex-wrap items-center gap-4 text-xs font-mono mb-6">
+                                                    
+                                                    {/* Botones de acción exclusiva del Administrador */}
+                                                    {isAdmin && (
+                                                        <div className="flex items-center gap-2 mr-2">
+                                                            <button onClick={() => openEditModal(item)} className="p-2.5 text-zinc-600 hover:text-white bg-black border border-zinc-800 hover:border-zinc-700 transition-all rounded-lg backdrop-blur-sm"><Pencil size={15}/></button>
+                                                            <button onClick={() => handleDelete(item.id)} className="p-2.5 text-zinc-600 hover:text-red-500 bg-black border border-zinc-800 hover:border-red-900 transition-all rounded-lg backdrop-blur-sm"><Trash2 size={15}/></button>
+                                                        </div>
+                                                    )}
 
-                                                {/* BARRA LATERAL ANIMADA */}
-                                                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-600 scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-center rounded-r-full" />
-
-                                                {/* CONTROLES ADMIN (SUPERPUESTOS) */}
-                                                {isAdmin && (
-                                                    <div className="absolute top-6 right-6 flex gap-2.5 z-20">
-                                                        <button onClick={() => openEditModal(item)} className="p-2.5 text-zinc-600 hover:text-white bg-black border border-zinc-800 hover:border-zinc-600 transition-all rounded-lg backdrop-blur-sm"><Pencil size={15}/></button>
-                                                        <button onClick={() => handleDelete(item.id)} className="p-2.5 text-zinc-600 hover:text-red-500 bg-black border border-zinc-800 hover:border-red-900 transition-all rounded-lg backdrop-blur-sm"><Trash2 size={15}/></button>
-                                                    </div>
-                                                )}
-
-                                                {/* METADATOS TÉCNICOS (Tipo y Fecha) */}
-                                                <div className="flex flex-wrap items-center gap-4 text-xs font-mono tracking-widest mb-8 border-b border-zinc-900 pb-6">
                                                     <span className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${item.type === 'work' ? 'bg-blue-950/40 text-blue-400 border border-blue-900' : 'bg-green-950/40 text-green-400 border border-green-900'}`}>
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                                        {item.type === 'work' ? 'DEPLOYMENT::PROFESSIONAL' : 'ARCHIVE::ACADEMIC_RECORD'}
+                                                        {item.type === 'work' ? (isSpanish ? 'DESPLIEGUE::PROFESIONAL' : 'DEPLOYMENT::PROFESSIONAL') : (isSpanish ? 'ARCHIVO::REGISTRO_ACADÉMICO' : 'ARCHIVE::ACADEMIC_RECORD')}
                                                     </span>
                                                     <span className="text-zinc-800">|</span>
                                                     <span className="text-zinc-500 flex items-center gap-2 group-hover:text-red-400 transition-colors">
                                                         <Calendar size={13}/> 
-                                                        {item.start_date} <ArrowRight size={12} className="text-zinc-700"/> {item.end_date || <span className="text-red-500 font-bold">ACTIVE_SESSION</span>}
+                                                        {item.start_date} <ArrowRight size={12} className="text-zinc-700"/> {item.end_date || <span className="text-red-500 font-bold">{isSpanish ? 'SESIÓN_ACTIVA' : 'ACTIVE_SESSION'}</span>}
                                                     </span>
                                                 </div>
 
                                                 {/* TÍTULO Y ORGANIZACIÓN */}
                                                 <div className="flex flex-col gap-2 mb-8">
                                                     <h3 className="text-3xl md:text-4xl font-extrabold text-white tracking-tighter group-hover:text-red-500 transition-colors duration-300">
-                                                        {item.title}
+                                                        {getTranslation(item.title, isSpanish)}
                                                     </h3>
                                                     
                                                     {/* DISEÑO ORGANIZACIÓN: Línea y Texto Mono */}
@@ -203,7 +230,7 @@ export default function Experience() {
 
                                                 {/* DESCRIPCIÓN (Con soporte para saltos de línea) */}
                                                 <p className="text-zinc-300 text-base leading-relaxed whitespace-pre-wrap font-sans group-hover:text-white transition-colors duration-300">
-                                                    {item.description}
+                                                    {getTranslation(item.description, isSpanish)}
                                                 </p>
                                                 
                                                 {/* Número de nodo decorativo de fondo */}
@@ -218,22 +245,17 @@ export default function Experience() {
                             };
                             return <CardWithTilt key={item.id} />;
                         })}
-
-                        {items.length === 0 && (
-                            <div className="ml-24 p-12 border-2 border-dashed border-zinc-800 text-zinc-700 font-mono text-center rounded-2xl bg-[#0b0b0d]">
-                               [SYSTEM_MESSAGE]: NO DATA STREAMS DETECTED. AWATING INPUT...
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Sistema de Modales */}
+            {/* Modal para Edición / Creación */}
             <ExperienceModal 
-                isOpen={isModalOpen} 
+                isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 itemToEdit={editingItem}
             />
+
         </section>
     );
 }

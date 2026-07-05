@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Html } from "@react-three/drei";
 import { Mail, Send, CheckCircle, Copy, AlertTriangle } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
-export default function ContactPanels() {
+export default function ContactPanels({ isSpanish }: { isSpanish: boolean }) {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [copiedEmail, setCopiedEmail] = useState(false);
 
@@ -61,17 +62,30 @@ export default function ContactPanels() {
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-red-500/10 pb-4">
           <Mail size={18} className="text-red-500" />
-          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">Communications</span>
+          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">
+            {isSpanish ? "Comunicaciones" : "Communications"}
+          </span>
         </div>
 
         {/* Content */}
         <div className="flex flex-col gap-4">
           <h3 className="text-4xl font-black leading-tight tracking-tight uppercase">
-            LET'S DISCUSS <br />
-            <span className="text-white/20">YOUR PROJECT.</span>
+            {isSpanish ? (
+              <>
+                HABLEMOS DE <br />
+                <span className="text-white/20">TU PROYECTO.</span>
+              </>
+            ) : (
+              <>
+                LET'S DISCUSS <br />
+                <span className="text-white/20">YOUR PROJECT.</span>
+              </>
+            )}
           </h3>
           <p className="text-zinc-400 text-[13px] leading-relaxed max-w-sm font-light">
-            Do you have an idea in mind? I am available for freelance collaborations and new challenges in the 3D industry.
+            {isSpanish
+              ? "¿Tienes alguna idea en mente? Estoy disponible para colaboraciones freelance y nuevos retos en la industria 3D."
+              : "Do you have an idea in mind? I am available for freelance collaborations and new challenges in the 3D industry."}
           </p>
         </div>
 
@@ -82,14 +96,16 @@ export default function ContactPanels() {
               <Mail size={16} />
             </div>
             <div className="truncate">
-              <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider mb-0.5">Email</div>
+              <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider mb-0.5">
+                {isSpanish ? "Correo" : "Email"}
+              </div>
               <div className="text-sm text-white font-medium select-text truncate">drayo3d.contact@gmail.com</div>
             </div>
           </div>
           <button
             onClick={copyToClipboard}
             className="p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
-            title="Copiar email"
+            title={isSpanish ? "Copiar correo" : "Copy email"}
           >
             {copiedEmail ? (
               <CheckCircle size={18} className="text-green-500 animate-pulse" />
@@ -120,16 +136,22 @@ export default function ContactPanels() {
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-red-500/10 pb-4">
           <Send size={18} className="text-red-500" />
-          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">Send Message</span>
+          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">
+            {isSpanish ? "Enviar Mensaje" : "Send Message"}
+          </span>
         </div>
 
         {formStatus === "success" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-4 animate-fade-in">
             <CheckCircle size={48} className="text-green-500" />
             <div>
-              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">Message Sent</h4>
+              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">
+                {isSpanish ? "Mensaje Enviado" : "Message Sent"}
+              </h4>
               <p className="text-zinc-400 text-[10px] leading-relaxed max-w-[280px]">
-                Your message has been sent successfully. I will get back to you as soon as possible.
+                {isSpanish
+                  ? "Tu mensaje ha sido enviado correctamente. Me pondré en contacto contigo lo antes posible."
+                  : "Your message has been sent successfully. I will get back to you as soon as possible."}
               </p>
             </div>
           </div>
@@ -137,27 +159,35 @@ export default function ContactPanels() {
           <div className="flex flex-col items-center justify-center py-16 text-center gap-4 animate-fade-in">
             <AlertTriangle size={48} className="text-red-500" />
             <div>
-              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">Send Failed</h4>
+              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">
+                {isSpanish ? "Error de Envío" : "Send Failed"}
+              </h4>
               <p className="text-zinc-400 text-[10px] leading-relaxed max-w-[280px]">
-                Could not send message. Please check your connection and try again.
+                {isSpanish
+                  ? "No se pudo enviar el mensaje. Por favor, comprueba tu conexión e inténtalo de nuevo."
+                  : "Could not send message. Please check your connection and try again."}
               </p>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 select-text">
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">Name</label>
+              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+                {isSpanish ? "Nombre" : "Name"}
+              </label>
               <input
                 required
                 type="text"
                 name="name"
                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-5 py-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-red-500/40"
-                placeholder="Your Name"
+                placeholder={isSpanish ? "Tu Nombre" : "Your Name"}
               />
             </div>
 
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">Email</label>
+              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+                {isSpanish ? "Correo" : "Email"}
+              </label>
               <input
                 required
                 type="email"
@@ -168,13 +198,15 @@ export default function ContactPanels() {
             </div>
 
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">Message</label>
+              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+                {isSpanish ? "Mensaje" : "Message"}
+              </label>
               <textarea
                 required
                 name="message"
                 rows={3}
                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-5 py-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono resize-none focus:ring-1 focus:ring-red-500/40"
-                placeholder="Write your message here..."
+                placeholder={isSpanish ? "Escribe tu mensaje aquí..." : "Write your message here..."}
               />
             </div>
 
@@ -184,11 +216,11 @@ export default function ContactPanels() {
               className="mt-2 w-full bg-red-600 hover:bg-red-500 text-white font-bold tracking-widest py-4 text-sm rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2 uppercase cursor-pointer"
             >
               {formStatus === "submitting" ? (
-                <span>Sending...</span>
+                <span>{isSpanish ? "Enviando..." : "Sending..."}</span>
               ) : (
                 <>
                   <Send size={14} />
-                  <span>Send Message</span>
+                  <span>{isSpanish ? "Enviar Mensaje" : "Send Message"}</span>
                 </>
               )}
             </button>

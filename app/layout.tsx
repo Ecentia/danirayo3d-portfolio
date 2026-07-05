@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
 import { UiProvider } from "@/context/UiContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import AdminControls from "@/components/AdminControls";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -372,23 +373,25 @@ export default function RootLayout({
         {/* CAPA 5: Viñeta */}
         <div className="vignette" />
 
-        <AdminProvider>
-          <UiProvider>
-            <div className="relative">
-              {/* <div className="hidden md:block">
-                <Header />
-              </div> */}
+        <LanguageProvider>
+          <AdminProvider>
+            <UiProvider>
+              <div className="relative">
+                {/* <div className="hidden md:block">
+                  <Header />
+                </div> */}
 
-              <main className="min-h-screen">{children}</main>
+                <main className="min-h-screen">{children}</main>
 
-              {/* <div className="hidden md:block">
-                <Footer />
-              </div> */}
-            </div>
+                {/* <div className="hidden md:block">
+                  <Footer />
+                </div> */}
+              </div>
 
-            <AdminControls />
-          </UiProvider>
-        </AdminProvider>
+              <AdminControls />
+            </UiProvider>
+          </AdminProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

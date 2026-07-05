@@ -3,39 +3,49 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAdmin, CURRENT_SLUG } from '@/context/AdminContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { Pencil, Terminal, Cpu, Fingerprint } from 'lucide-react'; 
 
 export default function AboutMe() {
   const { isAdmin, registerChange } = useAdmin();
+  const { isSpanish } = useLanguage();
   
   // Estado local para la UI inmediata
   const [content, setContent] = useState({
-    title: 'ARQUITECTO DE REALIDADES',
-    description: 'Cargando datos del sistema...'
+    title: isSpanish ? 'ARQUITECTO DE REALIDADES' : 'REALITY ARCHITECT',
+    description: isSpanish ? 'Cargando datos del sistema...' : 'Loading system data...'
   });
 
   // 1. CARGAR DATOS AL INICIO
   useEffect(() => {
     const fetchData = async () => {
+      const sectionId = isSpanish ? 'about_me' : 'about_me_en';
       const { data } = await supabase
         .from('portfolio_content')
         .select('title, description')
         .eq('client_slug', CURRENT_SLUG)
-        .eq('section_id', 'about_me') 
+        .eq('section_id', sectionId) 
         .single();
       
       if (data) {
         setContent({ title: data.title, description: data.description });
+      } else {
+        setContent({
+          title: isSpanish ? 'ARQUITECTO DE REALIDADES' : 'REALITY ARCHITECT',
+          description: isSpanish 
+            ? 'Cargando datos del sistema...' 
+            : "I'm Daniel Rayo. My code doesn't just compile, it breathes..."
+        });
       }
     };
     fetchData();
-  }, []);
+  }, [isSpanish]);
 
   // 2. MANEJAR EL INPUT
   const handleLocalChange = (field: 'title' | 'description', value: string) => {
     setContent(prev => ({ ...prev, [field]: value }));
-    registerChange('about_me', { [field]: value });
+    registerChange(isSpanish ? 'about_me' : 'about_me_en', { [field]: value });
   };
 
   return (
@@ -87,7 +97,7 @@ export default function AboutMe() {
                       rows={4}
                    />
                    <div className="absolute top-0 right-0 bg-red-600 text-xs px-3 py-1 text-black font-bold flex gap-2 items-center pointer-events-none tracking-widest uppercase">
-                     <Pencil size={12}/> Admin Mode
+                     <Pencil size={12}/> {isSpanish ? "Modo Administrador" : "Admin Mode"}
                    </div>
                 </div>
               ) : (
@@ -127,7 +137,7 @@ export default function AboutMe() {
                           className="w-full h-80 bg-black/40 text-red-50/90 font-mono text-base md:text-lg border border-red-900/30 p-6 rounded-lg focus:outline-none focus:border-red-500/60 focus:bg-black/60 resize-none transition-all custom-scrollbar leading-relaxed"
                        />
                        <div className="absolute bottom-4 right-4 text-red-600 opacity-40 pointer-events-none flex items-center gap-2 font-mono text-xs">
-                         <Terminal size={16} /> WAITING FOR INPUT...
+                         <Terminal size={16} /> {isSpanish ? "ESPERANDO ENTRADA..." : "WAITING FOR INPUT..."}
                        </div>
                     </div>
                   ) : (

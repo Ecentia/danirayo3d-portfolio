@@ -1,16 +1,18 @@
 import { Html } from "@react-three/drei";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { TechItem } from "@/types/database";
 import { ICON_MAP } from "@/components/sections/TechStack";
 import { Monitor, Video, Plus, Trash2 } from "lucide-react";
 
 interface TechArsenalPanelsProps {
   techList: TechItem[];
+  isSpanish: boolean;
   openAddModal: (category: string) => void;
   onDelete: (id: string) => void;
 }
 
-export default function TechArsenalPanels({ techList, openAddModal, onDelete }: TechArsenalPanelsProps) {
+export default function TechArsenalPanels({ techList, isSpanish, openAddModal, onDelete }: TechArsenalPanelsProps) {
   const { isAdmin } = useAdmin();
 
   const texturingItems = techList.filter((t) => t.category === "3D & TEXTURING");
@@ -48,7 +50,7 @@ export default function TechArsenalPanels({ techList, openAddModal, onDelete }: 
             <button
               onClick={() => openAddModal(categoryKey)}
               className="flex items-center justify-center p-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-purple-400 transition-all cursor-pointer"
-              title="Añadir software a esta categoría"
+              title={isSpanish ? "Añadir software a esta categoría" : "Add software to this category"}
             >
               <Plus size={14} />
             </button>
@@ -56,13 +58,13 @@ export default function TechArsenalPanels({ techList, openAddModal, onDelete }: 
         </div>
 
         {/* Items Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3.5">
           {items.map((item) => {
             const IconComponent = ICON_MAP[item.icon_key] || Monitor;
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-900/60 border border-white/[0.03] transition-all duration-300 hover:bg-purple-950/20 hover:border-purple-500/30 group relative"
+                className="flex items-center gap-3.5 p-3.5 rounded-xl bg-zinc-900/60 border border-white/[0.03] transition-all duration-300 hover:bg-purple-950/20 hover:border-purple-500/30 group relative"
               >
                 {isAdmin && (
                   <button
@@ -72,10 +74,10 @@ export default function TechArsenalPanels({ techList, openAddModal, onDelete }: 
                     <Trash2 size={11} />
                   </button>
                 )}
-                <div className="w-9 h-9 rounded-lg bg-zinc-950 border border-white/5 flex items-center justify-center group-hover:border-purple-500/40 transition-colors">
-                  <IconComponent size={18} className="text-zinc-400 group-hover:text-purple-400 transition-colors" />
+                <div className="w-10 h-10 rounded-lg bg-zinc-950 border border-white/5 flex items-center justify-center group-hover:border-purple-500/40 transition-colors">
+                  <IconComponent size={20} className="text-zinc-400 group-hover:text-purple-400 transition-colors" />
                 </div>
-                <span className="text-xs font-bold text-zinc-300 group-hover:text-white truncate">
+                <span className="text-sm font-bold text-zinc-300 group-hover:text-white truncate">
                   {item.name}
                 </span>
               </div>
@@ -91,7 +93,7 @@ export default function TechArsenalPanels({ techList, openAddModal, onDelete }: 
       {/* Panel Izquierdo: 3D & Texturing */}
       <Html position={[-2.65, 0, 0]} center distanceFactor={5.0}>
         {renderPanel(
-          "3D & Texturing",
+          isSpanish ? "3D y Texturizado" : "3D & Texturing",
           texturingItems,
           <Monitor size={16} />,
           "rgba(176, 38, 255, 0.25)",
@@ -103,7 +105,7 @@ export default function TechArsenalPanels({ techList, openAddModal, onDelete }: 
       {/* Panel Derecho: Post & Creative */}
       <Html position={[2.65, 0, 0]} center distanceFactor={5.0}>
         {renderPanel(
-          "Post & Creative",
+          isSpanish ? "Postproducción y Creativo" : "Post & Creative",
           creativeItems,
           <Video size={16} />,
           "rgba(176, 38, 255, 0.25)",

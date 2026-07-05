@@ -11,12 +11,14 @@ import {
   Copy,
 } from "lucide-react";
 import { SiArtstation, SiInstagram } from "react-icons/si";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Contact() {
   const [formStatus, setFormStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const { isSpanish } = useLanguage();
 
   const FORMSPREE_ENDPOINT = "https://formspree.io/f/xvzwzpre";
 
@@ -74,16 +76,26 @@ export default function Contact() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-[1px] bg-red-600"></div>
                 <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase">
-                  CONTACT
+                  {isSpanish ? "CONTACTO" : "CONTACT"}
                 </span>
               </div>
               <h3 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6 uppercase">
-                LET'S DISCUSS <br />
-                <span className="text-white/20">YOUR PROJECT.</span>
+                {isSpanish ? (
+                  <>
+                    HABLEMOS DE <br />
+                    <span className="text-white/20">TU PROYECTO.</span>
+                  </>
+                ) : (
+                  <>
+                    LET'S DISCUSS <br />
+                    <span className="text-white/20">YOUR PROJECT.</span>
+                  </>
+                )}
               </h3>
               <p className="text-zinc-400 text-lg leading-relaxed max-w-md font-light">
-                Do you have an idea in mind? I am available for freelance
-                collaborations and new challenges in the 3D industry.
+                {isSpanish
+                  ? "¿Tienes alguna idea en mente? Estoy disponible para colaboraciones freelance y nuevos retos en la industria 3D."
+                  : "Do you have an idea in mind? I am available for freelance collaborations and new challenges in the 3D industry."}
               </p>
             </div>
 
@@ -96,7 +108,7 @@ export default function Contact() {
                   </div>
                   <div className="flex-1">
                     <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">
-                      Email
+                      {isSpanish ? "Correo" : "Email"}
                     </div>
                     <div className="text-lg text-white font-medium">
                       drayo3d.contact@gmail.com
@@ -105,7 +117,7 @@ export default function Contact() {
                   <button
                     onClick={copyToClipboard}
                     className="p-2 text-zinc-500 hover:text-white transition-colors"
-                    title="Copiar email"
+                    title={isSpanish ? "Copiar correo" : "Copy email"}
                   >
                     {copiedEmail ? (
                       <CheckCircle size={20} className="text-green-500" />
@@ -153,42 +165,39 @@ export default function Contact() {
                 <div className="space-y-6">
                   <div className="group">
                     <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">
-                      Name
+                      {isSpanish ? "Nombre" : "Name"}
                     </label>
                     <input
                       type="text"
                       name="name"
                       required
-                      placeholder="Your name"
-                      // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500 para que se vea mejor
+                      placeholder={isSpanish ? "Tu nombre" : "Your name"}
                       className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all"
                     />
                   </div>
 
                   <div className="group">
                     <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">
-                      Email
+                      {isSpanish ? "Correo" : "Email"}
                     </label>
                     <input
                       type="email"
                       name="email"
                       required
                       placeholder="example@gmail.com"
-                      // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500
                       className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all"
                     />
                   </div>
 
                   <div className="group">
                     <label className="block text-sm font-medium text-zinc-400 mb-2 ml-1 group-focus-within:text-white transition-colors">
-                      Message
+                      {isSpanish ? "Mensaje" : "Message"}
                     </label>
                     <textarea
                       name="message"
                       required
                       rows={4}
-                      placeholder="Tell me about your project..."
-                      // CAMBIO: placeholder-zinc-800 -> placeholder-zinc-500
+                      placeholder={isSpanish ? "Cuéntame sobre tu proyecto..." : "Tell me about your project..."}
                       className="w-full bg-zinc-950/50 border border-white/5 rounded-sm px-5 py-4 text-white placeholder-zinc-500 outline-none focus:border-red-600/50 focus:bg-zinc-900/50 transition-all resize-none"
                     ></textarea>
                   </div>
@@ -206,20 +215,20 @@ export default function Contact() {
                 >
                   {formStatus === "idle" && (
                     <>
-                      Send Message <ArrowRight size={18} />
+                      {isSpanish ? "Enviar Mensaje" : "Send Message"} <ArrowRight size={18} />
                     </>
                   )}
                   {formStatus === "submitting" && (
-                    <span className="animate-pulse">Sending...</span>
+                    <span className="animate-pulse">{isSpanish ? "Enviando..." : "Sending..."}</span>
                   )}
                   {formStatus === "success" && (
                     <>
-                      ¡Message Sent! <CheckCircle size={18} />
+                      {isSpanish ? "¡Mensaje Enviado!" : "¡Message Sent!"} <CheckCircle size={18} />
                     </>
                   )}
                   {formStatus === "error" && (
                     <>
-                      Error - Retry <AlertTriangle size={18} />
+                      {isSpanish ? "Error - Reintentar" : "Error - Retry"} <AlertTriangle size={18} />
                     </>
                   )}
                 </button>
@@ -237,11 +246,12 @@ export default function Contact() {
                       <CheckCircle size={40} />
                     </div>
                     <h4 className="text-white font-bold text-2xl mb-2">
-                      Message received!
+                      {isSpanish ? "¡Mensaje recibido!" : "Message received!"}
                     </h4>
                     <p className="text-zinc-400">
-                      Thank you for contacting me. I will get back to you as
-                      soon as possible.
+                      {isSpanish
+                        ? "Gracias por contactarme. Me pondré en contacto contigo lo antes posible."
+                        : "Thank you for contacting me. I will get back to you as soon as possible."}
                     </p>
                   </motion.div>
                 )}

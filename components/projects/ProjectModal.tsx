@@ -8,10 +8,22 @@ import { supabase } from '@/lib/supabase';
 import { FullProjectData, Project, GalleryImage } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
 import { useUi } from '@/context/UiContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 import { ICON_MAP } from '@/components/sections/TechStack';
 import { CURRENT_SLUG } from '@/context/AdminContext';
 import { TechItem } from '@/types/database';
+
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
 
 // Substance 3D Designer (Sb) - Aumentado a 1.3em
 const SubstanceDesignerIcon = (props: any) => (
@@ -45,8 +57,6 @@ const SubstancePainterIcon = (props: any) => (
   </svg>
 );
 
-
-
 // --- ESTILOS (Scrollbar Visible y Roja) ---
 const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-yellow-950/40 hover:[&::-webkit-scrollbar-thumb]:bg-yellow-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
 
@@ -69,6 +79,8 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   const uploadTargetRef = useRef<'thumbnail' | 'gallery'>('thumbnail');
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const [availableTech, setAvailableTech] = useState<TechItem[]>([]);
+  const { isSpanish } = useLanguage();
+  const [modalLang, setModalLang] = useState<'en' | 'es'>('en');
 
   // Efecto para sincronizar el estado global de UI
   useEffect(() => {
@@ -106,7 +118,7 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     loadProject(projectId);
   };
 
-useEffect(() => {
+  useEffect(() => {
     // 💡 NUEVO: Sincronizamos el estado de la prop 'isOpen' con el Contexto Global
     setProjectModalOpen(isOpen);
 
@@ -119,41 +131,63 @@ useEffect(() => {
         setIsCreationMode(false);
         loadProject(initialProjectId);
       } else {
+        // Modo Creación: Objeto vacío localmente
         setIsCreationMode(true);
         setCurrentProject({
-          id: 'temp-' + Date.now(),
+          id: `temp-proj-${Date.now()}`,
           title: '',
           description: '',
           tags: [],
           thumbnail_url: '',
           display_order: 0,
-          gallery: [],
-          creation_date: new Date().toISOString().split('T')[0]
+          gallery: []
         });
       }
-    } else {
-      // 2. Restauramos el scroll limpiando el estilo en línea (mejor que 'unset')
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      
-      setCurrentProject(null);
-      setTagInput('');
     }
 
-    // 3. Función de limpieza de seguridad por si el componente se desmonta de golpe
     return () => {
+      // Al desmontar o cerrar, devolvemos el scroll
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
       // 💡 NUEVO: Por seguridad, si el modal se desmonta abruptamente, devolvemos el Header
       setProjectModalOpen(false); 
     };
-  }, [isOpen, initialProjectId, setProjectModalOpen]); // <-- Añade setProjectModalOpen a las dependencias
+  }, [isOpen, initialProjectId, setProjectModalOpen]);
 
   // --- HANDLERS ---
   const handleEdit = (field: keyof Project | 'creation_date', value: any) => {
     if (!currentProject || !isAdmin) return;
     setCurrentProject(prev => prev ? ({ ...prev, [field]: value }) : null);
     if (!isCreationMode) registerChange(`project_${currentProject.id}`, { [field]: value });
+  };
+
+  const getFieldVal = (val: string | null, lang: 'en' | 'es'): string => {
+    if (!val) return "";
+    try {
+      const parsed = JSON.parse(val);
+      if (parsed && typeof parsed === 'object') {
+        return parsed[lang] || "";
+      }
+    } catch (e) {}
+    return lang === 'en' ? val || "" : "";
+  };
+
+  const setFieldVal = (field: 'title' | 'description', lang: 'en' | 'es', text: string) => {
+    if (!currentProject) return;
+    const rawVal = currentProject[field] || "";
+    let parsed: any = { en: "", es: "" };
+    try {
+      const p = JSON.parse(rawVal);
+      if (p && typeof p === 'object') {
+        parsed = { ...p };
+      } else {
+        parsed.en = rawVal;
+      }
+    } catch (e) {
+      parsed.en = rawVal;
+    }
+    parsed[lang] = text;
+    handleEdit(field, JSON.stringify(parsed));
   };
 
   // Gestión de Software
@@ -173,30 +207,26 @@ useEffect(() => {
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      const newTag = tagInput.trim().replace(',', '');
-      if (newTag && currentProject && !currentProject.tags?.includes(newTag)) {
-        const newTags = [...(currentProject.tags || []), newTag];
-        handleEdit('tags', newTags);
+      const value = tagInput.trim();
+      if (value && currentProject) {
+        const currentTags = currentProject.tags || [];
+        if (!currentTags.includes(value)) {
+          const newTags = [...currentTags, value];
+          handleEdit('tags', newTags);
+        }
         setTagInput('');
       }
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    if (currentProject?.tags) {
-      const newTags = currentProject.tags.filter(tag => tag !== tagToRemove);
-      handleEdit('tags', newTags);
-    }
-  };
-
-  // --- SUBIDA DE ARCHIVOS ---
-  const triggerFileUpload = (target: 'thumbnail' | 'gallery') => {
-    uploadTargetRef.current = target;
-    fileInputRef.current?.click();
+    if (!currentProject) return;
+    const currentTags = currentProject.tags || [];
+    const newTags = currentTags.filter(t => t !== tagToRemove);
+    handleEdit('tags', newTags);
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
     const file = event.target.files?.[0];
     if (!file || !currentProject) return;
 
@@ -252,6 +282,11 @@ useEffect(() => {
             notify("Imagen eliminada", 'info');
         }
     }
+  };
+
+  const triggerFileUpload = (target: 'thumbnail' | 'gallery') => {
+    uploadTargetRef.current = target;
+    fileInputRef.current?.click();
   };
 
   const handleConfirmNewProject = () => {
@@ -339,146 +374,166 @@ useEffect(() => {
           {/* DERECHA: SIDEBAR */}
           <div className={`w-full md:w-[400px] lg:w-[450px] bg-[#0A0A0A] border-l border-white/5 flex flex-col ${modernScrollbar}`}>
              {isAdmin && (
-                 <div className="p-4 bg-zinc-900/50 border-b border-white/5 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-md">
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                       <div className={`w-2 h-2 rounded-full ${isCreationMode ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
-                       {isCreationMode ? 'Creating New Entity' : 'Edit Mode Active'}
-                    </div>
-                    {isCreationMode && (
-                      <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-3 rounded text-xs font-bold transition-all shadow-lg shadow-yellow-900/20">
-                        <Check size={14} /> CONFIRM & CREATE DRAFT
-                      </button>
-                    )}
-                 </div>
+                  <div className="p-4 bg-zinc-900/50 border-b border-white/5 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-md">
+                     <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                        <div className={`w-2 h-2 rounded-full ${isCreationMode ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+                        {isCreationMode ? 'Creating New Entity' : 'Edit Mode Active'}
+                     </div>
+                     {isCreationMode && (
+                       <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-3 rounded text-xs font-bold transition-all shadow-lg shadow-yellow-900/20">
+                         <Check size={14} /> CONFIRM & CREATE DRAFT
+                       </button>
+                     )}
+                     
+                     {/* TAB SELECTION FOR LANGUAGES (ES / EN) */}
+                     <div className="flex border-b border-zinc-800 pb-1 mt-2 justify-start gap-4">
+                       <button 
+                         onClick={() => setModalLang('en')}
+                         className={`px-3 py-1 text-xs font-mono font-bold tracking-widest transition-all ${
+                           modalLang === 'en' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-zinc-500 hover:text-white'
+                         }`}
+                       >
+                         EN
+                       </button>
+                       <button 
+                         onClick={() => setModalLang('es')}
+                         className={`px-3 py-1 text-xs font-mono font-bold tracking-widest transition-all ${
+                           modalLang === 'es' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-zinc-500 hover:text-white'
+                         }`}
+                       >
+                         ES
+                       </button>
+                     </div>
+                  </div>
              )}
 
              <div className="p-6 md:p-8 flex flex-col gap-8">
-                 {/* Header Proyecto */}
-                 <div className="flex items-start gap-4">
-                     {/* Mini planeta de proyectos CSS */}
-                     <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-                       {/* Tilted Ring (behind sphere) */}
-                       <div className="absolute w-14 h-4 border-[2px] border-yellow-500/80 rounded-full transform -rotate-[20deg] z-0" />
-                       {/* Planet Sphere */}
-                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-600 to-zinc-950 border border-yellow-500/30 shadow-[0_0_15px_rgba(255,204,0,0.4)] z-10" />
-                       {/* Tilted Ring (front half overlay) */}
-                       <div className="absolute w-14 h-4 border-[2px] border-t-transparent border-r-transparent border-yellow-500/80 rounded-full transform -rotate-[20deg] z-20 pointer-events-none" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                         {isAdmin ? (
-                            <input value={currentProject.title} onChange={(e) => handleEdit('title', e.target.value)} placeholder="NOMBRE DEL PROYECTO" className="w-full bg-transparent text-xl font-bold text-white border-b border-zinc-800 focus:border-yellow-500 focus:outline-none py-1 placeholder-zinc-700" />
-                         ) : (
-                            <h1 className="text-xl md:text-2xl font-bold text-white leading-tight break-words">{currentProject.title}</h1>
+                  {/* Header Proyecto */}
+                  <div className="flex items-start gap-4">
+                      {/* Mini planeta de proyectos CSS */}
+                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                        {/* Tilted Ring (behind sphere) */}
+                        <div className="absolute w-14 h-4 border-[2px] border-yellow-500/80 rounded-full transform -rotate-[20deg] z-0" />
+                        {/* Planet Sphere */}
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-600 to-zinc-950 border border-yellow-500/30 shadow-[0_0_15px_rgba(255,204,0,0.4)] z-10" />
+                        {/* Tilted Ring (front half overlay) */}
+                        <div className="absolute w-14 h-4 border-[2px] border-t-transparent border-r-transparent border-yellow-500/80 rounded-full transform -rotate-[20deg] z-20 pointer-events-none" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          {isAdmin ? (
+                             <input value={getFieldVal(currentProject.title, modalLang)} onChange={(e) => setFieldVal('title', modalLang, e.target.value)} placeholder={modalLang === 'en' ? "PROJECT TITLE" : "TÍTULO DEL PROYECTO"} className="w-full bg-transparent text-xl font-bold text-white border-b border-zinc-800 focus:border-yellow-500 focus:outline-none py-1 placeholder-zinc-700" />
+                          ) : (
+                             <h1 className="text-xl md:text-2xl font-bold text-white leading-tight break-words">{getTranslation(currentProject.title, isSpanish)}</h1>
+                          )}
+                          <div className="text-xs text-zinc-500 mt-1 font-mono">by Daniel Rayo</div>
+                      </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/5 w-full" />
+
+                  {/* FECHA (Opcional) */}
+                  <div className="space-y-2">
+                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                         <Calendar size={12}/> {isSpanish ? "Fecha" : "Date"}
+                     </h3>
+                     {isAdmin ? (
+                          <input 
+                             type="date"
+                             value={currentProject.creation_date || ''}
+                             onChange={(e) => handleEdit('creation_date', e.target.value)}
+                             className="bg-black/30 border border-zinc-800 p-2 text-xs text-white rounded focus:border-yellow-500 focus:outline-none w-full font-mono uppercase"
+                          />
+                     ) : (
+                         <p className="text-xs text-zinc-400 font-mono">
+                             {currentProject.creation_date || 'DATE_UNKNOWN'}
+                         </p>
+                     )}
+                  </div>
+
+                {/* SOFTWARE USED (Selector Visual Dinámico) */}
+                  <div className="space-y-3">
+                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                         <Monitor size={12}/> {isSpanish ? "Software Utilizado" : "Software Used"}
+                     </h3>
+                     
+                     {/* Modo Admin: Grid de selección dinámico */}
+                     {isAdmin && (
+                         <div className="grid grid-cols-5 gap-2 bg-black/20 p-3 rounded-lg border border-white/5">
+                             {availableTech.map((tech) => {
+                                 const isSelected = currentProject.tags?.includes(tech.name);
+                                 const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
+                                 return (
+                                     <button 
+                                         key={tech.id}
+                                         onClick={(e) => { e.preventDefault(); toggleSoftware(tech.name); }}
+                                         className={`flex flex-col items-center justify-center p-2 rounded transition-all aspect-square
+                                             ${isSelected 
+                                                 ? 'bg-yellow-950/30 border border-yellow-500 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.2)]' 
+                                                 : 'bg-zinc-900/50 border border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800'}
+                                         `}
+                                         title={tech.name}
+                                     >
+                                         <IconComponent size={20} />
+                                     </button>
+                                 )
+                             })}
+                         </div>
+                     )}
+
+                     {/* Modo Vista: Iconos Activos */}
+                     {!isAdmin && (
+                         <div className="flex flex-wrap gap-3">
+                             {availableTech.filter(tech => currentProject.tags?.includes(tech.name)).map(tech => {
+                                 const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
+                                 return (
+                                 <div key={tech.id} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-yellow-500/50 transition-colors" title={tech.name}>
+                                     <IconComponent size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
+                                 </div>
+                             )})}
+                         </div>
+                     )}
+                  </div>
+
+                  {/* DESCRIPCIÓN */}
+                  <div className="space-y-2">
+                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{isSpanish ? "Briefing" : "Briefing"}</h3>
+                     {isAdmin ? (
+                       <textarea value={getFieldVal(currentProject.description, modalLang)} onChange={(e) => setFieldVal('description', modalLang, e.target.value)} placeholder={modalLang === 'en' ? "Write briefing description..." : "Escribe la descripción del proyecto..."} className="w-full h-32 bg-black/30 p-3 rounded text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-yellow-500 resize-none leading-relaxed" />
+                     ) : (
+                       <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{getTranslation(currentProject.description, isSpanish)}</p>
+                     )}
+                  </div>
+
+                  {/* OTROS TAGS (No software) */}
+                  <div className="space-y-4">
+                     <div className="space-y-2">
+                         <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"><Layers size={12}/> {isSpanish ? "Otros Tags" : "Other Tags"}</h3>
+                         
+                         <div className="flex flex-wrap gap-2 mb-2">
+                           {/* Comprobamos si el tag NO está en la lista de software */}
+                           {currentProject.tags?.filter(tag => !availableTech.some(tech => tech.name === tag)).map((tag, index) => (
+                             <span key={index} className="flex items-center gap-1 text-[10px] uppercase font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
+                               {tag}
+                               {isAdmin && <button onClick={(e) => { e.preventDefault(); removeTag(tag); }} className="hover:text-yellow-500 ml-1"><X size={12} /></button>}
+                             </span>
+                           ))}
+                         </div>
+
+                         {isAdmin && (
+                           <div className="relative">
+                             <input 
+                               value={tagInput}
+                               onChange={(e) => setTagInput(e.target.value)}
+                               onKeyDown={handleTagKeyDown}
+                               className="w-full bg-black/30 border border-zinc-800 p-2 text-xs text-white focus:outline-none focus:border-yellow-500 rounded"
+                               placeholder={modalLang === 'en' ? "Type tag and press Enter..." : "Escribe tag y pulsa Enter..."}
+                             />
+                           </div>
                          )}
-                         <div className="text-xs text-zinc-500 mt-1 font-mono">by Daniel Rayo</div>
                      </div>
-                 </div>
-
-                 <div className="h-[1px] bg-white/5 w-full" />
-
-                 {/* FECHA (Opcional) */}
-                 <div className="space-y-2">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                        <Calendar size={12}/> Date
-                    </h3>
-                    {isAdmin ? (
-                         <input 
-                            type="date"
-                            value={currentProject.creation_date || ''}
-                            onChange={(e) => handleEdit('creation_date', e.target.value)}
-                            className="bg-black/30 border border-zinc-800 p-2 text-xs text-white rounded focus:border-yellow-500 focus:outline-none w-full font-mono uppercase"
-                         />
-                    ) : (
-                        <p className="text-xs text-zinc-400 font-mono">
-                            {currentProject.creation_date || 'DATE_UNKNOWN'}
-                        </p>
-                    )}
-                 </div>
-
-               {/* SOFTWARE USED (Selector Visual Dinámico) */}
-                 <div className="space-y-3">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                        <Monitor size={12}/> Software Used
-                    </h3>
-                    
-                    {/* Modo Admin: Grid de selección dinámico */}
-                    {isAdmin && (
-                        <div className="grid grid-cols-5 gap-2 bg-black/20 p-3 rounded-lg border border-white/5">
-                            {availableTech.map((tech) => {
-                                const isSelected = currentProject.tags?.includes(tech.name);
-                                const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
-                                return (
-                                    <button 
-                                        key={tech.id}
-                                        onClick={(e) => { e.preventDefault(); toggleSoftware(tech.name); }}
-                                        className={`flex flex-col items-center justify-center p-2 rounded transition-all aspect-square
-                                            ${isSelected 
-                                                ? 'bg-yellow-950/30 border border-yellow-500 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.2)]' 
-                                                : 'bg-zinc-900/50 border border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800'}
-                                        `}
-                                        title={tech.name}
-                                    >
-                                        <IconComponent size={20} />
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    )}
-
-                    {/* Modo Vista: Lista de Iconos Activos */}
-                    {!isAdmin && (
-                        <div className="flex flex-wrap gap-3">
-                            {availableTech.filter(tech => currentProject.tags?.includes(tech.name)).map(tech => {
-                                const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
-                                return (
-                                <div key={tech.id} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-yellow-500/50 transition-colors" title={tech.name}>
-                                    <IconComponent size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
-                                </div>
-                            )})}
-                        </div>
-                    )}
-                 </div>
-
-                 {/* DESCRIPCIÓN */}
-                 <div className="space-y-2">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Briefing</h3>
-                    {isAdmin ? (
-                      <textarea value={currentProject.description || ''} onChange={(e) => handleEdit('description', e.target.value)} placeholder="Escribe la descripción..." className="w-full h-32 bg-black/30 p-3 rounded text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-yellow-500 resize-none leading-relaxed" />
-                    ) : (
-                      <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{currentProject.description}</p>
-                    )}
-                 </div>
-
-                 {/* OTROS TAGS (No software) */}
-                 <div className="space-y-4">
-                    <div className="space-y-2">
-                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"><Layers size={12}/> Other Tags</h3>
-                        
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {/* Comprobamos si el tag NO está en la lista de software */}
-                          {currentProject.tags?.filter(tag => !availableTech.some(tech => tech.name === tag)).map((tag, index) => (
-                            <span key={index} className="flex items-center gap-1 text-[10px] uppercase font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
-                              {tag}
-                              {isAdmin && <button onClick={(e) => { e.preventDefault(); removeTag(tag); }} className="hover:text-yellow-500 ml-1"><X size={12} /></button>}
-                            </span>
-                          ))}
-                        </div>
-
-                        {isAdmin && (
-                          <div className="relative">
-                            <input 
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyDown={handleTagKeyDown}
-                              className="w-full bg-black/30 border border-zinc-800 p-2 text-xs text-white focus:outline-none focus:border-yellow-500 rounded"
-                              placeholder="Escribe tag y pulsa Enter..."
-                            />
-                          </div>
-                        )}
-                    </div>
-                 </div>
-                 
-                 <div className="mt-auto pt-8 text-[10px] text-zinc-700 font-mono text-center">PUBLISHED VIA SYSTEM_ADMIN_V1</div>
+                  </div>
+                  
+                  <div className="mt-auto pt-8 text-[10px] text-zinc-700 font-mono text-center">PUBLISHED VIA SYSTEM_ADMIN_V1</div>
              </div>
           </div>
         </motion.div>

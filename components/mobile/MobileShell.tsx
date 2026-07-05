@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Home, Grid, Briefcase, Mail, LucideIcon } from 'lucide-react'; // Importamos LucideIcon y Briefcase
+import { useLanguage } from '@/context/LanguageContext';
 import MobileHome from './MobileHome';
 import MobileProjects from './MobileProjects';
 import MobileBio from './MobileBio';
@@ -13,6 +14,7 @@ type ViewState = 'HOME' | 'PROJECTS' | 'CAREER' | 'CONTACT';
 
 export default function MobileShell() {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
+  const { isSpanish } = useLanguage();
 
   // Asignamos el tipo Variants de Framer Motion para solucionar el error 2322
   const pageVariants: Variants = {
@@ -73,26 +75,26 @@ export default function MobileShell() {
               active={currentView === 'HOME'} 
               onClick={() => setCurrentView('HOME')} 
               icon={Home} 
-              label="Home" 
+              label={isSpanish ? "Inicio" : "Home"} 
             />
             <NavButton 
               active={currentView === 'PROJECTS'} 
               onClick={() => setCurrentView('PROJECTS')} 
               icon={Grid} 
-              label="Projects" 
+              label={isSpanish ? "Proyectos" : "Projects"} 
             />
             {/* Actualizado a Career con el nuevo icono */}
             <NavButton 
               active={currentView === 'CAREER'} 
               onClick={() => setCurrentView('CAREER')} 
               icon={Briefcase} 
-              label="Career" 
+              label={isSpanish ? "Experiencia" : "Career"} 
             />
             <NavButton 
               active={currentView === 'CONTACT'} 
               onClick={() => setCurrentView('CONTACT')} 
               icon={Mail} 
-              label="Contact" 
+              label={isSpanish ? "Contacto" : "Contact"} 
             />
 
          </div>

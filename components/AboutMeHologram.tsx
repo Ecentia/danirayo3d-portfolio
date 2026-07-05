@@ -4,33 +4,43 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { supabase } from "@/lib/supabase";
 import { CURRENT_SLUG } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface AboutMeHologramProps {
   onClose: () => void;
+  isSpanish: boolean;
 }
 
-export default function AboutMeHologram({ onClose }: AboutMeHologramProps) {
+export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [content, setContent] = useState({
-    title: "ARQUITECTO DE REALIDADES",
-    description: "Cargando datos...",
+    title: isSpanish ? "ARQUITECTO DE REALIDADES" : "REALITY ARCHITECT",
+    description: isSpanish ? "Cargando datos..." : "Loading data...",
   });
 
   useEffect(() => {
     const fetchData = async () => {
+      const sectionId = isSpanish ? "about_me" : "about_me_en";
       const { data } = await supabase
         .from("portfolio_content")
         .select("title, description")
         .eq("client_slug", CURRENT_SLUG)
-        .eq("section_id", "about_me")
+        .eq("section_id", sectionId)
         .single();
 
       if (data) {
         setContent({ title: data.title, description: data.description });
+      } else {
+        setContent({
+          title: isSpanish ? "ARQUITECTO DE REALIDADES" : "REALITY ARCHITECT",
+          description: isSpanish 
+            ? "Cargando datos..." 
+            : "I'm Daniel Rayo. My code doesn't just compile, it breathes..."
+        });
       }
     };
     fetchData();
-  }, []);
+  }, [isSpanish]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();

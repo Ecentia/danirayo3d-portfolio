@@ -26,6 +26,7 @@ import {
 import { Monitor, Video, Plus, Trash2, X, Database } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAdmin, CURRENT_SLUG } from '@/context/AdminContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { TechItem } from '@/types/database';
 
 // --- ICONOS CUSTOM (SUBSTANCE, MARVELOUS Y ZBRUSH) ---
@@ -96,8 +97,15 @@ const CATEGORIES = [
 export default function TechStack() {
   const [techList, setTechList] = useState<TechItem[]>([]);
   const { isAdmin, deleteItem, notify } = useAdmin();
+  const { isSpanish } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', category: '3D & TEXTURING', icon_key: 'SiBlender' });
+
+  const getCategoryLabel = (id: string) => {
+    if (id === "3D & TEXTURING") return isSpanish ? "3D y Texturizado" : "3D & Texturing";
+    if (id === "POST & CREATIVE") return isSpanish ? "Postproducción y Creativo" : "Post & Creative";
+    return id;
+  };
 
   // Cargar datos
   const fetchTech = async () => {
@@ -194,7 +202,7 @@ export default function TechStack() {
             <div className="flex flex-wrap gap-4 mt-6 md:mt-0">
               {techList.length === 0 && (
                  <button onClick={handleSeedDB} className="flex items-center gap-2 bg-zinc-900 text-zinc-400 border border-zinc-700 px-5 py-3 rounded-full text-xs font-mono hover:bg-zinc-800 hover:text-white transition-all shadow-lg hover:border-zinc-500">
-                    <Database size={14} /> CARGAR DEFAULT_SYS
+                    <Database size={14} /> {isSpanish ? "CARGAR SISTEMA DEFECTO" : "LOAD DEFAULT SYS"}
                  </button>
               )}
               <motion.button 
@@ -204,7 +212,7 @@ export default function TechStack() {
                 className="group flex items-center gap-3 bg-red-600 text-white px-6 py-3 rounded-full text-xs font-bold tracking-tight hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)]"
               >
                  <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" /> 
-                 <span>ADD SOFTWARE NODE</span>
+                 <span>{isSpanish ? "AÑADIR SOFTWARE" : "ADD SOFTWARE NODE"}</span>
               </motion.button>
             </div>
           )}
@@ -231,7 +239,7 @@ export default function TechStack() {
                     {cat.icon}
                   </div>
                   <h3 className="text-lg font-black text-white tracking-[0.2em] uppercase">
-                    {cat.id}
+                    {getCategoryLabel(cat.id)}
                   </h3>
                 </div>
 
@@ -301,23 +309,23 @@ export default function TechStack() {
                  <div className="w-10 h-10 rounded-full bg-red-900/20 flex items-center justify-center text-red-500 border border-red-500/20">
                     <Database size={18} />
                  </div>
-                 <h3 className="text-white font-black tracking-tighter text-2xl uppercase">Insert Node</h3>
+                 <h3 className="text-white font-black tracking-tighter text-2xl uppercase">{isSpanish ? "Añadir Nodo" : "Insert Node"}</h3>
               </div>
               
               <form onSubmit={handleAddTech} className="flex flex-col gap-6">
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Node_Name</label>
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">{isSpanish ? "Nombre_Nodo" : "Node_Name"}</label>
                     <input autoFocus required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-red-500/50" placeholder="e.g. Marvelous Designer" />
                  </div>
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Partition_Category</label>
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">{isSpanish ? "Categoría_Partición" : "Partition_Category"}</label>
                     <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-red-500/50">
-                       <option value="3D & TEXTURING">3D & TEXTURING</option>
-                       <option value="POST & CREATIVE">POST & CREATIVE</option>
+                       <option value="3D & TEXTURING">{isSpanish ? "3D y Texturizado" : "3D & TEXTURING"}</option>
+                       <option value="POST & CREATIVE">{isSpanish ? "Postproducción y Creativo" : "POST & CREATIVE"}</option>
                     </select>
                  </div>
                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Icon_Key_Hash</label>
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">{isSpanish ? "Hash_Icono" : "Icon_Key_Hash"}</label>
                     <select value={formData.icon_key} onChange={(e) => setFormData({...formData, icon_key: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-red-500/50">
                        {Object.keys(ICON_MAP).map(key => (
                          <option key={key} value={key}>{key.replace('Si', '').replace('Icon', '')}</option>
@@ -326,7 +334,7 @@ export default function TechStack() {
                  </div>
                  
                  <button type="submit" className="mt-2 bg-gradient-to-r from-red-700 to-red-600 text-white font-bold tracking-widest py-4 rounded-xl hover:from-red-600 hover:to-red-500 transition-all active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.3)] uppercase">
-                    Initialize Node
+                    {isSpanish ? "Inicializar Nodo" : "Initialize Node"}
                  </button>
               </form>
             </motion.div>

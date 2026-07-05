@@ -14,6 +14,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation"; // ✅ IMPORTAMOS USEPATHNAME
 import { useAdmin } from "@/context/AdminContext";
 import { useUi } from "@/context/UiContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Settings, Menu, X, ArrowRight } from "lucide-react";
 
 const NAV_LINKS = [
@@ -29,6 +30,15 @@ export default function Header() {
   const { isAdmin } = useAdmin();
   const { isProjectModalOpen } = useUi();
   const { scrollY } = useScroll();
+  const { isSpanish } = useLanguage();
+
+  const getNavLinkName = (name: string) => {
+    if (name === "About Me") return isSpanish ? "Sobre Mí" : "About Me";
+    if (name === "Contact") return isSpanish ? "Contacto" : "Contact";
+    if (name === "Projects") return isSpanish ? "Proyectos" : "Projects";
+    if (name === "Career") return isSpanish ? "Experiencia" : "Career";
+    return name;
+  };
 
   // --- FÍSICA DE FLUIDEZ ESTILIZADA ---
   const scrollRange = [0, 120];
@@ -115,7 +125,7 @@ export default function Header() {
                       </span>
                       <div className="flex flex-col items-center justify-center relative">
                         <span className="text-[12px] font-black tracking-[0.2em] uppercase text-zinc-400 group-hover/link:text-white transition-colors duration-300">
-                          {link.name}
+                          {getNavLinkName(link.name)}
                         </span>
                         <span className="text-[8px] font-mono text-red-500/0 group-hover/link:text-red-500/80 transition-colors duration-300 uppercase absolute -bottom-3">
                           MOD.{link.id}
@@ -162,7 +172,7 @@ export default function Header() {
                       transition={{ duration: 0.4, ease: "easeInOut" }}
                       className="block text-[11px] font-black uppercase tracking-[0.2em] text-white"
                     >
-                      Let's Talk
+                      {isSpanish ? "Hablemos" : "Let's Talk"}
                     </motion.span>
                     <motion.div
                       variants={{ initial: { y: "150%" }, hover: { y: 0 } }}
@@ -170,7 +180,7 @@ export default function Header() {
                       className="absolute inset-0 flex items-center justify-center w-full"
                     >
                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
-                        CONTACT
+                        {isSpanish ? "CONTACTO" : "CONTACT"}
                       </span>
                     </motion.div>
                   </div>
@@ -226,7 +236,7 @@ export default function Header() {
                     className="flex items-center justify-between group border-b border-white/5 pb-6"
                   >
                     <span className="text-4xl md:text-5xl font-black text-zinc-400 group-hover:text-white transition-colors uppercase tracking-tighter">
-                      {link.name}
+                      {getNavLinkName(link.name)}
                     </span>
                     <ArrowRight className="text-zinc-700 group-hover:text-red-500 -translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                   </Link>

@@ -22,6 +22,7 @@ import { X, Database, Settings } from "lucide-react";
 import AboutMe from "@/components/sections/AboutMe";
 import AboutMeHologram from "@/components/AboutMeHologram";
 import TechStack, { ICON_MAP } from "@/components/sections/TechStack";
+import ProjectsGrid from "@/components/sections/ProjectGrid";
 import TechArsenalPanels from "@/components/TechArsenalPanels";
 import CareerRing from "@/components/CareerRing";
 import ContactPanels from "@/components/ContactPanels";
@@ -32,7 +33,19 @@ import { Project, TechItem, ExperienceItem } from "@/types/database";
 import ProjectModal from "@/components/projects/ProjectModal";
 import ExperienceModal from "@/components/sections/ExperienceModal";
 import { useAdmin, CURRENT_SLUG } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { SiArtstation, SiInstagram, SiLinkedin } from "react-icons/si";
+
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
 
 // --- COMPONENTE 3D: El "Casco/Orbe" Sci-Fi Central ---
 function SciFiHelmet() {
@@ -478,6 +491,8 @@ function CameraManager({ activePlanet }: CameraManagerProps) {
 // --- COMPONENTE 3D: Anillo de Proyectos Orbitando ---
 interface ProjectRingProps {
   projects: Project[];
+  isSpanish: boolean;
+  orbitSpeedMultiplier: number;
   onSelectProject: (id: string) => void;
 }
 
@@ -519,9 +534,11 @@ interface ProjectCardProps {
   N: number;
   onSelectProject: (id: string) => void;
   allProjects: Project[];
+  isSpanish: boolean;
+  orbitSpeedMultiplier: number;
 }
 
-function ProjectCard({ project, idx, N, onSelectProject, allProjects }: ProjectCardProps) {
+function ProjectCard({ project, idx, N, onSelectProject, allProjects, isSpanish, orbitSpeedMultiplier }: ProjectCardProps) {
   const cardRef = useRef<THREE.Group>(null);
   const dotRef = useRef<THREE.MeshStandardMaterial>(null);
   const [hovered, setHovered] = useState(false);
@@ -546,7 +563,7 @@ function ProjectCard({ project, idx, N, onSelectProject, allProjects }: ProjectC
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    const phi = theta + t * 0.11; // Velocidad de rotación aumentada a 0.11
+    const phi = theta + t * 0.11 * orbitSpeedMultiplier; // Velocidad de rotación multiplicada por el selector
     const normalizedPhi = ((phi % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 
     // Detección de cruce de meridiano trasero (detrás del planeta: 1.5 * Math.PI)
@@ -792,7 +809,7 @@ function ProjectCard({ project, idx, N, onSelectProject, allProjects }: ProjectC
         outlineColor="#000000"
         renderOrder={2}
       >
-        {currentProject.title.toUpperCase()}
+        {getTranslation(currentProject.title, isSpanish).toUpperCase()}
       </Text>
     </group>
   );
@@ -937,7 +954,7 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
   );
 }
 
-function ProjectRing({ projects, onSelectProject }: ProjectRingProps) {
+function ProjectRing({ projects, isSpanish, orbitSpeedMultiplier, onSelectProject }: ProjectRingProps) {
   const N = Math.min(projects.length, 6); // Limitar slots a un máximo de 6 para evitar saturar el aro
 
   return (
@@ -950,6 +967,8 @@ function ProjectRing({ projects, onSelectProject }: ProjectRingProps) {
           N={N}
           onSelectProject={onSelectProject}
           allProjects={projects}
+          isSpanish={isSpanish}
+          orbitSpeedMultiplier={orbitSpeedMultiplier}
         />
       ))}
     </group>
@@ -1203,12 +1222,98 @@ function SocialSatellites() {
   );
 }
 
+interface ProjectsMoonProps {
+  position: [number, number, number];
+  isSpanish: boolean;
+  onClick: () => void;
+}
+
+function ProjectsMoon({ position, isSpanish, onClick }: ProjectsMoonProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (meshRef.current) {
+      meshRef.current.rotation.y = t * 0.3;
+      meshRef.current.rotation.x = t * 0.1;
+    }
+  });
+
+  return (
+    <group
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        setHovered(false);
+        document.body.style.cursor = "default";
+      }}
+    >
+      {/* Esfera de la Luna (aspecto rocoso y mate de luna) */}
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[0.32, 32, 32]} />
+        <meshStandardMaterial
+          color={hovered ? "#ffffff" : "#a1a1aa"}
+          emissive={hovered ? "#ffffff" : "#1e1e24"}
+          emissiveIntensity={hovered ? 2.0 : 0.5}
+          roughness={0.95} // Aspecto mate y rocoso de luna
+          metalness={0.05} // No metálico
+        />
+        {/* Cráter 1 */}
+        <mesh position={[0.18, 0.18, 0.18]}>
+          <sphereGeometry args={[0.07, 16, 16]} />
+          <meshStandardMaterial color="#71717a" roughness={1.0} metalness={0.0} />
+        </mesh>
+        {/* Cráter 2 */}
+        <mesh position={[-0.2, -0.1, 0.18]}>
+          <sphereGeometry args={[0.09, 16, 16]} />
+          <meshStandardMaterial color="#52525b" roughness={1.0} metalness={0.0} />
+        </mesh>
+        {/* Cráter 3 */}
+        <mesh position={[0.0, -0.22, 0.18]}>
+          <sphereGeometry args={[0.06, 16, 16]} />
+          <meshStandardMaterial color="#71717a" roughness={1.0} metalness={0.0} />
+        </mesh>
+      </mesh>
+
+      {/* Etiqueta 3D interactiva */}
+      <Billboard position={[0, 0.48, 0]}>
+        <Text
+          fontSize={0.08}
+          color="#ffffff"
+          fontWeight="bold"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.006}
+          outlineColor="#000000"
+        >
+          {isSpanish ? "VER GALERÍA" : "VIEW GALLERY"}
+        </Text>
+      </Billboard>
+    </group>
+  );
+}
+
 // --- COMPONENTE PRINCIPAL HERO ---
 export default function Hero() {
   const [isHoveringTitle, setIsHoveringTitle] = useState(false);
   const [activePlanet, setActivePlanet] = useState<string | null>(null);
+  const { isSpanish } = useLanguage();
   const aboutMeX = activePlanet === "career" ? -2.2 : (activePlanet === "about-me" ? -1.9 : -2.8);
   const aboutMeY = activePlanet === "tech-arsenal" ? 0.8 : 1.35;
+  const contactX = activePlanet === "tech-arsenal" ? -1.6 : 0;
+  const techArsenalPos: [number, number, number] = activePlanet === "about-me"
+    ? [-5.4, 0.32, -0.6]
+    : [-5.2, -1.2, 0.5];
+  const techArsenalScale = activePlanet === "about-me" ? 0.35 : 1.0;
   const [showSidebar, setShowSidebar] = useState(false);
 
   // Estados para base de datos de proyectos
@@ -1216,6 +1321,7 @@ export default function Hero() {
   const [projectsReady, setProjectsReady] = useState(false);
   const [orbitWarmed, setOrbitWarmed] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [showAllProjectsGrid, setShowAllProjectsGrid] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAdmin, deleteItem, notify } = useAdmin();
 
@@ -1263,6 +1369,7 @@ export default function Hero() {
     }
   };
 
+  const [orbitSpeedMultiplier, setOrbitSpeedMultiplier] = useState(1.0);
   // Estados para base de datos de trayectoria (Career Timeline)
   const [experienceList, setExperienceList] = useState<ExperienceItem[]>([]);
   const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null);
@@ -1281,7 +1388,7 @@ export default function Hero() {
   }, [isAdmin]);
 
   const handleDeleteExperience = async (id: string) => {
-    if (confirm("¿Seguro que deseas eliminar este registro de trayectoria?")) {
+    if (confirm(isSpanish ? "¿Seguro que deseas eliminar este registro de experiencia?" : "Are you sure you want to delete this experience record?")) {
       await deleteItem('experience', id);
       fetchExperience();
     }
@@ -1365,7 +1472,7 @@ export default function Hero() {
   };
 
   const titleText = "DANIEL RAYO";
-  const subtitleText = " 3D Artist".split(" s");
+  const subtitleText = (isSpanish ? "> Artista 3D" : "> 3D Artist").split("");
 
   const showProjectsUI =
     activePlanet === "projects" && projectsReady && orbitWarmed;
@@ -1406,7 +1513,7 @@ export default function Hero() {
           <InteractivePlanet
             position={[aboutMeX, aboutMeY, -1.0]}
             targetId="about-me"
-            label="About Me"
+            label={isSpanish ? "Sobre Mí" : "About Me"}
             color="#00f3ff"
             emissive="#00b8d4"
             planetType="distorted"
@@ -1416,7 +1523,7 @@ export default function Hero() {
 
           {/* Holograma About Me pre-montado para evitar tirón en el primer clic */}
           <group position={[aboutMeX - 2.0, aboutMeY, -1.0]} visible={activePlanet === "about-me"}>
-            <AboutMeHologram onClose={() => setActivePlanet(null)} />
+            <AboutMeHologram onClose={() => setActivePlanet(null)} isSpanish={isSpanish} />
           </group>
           
           {/* PLANETA DE PROYECTOS & SU ARO DE TARJETAS 3D */}
@@ -1425,7 +1532,7 @@ export default function Hero() {
               <InteractivePlanet
                 position={[0, 0, 0]}
                 targetId="projects"
-                label="Projects"
+                label={isSpanish ? "Proyectos" : "Projects"}
                 color="#ffcc00"
                 emissive="#ff9100"
                 planetType="ringed"
@@ -1436,10 +1543,17 @@ export default function Hero() {
                 <group visible={activePlanet === "projects"}>
                   <ProjectRing
                     projects={projects}
+                    isSpanish={isSpanish}
+                    orbitSpeedMultiplier={orbitSpeedMultiplier}
                     onSelectProject={(id) => {
                       setSelectedProjectId(id);
                       setIsModalOpen(true);
                     }}
+                  />
+                  <ProjectsMoon
+                    position={[4.4, 1.6, -0.2]}
+                    isSpanish={isSpanish}
+                    onClick={() => setShowAllProjectsGrid(true)}
                   />
                   {isAdmin && activePlanet === "projects" && (
                     <AdminSatellite
@@ -1454,21 +1568,22 @@ export default function Hero() {
             </group>
           )}
 
-          <InteractivePlanet
-            position={[-5.2, -1.2, 0.5]}
-            targetId="tech-arsenal"
-            label="Tech Arsenal"
-            color="#b026ff"
-            emissive="#8a00e6"
-            planetType="wireframe"
-            onClickPlanet={setActivePlanet}
-            activePlanet={activePlanet}
-          />
-          {activePlanet === "tech-arsenal" && (
-            <group position={[-5.2, -1.2, 0.5]}>
+          <group position={techArsenalPos} scale={techArsenalScale}>
+            <InteractivePlanet
+              position={[0, 0, 0]}
+              targetId="tech-arsenal"
+              label="Tech Arsenal"
+              color="#b026ff"
+              emissive="#8a00e6"
+              planetType="wireframe"
+              onClickPlanet={setActivePlanet}
+              activePlanet={activePlanet}
+            />
+            {activePlanet === "tech-arsenal" && (
               <Suspense fallback={null}>
                 <TechArsenalPanels
                   techList={techList}
+                  isSpanish={isSpanish}
                   openAddModal={(category) => {
                     setTechFormData((prev) => ({ ...prev, category }));
                     setIsTechModalOpen(true);
@@ -1476,14 +1591,14 @@ export default function Hero() {
                   onDelete={handleDeleteTech}
                 />
               </Suspense>
-            </group>
-          )}
+            )}
+          </group>
           {activePlanet !== "about-me" && (
             <group position={[5.2, -1.2, 0.5]}>
               <InteractivePlanet
                 position={[0, 0, 0]}
                 targetId="career"
-                label="Career"
+                label={isSpanish ? "Experiencia" : "Career"}
                 color="#00ff66"
                 emissive="#00c853"
                 planetType="moons"
@@ -1495,6 +1610,7 @@ export default function Hero() {
                   <CareerRing
                     experienceList={experienceList}
                     isAdmin={isAdmin}
+                    isSpanish={isSpanish}
                     onEdit={(item) => {
                       setEditingExperience(item);
                       setIsExperienceModalOpen(true);
@@ -1506,11 +1622,11 @@ export default function Hero() {
             </group>
           )}
           {activePlanet !== "about-me" && (
-            <group position={[0, -3.2, 0.5]}>
+            <group position={[contactX, -3.2, 0.5]}>
               <InteractivePlanet
                 position={[0, 0, 0]}
                 targetId="contact"
-                label="Contact"
+                label={isSpanish ? "Contacto" : "Contact"}
                 color="#ff3366"
                 emissive="#ff0044"
                 planetType="pulsing"
@@ -1519,7 +1635,7 @@ export default function Hero() {
               />
               {activePlanet === "contact" && (
                 <Suspense fallback={null}>
-                  <ContactPanels />
+                  <ContactPanels isSpanish={isSpanish} />
                 </Suspense>
               )}
             </group>
@@ -1580,7 +1696,7 @@ export default function Hero() {
               variants={letter}
               className={char === ">" ? "text-rayo-red mr-2 font-bold" : ""}
             >
-              {char}
+              {char === " " ? "\u00A0" : char}
             </motion.span>
           ))}
         </motion.h2>
@@ -1607,8 +1723,28 @@ export default function Hero() {
 
             {/* Title text */}
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-yellow-400 drop-shadow-[0_0_10px_rgba(255,204,0,0.4)]">
-              PROJECTS ORBIT
+              {isSpanish ? "ÓRBITA DE PROYECTOS" : "PROJECTS ORBIT"}
             </h1>
+
+            {/* Speed Selector HUD */}
+            <div className="flex items-center gap-2 mt-3 pointer-events-auto text-[9px] font-mono text-yellow-500/80">
+              <span className="tracking-widest uppercase font-bold">{isSpanish ? "VELOCIDAD DE GIRO:" : "ORBIT SPEED:"}</span>
+              <div className="flex items-center gap-1">
+                {[0.2, 0.5, 1.0, 2.0, 4.0].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => setOrbitSpeedMultiplier(val)}
+                    className={`px-2 py-0.5 border text-[9px] font-bold tracking-wider rounded transition-all cursor-pointer ${
+                      orbitSpeedMultiplier === val
+                        ? "border-yellow-400 bg-yellow-500/20 text-yellow-400 shadow-[0_0_8px_rgba(255,204,0,0.2)]"
+                        : "border-yellow-500/10 text-yellow-500/40 hover:border-yellow-500/30 hover:text-yellow-500/60"
+                    }`}
+                  >
+                    {val === 0.2 ? "SLOW" : `${val}X`}
+                  </button>
+                ))}
+              </div>
+            </div>
 
 
           </div>
@@ -1665,7 +1801,7 @@ export default function Hero() {
 
             {/* Title text */}
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-cyan-400 drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
-              BIOGRAPHY CORE
+              {isSpanish ? "NÚCLEO DE BIOGRAFÍA" : "BIOGRAPHY CORE"}
             </h1>
 
 
@@ -1695,7 +1831,7 @@ export default function Hero() {
 
             {/* Title text */}
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
-              CONTACT HUB
+              {isSpanish ? "CENTRO DE CONTACTO" : "CONTACT HUB"}
             </h1>
 
 
@@ -1724,8 +1860,8 @@ export default function Hero() {
             </div>
 
             {/* Title text */}
-            <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-green-400 drop-shadow-[0_0_10px_rgba(0,255,102,0.4)]">
-              CAREER TIMELINE
+            <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-green-400 drop-shadow-[0_0_10px_rgba(0,255,102,0.05)]">
+              {isSpanish ? "LÍNEA DE EXPERIENCIA" : "CAREER TIMELINE"}
             </h1>
 
 
@@ -1747,7 +1883,7 @@ export default function Hero() {
                 }}
                 className="mt-2.5 px-4 py-1.5 border border-green-500/40 hover:bg-green-500/20 text-green-400 hover:text-white transition-all font-mono text-[9px] tracking-widest rounded-md uppercase cursor-pointer pointer-events-auto shadow-[0_0_15px_rgba(0,255,102,0.15)] hover:scale-105"
               >
-                + Insert Node
+                {isSpanish ? "+ Insertar Nodo" : "+ Insert Node"}
               </button>
             )}
           </div>
@@ -1761,7 +1897,7 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-yellow-500/40 bg-zinc-950/80 rounded-md text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,204,0,0.25)] hover:scale-105"
         >
-          <span>✕</span> Return to Orbit
+          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -1771,7 +1907,7 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-cyan-500/40 bg-zinc-950/80 rounded-md text-cyan-400 hover:bg-cyan-500 hover:text-white hover:border-cyan-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,243,255,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> Return to Orbit
+          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -1781,7 +1917,7 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-purple-500/40 bg-zinc-950/80 rounded-md text-purple-400 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(176,38,255,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> Return to Orbit
+          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -1791,7 +1927,7 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-red-500/40 bg-zinc-950/80 rounded-md text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> Return to Orbit
+          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -1801,7 +1937,7 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-green-500/40 bg-zinc-950/80 rounded-md text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,102,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> Return to Orbit
+          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -1896,6 +2032,33 @@ export default function Hero() {
             }}
             itemToEdit={editingExperience}
           />
+        )}
+      </AnimatePresence>
+
+      {/* --- MODO GALERÍA COMPLETA (ProjectsGrid 2D Overlay) --- */}
+      <AnimatePresence>
+        {showAllProjectsGrid && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md overflow-y-auto custom-scrollbar"
+          >
+            {/* Botón de cerrar flotante */}
+            <div className="sticky top-6 right-6 z-[70] flex justify-end px-6 box-border pointer-events-none">
+              <button
+                onClick={() => setShowAllProjectsGrid(false)}
+                className="pointer-events-auto px-5 py-2.5 border border-yellow-500/40 bg-zinc-950/80 rounded-md text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,204,0,0.25)] hover:scale-105"
+              >
+                ✕ {isSpanish ? "Cerrar Galería" : "Close Gallery"}
+              </button>
+            </div>
+
+            {/* Grid de Proyectos */}
+            <div className="relative pt-10 pb-20">
+              <ProjectsGrid />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

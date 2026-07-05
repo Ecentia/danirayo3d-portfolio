@@ -5,10 +5,23 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { ExperienceItem } from '@/types/database';
 import { Briefcase, GraduationCap, Calendar } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
 
 export default function MobileBio() {
   const [items, setItems] = useState<ExperienceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isSpanish } = useLanguage();
 
   // Fetch a la base de datos (igual que en escritorio, pero puro para móvil)
   useEffect(() => {
@@ -29,10 +42,10 @@ export default function MobileBio() {
       {/* HEADER PREMIUM */}
       <div className="flex items-center justify-between mb-10 px-1">
         <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
-          Career <span className="text-red-500">Path</span>
+          {isSpanish ? <>Línea de <span className="text-red-500">Experiencia</span></> : <>Career <span className="text-red-500">Path</span></>}
         </h2>
         <span className="text-[9px] font-bold tracking-widest text-zinc-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
-           {items.length} RECORDS
+           {items.length} {isSpanish ? "REGISTROS" : "RECORDS"}
         </span>
       </div>
 
@@ -59,6 +72,8 @@ export default function MobileBio() {
           <div className="flex flex-col gap-8 pb-10">
             {items.map((item, i) => {
               const isWork = item.type === 'work';
+              const translatedTitle = getTranslation(item.title, isSpanish);
+              const translatedDesc = getTranslation(item.description, isSpanish);
               
               return (
                 <motion.div
@@ -73,9 +88,9 @@ export default function MobileBio() {
                   {/* NODO DEL TIMELINE (Icono Flotante) */}
                   <div className="absolute left-0 top-3 w-10 h-10 bg-[#030303] rounded-full flex items-center justify-center z-10">
                     <div className={`w-8 h-8 rounded-full border flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
-                      isWork 
-                        ? 'border-red-500/50 bg-red-950/30 text-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]' 
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-400'
+                       isWork 
+                         ? 'border-red-500/50 bg-red-950/30 text-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]' 
+                         : 'border-zinc-700 bg-zinc-900 text-zinc-400'
                     }`}>
                       {isWork ? <Briefcase size={14} /> : <GraduationCap size={14} />}
                     </div>
@@ -92,7 +107,7 @@ export default function MobileBio() {
                       <span className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest ${
                         isWork ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-white/5 text-zinc-400 border border-white/10'
                       }`}>
-                        {isWork ? 'Professional' : 'Academic'}
+                        {isWork ? (isSpanish ? 'Profesional' : 'Professional') : (isSpanish ? 'Académico' : 'Academic')}
                       </span>
                       
                       <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-500">
@@ -102,7 +117,7 @@ export default function MobileBio() {
                         {item.end_date ? (
                           <span>{item.end_date}</span>
                         ) : (
-                          <span className="text-red-500 font-bold animate-pulse">PRESENT</span>
+                          <span className="text-red-500 font-bold animate-pulse">{isSpanish ? 'PRESENTE' : 'PRESENT'}</span>
                         )}
                       </div>
                     </div>
@@ -110,7 +125,7 @@ export default function MobileBio() {
                     {/* TÍTULO Y ORGANIZACIÓN */}
                     <div className="mb-3">
                       <h3 className="text-xl font-black text-white leading-tight">
-                        {item.title}
+                        {translatedTitle}
                       </h3>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="w-4 h-[1px] bg-red-600"></span>
@@ -121,9 +136,9 @@ export default function MobileBio() {
                     </div>
 
                     {/* DESCRIPCIÓN */}
-                    {item.description && (
+                    {translatedDesc && (
                       <p className="text-sm text-zinc-400 leading-relaxed font-light mt-4 whitespace-pre-wrap">
-                        {item.description}
+                        {translatedDesc}
                       </p>
                     )}
                   </div>

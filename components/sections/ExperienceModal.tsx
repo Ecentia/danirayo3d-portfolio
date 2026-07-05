@@ -22,9 +22,11 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
   
   // Estado base
   const [type, setType] = useState<'work' | 'education'>('work');
-  const [title, setTitle] = useState('');
+  const [titleEn, setTitleEn] = useState('');
+  const [titleEs, setTitleEs] = useState('');
   const [organization, setOrganization] = useState('');
-  const [description, setDescription] = useState('');
+  const [descEn, setDescEn] = useState('');
+  const [descEs, setDescEs] = useState('');
 
   // Estados de Fechas separados
   const [startMonth, setStartMonth] = useState('');
@@ -34,13 +36,46 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
   const [endYear, setEndYear] = useState('');
   const [isCurrent, setIsCurrent] = useState(false);
 
+  // Tab para el idioma de edición
+  const [modalLang, setModalLang] = useState<'en' | 'es'>('en');
+
   // Cargar datos si es edición
   useEffect(() => {
     if (itemToEdit) {
       setType(itemToEdit.type || 'work');
-      setTitle(itemToEdit.title || '');
       setOrganization(itemToEdit.organization || '');
-      setDescription(itemToEdit.description || '');
+
+      // Parsear título
+      const tVal = itemToEdit.title || '';
+      try {
+        const parsed = JSON.parse(tVal);
+        if (parsed && typeof parsed === 'object') {
+          setTitleEn(parsed.en || '');
+          setTitleEs(parsed.es || '');
+        } else {
+          setTitleEn(tVal);
+          setTitleEs('');
+        }
+      } catch (e) {
+        setTitleEn(tVal);
+        setTitleEs('');
+      }
+
+      // Parsear descripción
+      const dVal = itemToEdit.description || '';
+      try {
+        const parsed = JSON.parse(dVal);
+        if (parsed && typeof parsed === 'object') {
+          setDescEn(parsed.en || '');
+          setDescEs(parsed.es || '');
+        } else {
+          setDescEn(dVal);
+          setDescEs('');
+        }
+      } catch (e) {
+        setDescEn(dVal);
+        setDescEs('');
+      }
 
       // Parsear fecha de inicio (Ej: "Enero 2023" o "2023")
       if (itemToEdit.start_date) {
@@ -79,19 +114,22 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
 
   const resetForm = () => {
     setType('work');
-    setTitle('');
+    setTitleEn('');
+    setTitleEs('');
     setOrganization('');
-    setDescription('');
+    setDescEn('');
+    setDescEs('');
     setStartMonth('');
     setStartYear('');
     setEndMonth('');
     setEndYear('');
     setIsCurrent(false);
+    setModalLang('en');
   };
 
   const handleSubmit = () => {
     // 1. Validación: El año de inicio es OBLIGATORIO
-    if (!title || !organization || !startYear) {
+    if ((modalLang === 'en' ? !titleEn : !titleEs) || !organization || !startYear) {
       notify("Falta el Título, Organización o el Año de Inicio", "error");
       return;
     }
@@ -101,17 +139,20 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
     
     let finalEndDate = null;
     if (!isCurrent) {
-       // Si puso año de fin, lo construimos. Si no, se queda null (lo cual no es ideal si no es "current", pero asumiremos que si no es current debe tener fecha)
        if (endYear) {
          finalEndDate = endMonth ? `${endMonth} ${endYear}` : `${endYear}`;
        }
     }
 
+    // Empaquetar bilingüe
+    const serializedTitle = JSON.stringify({ en: titleEn, es: titleEs });
+    const serializedDesc = JSON.stringify({ en: descEn, es: descEs });
+
     const payload = {
       type,
-      title,
+      title: serializedTitle,
       organization,
-      description,
+      description: serializedDesc,
       start_date: finalStartDate,
       end_date: finalEndDate,
     };
@@ -176,24 +217,48 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
               </button>
             </div>
 
+            {/* TAB SELECTION FOR LANGUAGES (ES / EN) */}
+            <div className="flex border-b border-zinc-800 pb-1 justify-start gap-4">
+               <button 
+                 onClick={() => setModalLang('en')}
+                 className={`px-3 py-1 text-xs font-mono font-bold tracking-widest transition-all ${
+                   modalLang === 'en' ? 'text-red-500 border-b-2 border-red-500' : 'text-zinc-500 hover:text-white'
+                 }`}
+               >
+                 EN
+               </button>
+               <button 
+                 onClick={() => setModalLang('es')}
+                 className={`px-3 py-1 text-xs font-mono font-bold tracking-widest transition-all ${
+                   modalLang === 'es' ? 'text-red-500 border-b-2 border-red-500' : 'text-zinc-500 hover:text-white'
+                 }`}
+               >
+                 ES
+               </button>
+            </div>
+
             {/* Inputs Principales */}
             <div className="space-y-4">
                 <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Role / Title</label>
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">
+                      {modalLang === 'en' ? "Role / Title" : "Rol / Puesto"}
+                    </label>
                     <input 
-                    placeholder="e.g. Senior 3D Artist"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
+                      placeholder={modalLang === 'en' ? "e.g. Senior 3D Artist" : "Ej: Artista 3D Senior"}
+                      value={modalLang === 'en' ? titleEn : titleEs}
+                      onChange={(e) => modalLang === 'en' ? setTitleEn(e.target.value) : setTitleEs(e.target.value)}
+                      className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Organization / School</label>
+                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">
+                      {modalLang === 'en' ? "Organization / School" : "Organización / Escuela"}
+                    </label>
                     <input 
-                    placeholder="e.g. Ubisoft / University of Design"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                    className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
+                      placeholder="e.g. Ubisoft / University of Design"
+                      value={organization}
+                      onChange={(e) => setOrganization(e.target.value)}
+                      className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none transition-colors"
                     />
                 </div>
             </div>
@@ -272,10 +337,10 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
             <div>
                 <label className="text-[10px] text-zinc-500 uppercase font-mono mb-1 block">Description</label>
                 <textarea 
-                placeholder="Brief description of duties or achievements..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none min-h-[100px] resize-none transition-colors scrollbar-thin scrollbar-thumb-zinc-700"
+                  placeholder={modalLang === 'en' ? "Brief description of duties or achievements..." : "Breve descripción de funciones o logros..."}
+                  value={modalLang === 'en' ? descEn : descEs}
+                  onChange={(e) => modalLang === 'en' ? setDescEn(e.target.value) : setDescEs(e.target.value)}
+                  className="w-full bg-black border border-zinc-800 rounded p-3 text-sm text-white focus:border-red-500 outline-none min-h-[100px] resize-none transition-colors scrollbar-thin scrollbar-thumb-zinc-700"
                 />
             </div>
 

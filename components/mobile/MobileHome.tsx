@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { CURRENT_SLUG } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
 // ✅ Importamos el mapa de iconos en vez del componente gigante de PC
 import { ICON_MAP } from "@/components/sections/TechStack";
 import { TechItem } from "@/types/database";
@@ -16,19 +17,21 @@ export default function MobileHome({
   onNavigate: (v: any) => void;
 }) {
   const [description, setDescription] = useState<string>("");
-  const [title, setTitle] = useState<string>("SYNCHRONIZING...");
+  const { isSpanish } = useLanguage();
+  const [title, setTitle] = useState<string>(isSpanish ? "SINCRONIZANDO..." : "SYNCHRONIZING...");
   const [techList, setTechList] = useState<TechItem[]>([]); // ✅ Estado para las tecnologías
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const sectionId = isSpanish ? "about_me" : "about_me_en";
         // 1. Cargar Perfil
         const { data: profileData } = await supabase
           .from("portfolio_content")
           .select("title, description")
           .eq("client_slug", CURRENT_SLUG)
-          .eq("section_id", "about_me")
+          .eq("section_id", sectionId)
           .single();
 
         // 2. Cargar Tecnologías
@@ -43,9 +46,11 @@ export default function MobileHome({
             setTitle(profileData.title);
             setDescription(profileData.description);
           } else {
-            setTitle("REALITY ARCHITECT");
+            setTitle(isSpanish ? "ARQUITECTO DE REALIDADES" : "REALITY ARCHITECT");
             setDescription(
-              "I'm Daniel Rayo. My code doesn't just compile, it breathes...",
+              isSpanish 
+                ? "Soy Daniel Rayo. Mi código no solo compila, respira..." 
+                : "I'm Daniel Rayo. My code doesn't just compile, it breathes..."
             );
           }
           if (techData) {
@@ -149,7 +154,7 @@ export default function MobileHome({
             <div className="flex items-center gap-2 mb-5">
               <Sparkles size={16} className="text-red-500" />
               <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-                About Me
+                {isSpanish ? "Sobre Mí" : "About Me"}
               </h2>
             </div>
 
@@ -190,7 +195,7 @@ export default function MobileHome({
               className="w-full mt-8 relative overflow-hidden bg-zinc-100 text-black py-4 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all duration-300 hover:bg-white active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
             >
               <div className="absolute inset-0 -translate-x-full hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/5 to-transparent skew-x-12 z-0" />
-              <span className="relative z-10">View Projects</span>
+              <span className="relative z-10">{isSpanish ? "Ver Proyectos" : "View Projects"}</span>
               <ArrowRight size={16} className="relative z-10" />
             </button>
           </div>
@@ -201,7 +206,7 @@ export default function MobileHome({
           <div className="flex items-center gap-3 mb-4 px-1">
             <Code2 size={16} className="text-zinc-500" />
             <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-              Tech Stack
+              {isSpanish ? "Arsenal de Tech" : "Tech Stack"}
             </h2>
             <div className="h-[1px] flex-grow bg-gradient-to-r from-white/10 to-transparent" />
           </div>

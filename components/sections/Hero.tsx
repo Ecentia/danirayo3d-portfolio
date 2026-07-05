@@ -3,8 +3,10 @@
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Hero() {
+  const { isSpanish } = useLanguage();
   // Animaciones correctamente tipadas con 'Variants' para evitar el error TS2322
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -51,7 +53,7 @@ export default function Hero() {
             variants={itemVariants}
             className="text-cyan-400 font-mono text-sm tracking-[0.3em] uppercase mb-3 bg-cyan-950/30 px-3 py-1 rounded-full border border-cyan-800"
           >
-            Digital Artisan / workflow Specialist
+            {isSpanish ? "Artesano Digital / Especialista en Workflow" : "Digital Artisan / Workflow Specialist"}
           </motion.span>
 
           <motion.h1
@@ -67,9 +69,9 @@ export default function Hero() {
             variants={itemVariants}
             className="text-gray-400 text-lg md:text-xl max-w-lg mb-10 font-light"
           >
-            Especializado en la creación de personajes, assets 3D y optimización
-            de pipelines de arte digital. Transformando conceptos en realidad
-            renderizada.
+            {isSpanish
+              ? "Especializado en la creación de personajes, assets 3D y optimización de pipelines de arte digital. Transformando conceptos en realidad renderizada."
+              : "Specialized in character creation, 3D assets, and digital art pipeline optimization. Transforming concepts into rendered reality."}
           </motion.p>
 
           <motion.div
@@ -78,13 +80,13 @@ export default function Hero() {
           >
             <Link href="#projects">
               <button className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center gap-2">
-                VER PROYECTOS
+                {isSpanish ? "VER PROYECTOS" : "VIEW PROJECTS"}
                 <span>→</span>
               </button>
             </Link>
             <Link href="#contact">
               <button className="px-8 py-4 bg-transparent border border-gray-700 hover:border-gray-500 text-gray-300 font-medium rounded-lg transition-colors duration-300">
-                Contactar
+                {isSpanish ? "Contactar" : "Contact"}
               </button>
             </Link>
           </motion.div>

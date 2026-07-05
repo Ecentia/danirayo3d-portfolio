@@ -4,6 +4,17 @@ import { Text } from "@react-three/drei";
 import * as THREE from "three";
 import { ExperienceItem } from "@/types/database";
 
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
+
 // Helper para generar rectángulos con esquinas redondeadas
 function getRoundedRectShape(width: number, height: number, radius: number) {
   const shape = new THREE.Shape();
@@ -31,6 +42,7 @@ interface CareerCardProps {
   onDelete: (id: string) => void;
   allExperience: ExperienceItem[];
   isAdmin: boolean;
+  isSpanish: boolean;
 }
 
 function CareerCard({
@@ -41,6 +53,7 @@ function CareerCard({
   onDelete,
   allExperience,
   isAdmin,
+  isSpanish,
 }: CareerCardProps) {
   const cardRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -51,13 +64,12 @@ function CareerCard({
   const beta = Math.PI / 5.5; // Inclinación lateral para visualización tridimensional
   const lastPhiRef = useRef(theta);
 
-
-
   useEffect(() => {
     setItemIdx(idx);
   }, [idx, N]);
 
   useFrame((state) => {
+    if (!cardRef.current) return;
     const t = state.clock.getElapsedTime();
     const phi = theta + t * 0.11; // Rotación suave
     const normalizedPhi = ((phi % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
@@ -70,28 +82,28 @@ function CareerCard({
       setItemIdx((prevIdx) => (prevIdx + N) % allExperience.length);
     }
 
-    // Posición en órbita vertical inclinada
+    // Posición en órbita vertical inclinada original
     const x = (radius * Math.sin(phi)) * Math.sin(beta);
     const y = radius * Math.cos(phi);
     const z = (radius * Math.sin(phi)) * Math.cos(beta);
 
     // Las tarjetas se mantienen rectas de cara a la cámara
-    if (cardRef.current) {
-      cardRef.current.position.set(x, y, z);
-      cardRef.current.rotation.set(0, 0, 0);
+    cardRef.current.position.set(x, y, z);
+    cardRef.current.rotation.set(0, 0, 0);
 
-      // Lerp de escala en hover
-      const targetScale = hovered ? 1.20 : 1.0;
-      cardRef.current.scale.setScalar(THREE.MathUtils.lerp(cardRef.current.scale.x, targetScale, 0.1));
-    }
+    // Lerp de escala en hover
+    const targetScale = hovered ? 1.20 : 1.0;
+    cardRef.current.scale.setScalar(THREE.MathUtils.lerp(cardRef.current.scale.x, targetScale, 0.1));
   });
 
   const currentItem = allExperience[itemIdx] || item;
+  const titleText = getTranslation(currentItem.title, isSpanish);
+  const descText = getTranslation(currentItem.description, isSpanish);
 
   // Dimensiones y Layout Dinámicos de tarjeta basados en el texto
   const showAdmin = isAdmin;
-  const titleLines = Math.ceil((currentItem.title || "").length / 38) || 1;
-  const descLines = (currentItem.description || "").split("\n").reduce((acc: number, line: string) => {
+  const titleLines = Math.ceil((titleText || "").length / 38) || 1;
+  const descLines = (descText || "").split("\n").reduce((acc: number, line: string) => {
     const charsPerLine = 58;
     const linesForSegment = Math.ceil(line.length / charsPerLine) || 1;
     return acc + linesForSegment;
@@ -177,7 +189,7 @@ function CareerCard({
         fontWeight="bold"
         renderOrder={4}
       >
-        {currentItem.type === "work" ? "EXPERIENCE" : "EDUCATION"}
+        {currentItem.type === "work" ? (isSpanish ? "EXPERIENCIA" : "EXPERIENCE") : (isSpanish ? "EDUCACIÓN" : "EDUCATION")}
       </Text>
 
       {/* Fechas (Top Right) */}
@@ -190,7 +202,7 @@ function CareerCard({
         fontWeight="bold"
         renderOrder={4}
       >
-        {`${currentItem.start_date} - ${currentItem.end_date || "ACTIVE"}`}
+        {`${currentItem.start_date} - ${currentItem.end_date || (isSpanish ? "ACTIVO" : "ACTIVE")}`}
       </Text>
 
       {/* Título Principal */}
@@ -204,7 +216,7 @@ function CareerCard({
         maxWidth={1.34}
         renderOrder={4}
       >
-        {currentItem.title.toUpperCase()}
+        {titleText.toUpperCase()}
       </Text>
 
       {/* Organización */}
@@ -231,7 +243,7 @@ function CareerCard({
         lineHeight={1.4}
         renderOrder={4}
       >
-        {currentItem.description}
+        {descText}
       </Text>
 
       {/* Controles Admin 3D */}
@@ -288,6 +300,7 @@ function CareerCard({
 interface CareerRingProps {
   experienceList: ExperienceItem[];
   isAdmin: boolean;
+  isSpanish: boolean;
   onEdit: (item: ExperienceItem) => void;
   onDelete: (id: string) => void;
 }
@@ -295,10 +308,13 @@ interface CareerRingProps {
 export default function CareerRing({
   experienceList,
   isAdmin,
+  isSpanish,
   onEdit,
   onDelete,
 }: CareerRingProps) {
   const N = Math.min(experienceList.length, 6); // Límite de 6 slots orbitando simultáneamente
+
+  if (N === 0) return null;
 
   return (
     <group>
@@ -312,6 +328,7 @@ export default function CareerRing({
           onDelete={onDelete}
           allExperience={experienceList}
           isAdmin={isAdmin}
+          isSpanish={isSpanish}
         />
       ))}
     </group>

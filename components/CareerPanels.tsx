@@ -1,6 +1,7 @@
 import { Html } from "@react-three/drei";
 import { Briefcase, GraduationCap, Plus, Trash2, Pencil, Calendar, ArrowRight } from "lucide-react";
 import { ExperienceItem } from "@/types/database";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface CareerPanelsProps {
   experienceList: ExperienceItem[];
@@ -10,6 +11,17 @@ interface CareerPanelsProps {
   onDelete: (id: string) => void;
 }
 
+const getTranslation = (value: string | null, isSpanish: boolean): string => {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed && typeof parsed === 'object') {
+      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    }
+  } catch (e) {}
+  return value;
+};
+
 export default function CareerPanels({
   experienceList,
   isAdmin,
@@ -17,49 +29,57 @@ export default function CareerPanels({
   onEdit,
   onDelete,
 }: CareerPanelsProps) {
+  const { isSpanish } = useLanguage();
+  
   const educationItems = experienceList.filter((item) => item.type === "education");
   const workItems = experienceList.filter((item) => item.type === "work");
 
   const renderCard = (item: ExperienceItem) => {
+    const isWork = item.type === "work";
+    const translatedTitle = getTranslation(item.title, isSpanish);
+    const translatedDesc = getTranslation(item.description, isSpanish);
+
     return (
       <div
         key={item.id}
-        className="group relative bg-zinc-900/40 border border-zinc-800/40 hover:border-green-500/40 p-5 rounded-xl backdrop-blur-md transition-all duration-300 flex flex-col gap-3 shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+        className="group relative bg-[#070709]/80 border border-zinc-900 hover:border-green-500/30 rounded-xl p-4 flex flex-col gap-3 transition-all duration-300 shadow-lg"
       >
-        {/* Esquinas tácticas en hover */}
-        <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-green-500 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-green-500 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+        {/* Glow Line Hover */}
+        <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-green-500/0 group-hover:bg-green-500 transition-colors" />
 
-        {/* Controles Admin */}
-        {isAdmin && (
-          <div className="absolute top-4 right-4 flex gap-2 z-20">
-            <button
-              onClick={() => onEdit(item)}
-              className="p-2 text-zinc-400 hover:text-white bg-black border border-zinc-800 hover:border-zinc-600 transition-all rounded-lg cursor-pointer"
-            >
-              <Pencil size={12} />
-            </button>
-            <button
-              onClick={() => onDelete(item.id)}
-              className="p-2 text-zinc-400 hover:text-red-500 bg-black border border-zinc-800 hover:border-red-900 transition-all rounded-lg cursor-pointer"
-            >
-              <Trash2 size={12} />
-            </button>
+        {/* Metadatos (Fechas y Acciones) */}
+        <div className="flex items-center justify-between">
+          {/* Rango de Fechas */}
+          <div className="flex items-center gap-2 text-[9px] font-mono text-zinc-500 tracking-wider">
+            <Calendar size={10} className="text-zinc-600" />
+            <span>{item.start_date}</span>
+            <ArrowRight size={8} className="text-zinc-700" />
+            <span>{item.end_date || <span className="text-green-500 font-black">{isSpanish ? "ACTIVO" : "ACTIVE"}</span>}</span>
           </div>
-        )}
 
-        {/* Duración */}
-        <div className="flex items-center gap-2 text-[9px] font-mono text-zinc-500 tracking-wider">
-          <Calendar size={10} className="text-zinc-600" />
-          <span>{item.start_date}</span>
-          <ArrowRight size={8} className="text-zinc-700" />
-          <span>{item.end_date || <span className="text-green-500 font-black">ACTIVE</span>}</span>
+          {/* Botones de Control de Administrador */}
+          {isAdmin && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onEdit(item)}
+                className="p-1.5 text-zinc-600 hover:text-white bg-zinc-950 border border-zinc-900 hover:border-zinc-800 transition-all rounded"
+              >
+                <Pencil size={11} />
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="p-1.5 text-zinc-600 hover:text-red-500 bg-zinc-950 border border-zinc-900 hover:border-red-950 transition-all rounded"
+              >
+                <Trash2 size={11} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Puesto & Organización */}
         <div className="flex flex-col gap-0.5">
           <h4 className="text-sm font-bold text-white leading-snug group-hover:text-green-400 transition-colors duration-300">
-            {item.title}
+            {translatedTitle}
           </h4>
           <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase">
             {item.organization}
@@ -67,9 +87,11 @@ export default function CareerPanels({
         </div>
 
         {/* Descripción */}
-        <p className="text-zinc-400 text-xs leading-relaxed whitespace-pre-wrap font-sans">
-          {item.description}
-        </p>
+        {translatedDesc && (
+          <p className="text-zinc-400 text-xs leading-relaxed whitespace-pre-wrap font-sans">
+            {translatedDesc}
+          </p>
+        )}
       </div>
     );
   };
@@ -108,7 +130,7 @@ export default function CareerPanels({
               className="flex items-center gap-1.5 bg-white hover:bg-green-500 text-black hover:text-white px-3 py-1.5 transition-all duration-300 rounded-md font-bold text-[9px] tracking-wider uppercase cursor-pointer"
             >
               <Plus size={10} />
-              <span>Insert</span>
+              <span>{isSpanish ? "Añadir" : "Insert"}</span>
             </button>
           )}
         </div>
@@ -119,7 +141,7 @@ export default function CareerPanels({
 
           {items.length === 0 && (
             <div className="flex-1 flex items-center justify-center border border-dashed border-zinc-800 rounded-xl p-8 text-center text-zinc-600 text-xs">
-              [SYSTEM_MESSAGE]: NO DATA NODES LOADED.
+              {isSpanish ? "[MENSAJE_SISTEMA]: NO SE CARGARON NODOS." : "[SYSTEM_MESSAGE]: NO DATA NODES LOADED."}
             </div>
           )}
         </div>
@@ -131,12 +153,12 @@ export default function CareerPanels({
     <group>
       {/* Panel Izquierdo: Historial Académico */}
       <Html position={[-2.65, 0, 0]} center distanceFactor={5.0}>
-        {renderPanel("Academic Record", educationItems, <GraduationCap size={16} className="text-green-500" />, "education")}
+        {renderPanel(isSpanish ? "Historial Académico" : "Academic Record", educationItems, <GraduationCap size={16} className="text-green-500" />, "education")}
       </Html>
 
       {/* Panel Derecho: Historial Laboral */}
       <Html position={[2.65, 0, 0]} center distanceFactor={5.0}>
-        {renderPanel("Professional Deployments", workItems, <Briefcase size={16} className="text-green-500" />, "work")}
+        {renderPanel(isSpanish ? "Experiencia Laboral" : "Professional Deployments", workItems, <Briefcase size={16} className="text-green-500" />, "work")}
       </Html>
     </group>
   );
