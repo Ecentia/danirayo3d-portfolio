@@ -23,6 +23,7 @@ import AboutMe from "@/components/sections/AboutMe";
 import AboutMeHologram from "@/components/AboutMeHologram";
 import TechStack, { ICON_MAP } from "@/components/sections/TechStack";
 import ProjectsGrid from "@/components/sections/ProjectGrid";
+import SketchfabGallery from "@/components/sections/SketchfabGallery";
 import TechArsenalPanels from "@/components/TechArsenalPanels";
 import CareerRing from "@/components/CareerRing";
 import ContactPanels from "@/components/ContactPanels";
@@ -2055,8 +2056,13 @@ export default function Hero() {
             </div>
 
             {/* Grid de Proyectos */}
-            <div className="relative pt-10 pb-20">
+            <div className="relative pt-10 pb-4">
               <ProjectsGrid />
+            </div>
+
+            {/* Visualizador Sketchfab */}
+            <div className="relative pb-24 border-t border-zinc-900/60">
+              <SketchfabGallery />
             </div>
           </motion.div>
         )}

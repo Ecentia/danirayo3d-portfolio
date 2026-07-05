@@ -30,7 +30,7 @@ export default function Header() {
   const { isAdmin } = useAdmin();
   const { isProjectModalOpen } = useUi();
   const { scrollY } = useScroll();
-  const { isSpanish } = useLanguage();
+  const { language, isSpanish, setLanguage } = useLanguage();
 
   const getNavLinkName = (name: string) => {
     if (name === "About Me") return isSpanish ? "Sobre Mí" : "About Me";
@@ -142,6 +142,30 @@ export default function Header() {
 
             {/* --- 3. BOTÓN HYPER-ACTION --- */}
             <div className="flex items-center gap-4 relative z-20">
+              {/* Language Selector */}
+              <div className="flex items-center bg-zinc-950/60 border border-zinc-800 rounded-full p-0.5 font-mono text-[9px] relative z-30 pointer-events-auto">
+                <button
+                  onClick={() => setLanguage("en")}
+                  className={`px-2 py-1 rounded-full transition-all cursor-pointer font-bold ${
+                    language === "en"
+                      ? "bg-red-600 text-white shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => setLanguage("es")}
+                  className={`px-2 py-1 rounded-full transition-all cursor-pointer font-bold ${
+                    language === "es"
+                      ? "bg-red-600 text-white shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  ES
+                </button>
+              </div>
+
               {isAdmin && (
                 <Link
                   href="/admin/settings"
@@ -208,9 +232,34 @@ export default function Header() {
             className="fixed inset-0 z-[200] bg-[#050505]/98 backdrop-blur-2xl flex flex-col p-8"
           >
             <div className="flex justify-between items-center mb-16 border-b border-white/5 pb-6">
-              <span className="text-[10px] font-mono text-zinc-500 tracking-widest uppercase">
-                Navigation
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-zinc-500 tracking-widest uppercase">
+                  Navigation
+                </span>
+                {/* Language Selector Mobile */}
+                <div className="flex items-center bg-zinc-950/60 border border-white/10 rounded-full p-0.5 font-mono text-[9px]">
+                  <button
+                    onClick={() => setLanguage("en")}
+                    className={`px-2 py-0.5 rounded-full transition-all font-bold ${
+                      language === "en"
+                        ? "bg-red-600 text-white"
+                        : "text-zinc-400"
+                    }`}
+                  >
+                    EN
+                  </button>
+                  <button
+                    onClick={() => setLanguage("es")}
+                    className={`px-2 py-0.5 rounded-full transition-all font-bold ${
+                      language === "es"
+                        ? "bg-red-600 text-white"
+                        : "text-zinc-400"
+                    }`}
+                  >
+                    ES
+                  </button>
+                </div>
+              </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-full text-zinc-400 hover:text-white hover:border-red-500 transition-colors"

@@ -8,6 +8,7 @@ import ProjectCard from '../projects/ProjectCard';
 import ProjectModal from '../projects/ProjectModal';
 import { Plus, Trash2, LayoutGrid } from 'lucide-react';
 import { useAdmin } from '@/context/AdminContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const breakpointColumnsObj = {
@@ -22,6 +23,7 @@ export default function ProjectsGrid() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAdmin, deleteProject, isSaving } = useAdmin();
+  const { isSpanish } = useLanguage();
 
   const fetchProjects = async () => {
     const { data } = await supabase
@@ -63,13 +65,21 @@ useEffect(() => {
         {/* CABECERA DE SECCIÓN TÉCNICA */}
         <div className="flex flex-col mb-16">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-[1px] bg-red-600"></div>
-            <span className="text-red-500 font-bold text-[10px] tracking-[0.5em] uppercase flex items-center gap-2">
-               <LayoutGrid size={12} /> Projects_Gallery
+            <div className="w-10 h-[1px] bg-yellow-500"></div>
+            <span className="text-yellow-500 font-bold text-[10px] tracking-[0.5em] uppercase flex items-center gap-2">
+               <LayoutGrid size={12} /> {isSpanish ? "Galería_de_Proyectos" : "Projects_Gallery"}
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">
-            Visual <span className="text-white/20">Selection</span>
+            {isSpanish ? (
+              <>
+                Selección <span className="text-white/20">Visual</span>
+              </>
+            ) : (
+              <>
+                Visual <span className="text-white/20">Selection</span>
+              </>
+            )}
           </h2>
         </div>
 
@@ -88,13 +98,13 @@ useEffect(() => {
             >
               <button 
                 onClick={handleOpenCreate}
-                className="w-full aspect-square border border-white/10 bg-white/5 backdrop-blur-md rounded-sm flex flex-col items-center justify-center gap-4 hover:border-red-600/50 hover:bg-white/10 transition-all group relative overflow-hidden"
+                className="w-full aspect-square border border-white/10 bg-white/5 backdrop-blur-md rounded-sm flex flex-col items-center justify-center gap-4 hover:border-yellow-500/50 hover:bg-white/10 transition-all group relative overflow-hidden"
               >
                 {/* Micro-esquinas tácticas */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 
-                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-red-600 group-hover:border-red-600 transition-all duration-500">
+                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-yellow-500 group-hover:border-yellow-500 transition-all duration-500">
                   <Plus size={24} />
                 </div>
                 <span className="font-mono text-[9px] tracking-[0.3em] text-zinc-500 group-hover:text-white uppercase transition-colors">
