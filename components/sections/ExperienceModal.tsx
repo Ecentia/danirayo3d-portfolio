@@ -37,23 +37,30 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
   // Cargar datos si es edición
   useEffect(() => {
     if (itemToEdit) {
-      setType(itemToEdit.type);
-      setTitle(itemToEdit.title);
-      setOrganization(itemToEdit.organization);
-      setDescription(itemToEdit.description);
+      setType(itemToEdit.type || 'work');
+      setTitle(itemToEdit.title || '');
+      setOrganization(itemToEdit.organization || '');
+      setDescription(itemToEdit.description || '');
 
       // Parsear fecha de inicio (Ej: "Enero 2023" o "2023")
-      const startParts = itemToEdit.start_date.split(' ');
-      if (startParts.length > 1) {
-        setStartMonth(startParts[0]);
-        setStartYear(startParts[1]);
+      if (itemToEdit.start_date) {
+        const startParts = itemToEdit.start_date.split(' ');
+        if (startParts.length > 1) {
+          setStartMonth(startParts[0]);
+          setStartYear(startParts[1]);
+        } else {
+          setStartYear(itemToEdit.start_date);
+        }
       } else {
-        setStartYear(itemToEdit.start_date);
+        setStartMonth('');
+        setStartYear('');
       }
 
       // Parsear fecha fin
       if (!itemToEdit.end_date) {
         setIsCurrent(true);
+        setEndMonth('');
+        setEndYear('');
       } else {
         setIsCurrent(false);
         const endParts = itemToEdit.end_date.split(' ');
@@ -109,13 +116,13 @@ export default function ExperienceModal({ isOpen, onClose, itemToEdit }: Experie
       end_date: finalEndDate,
     };
 
-    if (itemToEdit) {
+    if (itemToEdit && itemToEdit.id && !itemToEdit.id.startsWith('temp-')) {
       registerChange(`exp_${itemToEdit.id}`, payload);
       notify("Cambio registrado. Guarda para confirmar.", "success");
     } else {
       registerNewExperience({
         ...payload,
-        id: `temp-${Date.now()}`,
+        id: (itemToEdit && itemToEdit.id) || `temp-${Date.now()}`,
         display_order: 0
       });
     }
