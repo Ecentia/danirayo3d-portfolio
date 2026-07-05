@@ -39,7 +39,7 @@ export default function AboutMe() {
   };
 
   return (
-    <section className="relative w-full py-32 lg:py-48 bg-[#070708] text-white overflow-hidden" id="sobre-mi">
+    <section className="relative w-full py-32 lg:py-48 bg-[#070708] text-white overflow-hidden" id="about-me">
         
         {/* --- DECORACIÓN DE FONDO (Tech / Cyberpunk) --- */}
         <div className="absolute inset-0 pointer-events-none opacity-30">

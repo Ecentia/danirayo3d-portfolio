@@ -76,13 +76,13 @@ export default function Hero() {
             variants={itemVariants}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <Link href="#proyectos">
+            <Link href="#projects">
               <button className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center gap-2">
                 VER PROYECTOS
                 <span>→</span>
               </button>
             </Link>
-            <Link href="#contacto">
+            <Link href="#contact">
               <button className="px-8 py-4 bg-transparent border border-gray-700 hover:border-gray-500 text-gray-300 font-medium rounded-lg transition-colors duration-300">
                 Contactar
               </button>

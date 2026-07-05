@@ -48,7 +48,7 @@ const SubstancePainterIcon = (props: any) => (
 
 
 // --- ESTILOS (Scrollbar Visible y Roja) ---
-const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-red-900/40 hover:[&::-webkit-scrollbar-thumb]:bg-red-600 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
+const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-yellow-950/40 hover:[&::-webkit-scrollbar-thumb]:bg-yellow-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -277,7 +277,7 @@ useEffect(() => {
         className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex justify-center items-center p-0 md:p-6"
         onClick={onClose}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 md:right-8 text-white/50 hover:text-red-500 z-[130] bg-black/50 rounded-full p-2 backdrop-blur transition-all">
+        <button onClick={onClose} className="absolute top-4 right-4 md:right-8 text-white/50 hover:text-yellow-500 z-[130] bg-black/50 rounded-full p-2 backdrop-blur transition-all">
           <X size={28} />
         </button>
 
@@ -302,10 +302,10 @@ useEffect(() => {
           {/* IZQUIERDA: IMÁGENES */}
           <div ref={imageContainerRef} className={`flex-1 bg-black relative ${modernScrollbar}`}>
             <div className="p-4 md:p-8 md:pb-32 flex flex-col gap-4 min-h-full">
-                {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 text-red-500 font-mono animate-pulse">LOADING DATA...</div>}
+                {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 text-yellow-500 font-mono animate-pulse">LOADING DATA...</div>}
 
                 {contentImages.length === 0 && isAdmin && (
-                    <button onClick={() => triggerFileUpload('thumbnail')} className="flex-1 min-h-[50vh] border-2 border-dashed border-zinc-800 hover:border-red-900 rounded-lg flex flex-col items-center justify-center gap-4 text-zinc-600 hover:text-red-500 transition-all group">
+                    <button onClick={() => triggerFileUpload('thumbnail')} className="flex-1 min-h-[50vh] border-2 border-dashed border-zinc-800 hover:border-yellow-500 rounded-lg flex flex-col items-center justify-center gap-4 text-zinc-600 hover:text-yellow-500 transition-all group">
                        <UploadCloud size={64} className="group-hover:scale-110 transition-transform"/>
                        <span className="font-mono tracking-widest text-sm">UPLOAD COVER ART</span>
                     </button>
@@ -317,19 +317,19 @@ useEffect(() => {
                     {isAdmin && (
                       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                          {(img as any).isThumbnail ? (
-                             <button onClick={() => triggerFileUpload('thumbnail')} className="bg-black/80 text-white p-2 rounded hover:bg-red-600 transition-colors border border-white/10" title="Cambiar Portada"><UploadCloud size={18} /></button>
+                             <button onClick={() => triggerFileUpload('thumbnail')} className="bg-black/80 text-white p-2 rounded hover:bg-yellow-500 transition-colors border border-white/10" title="Cambiar Portada"><UploadCloud size={18} /></button>
                          ) : (
-                             <button onClick={() => handleDeleteGalleryImage(img.id)} className="bg-black/80 text-white p-2 rounded hover:bg-red-600 transition-colors border border-white/10" title="Borrar Imagen"><Trash2 size={18} /></button>
+                             <button onClick={() => handleDeleteGalleryImage(img.id)} className="bg-black/80 text-white p-2 rounded hover:bg-yellow-500 transition-colors border border-white/10" title="Borrar Imagen"><Trash2 size={18} /></button>
                          )}
                       </div>
                     )}
-                    {(img as any).isThumbnail && <div className="absolute bottom-4 left-4 bg-red-600/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider pointer-events-none shadow-lg">Cover Art</div>}
+                    {(img as any).isThumbnail && <div className="absolute bottom-4 left-4 bg-yellow-500/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider pointer-events-none shadow-lg">Cover Art</div>}
                   </div>
                 ))}
 
                 {isAdmin && currentProject.thumbnail_url && (
-                   <button onClick={() => triggerFileUpload('gallery')} disabled={uploading} className="w-full py-16 border-2 border-dashed border-zinc-900 hover:border-red-900/50 rounded-lg flex flex-col items-center justify-center text-zinc-700 hover:text-red-500 transition-all mt-4 group">
-                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500" /> : <Plus size={40} strokeWidth={1} className="group-hover:scale-110 transition-transform" />}
+                   <button onClick={() => triggerFileUpload('gallery')} disabled={uploading} className="w-full py-16 border-2 border-dashed border-zinc-900 hover:border-yellow-500/50 rounded-lg flex flex-col items-center justify-center text-zinc-700 hover:text-yellow-500 transition-all mt-4 group">
+                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500" /> : <Plus size={40} strokeWidth={1} className="group-hover:scale-110 transition-transform" />}
                       <span className="text-[10px] font-mono mt-4 uppercase tracking-[0.2em]">{uploading ? 'UPLOADING...' : 'ADD GALLERY IMAGE'}</span>
                    </button>
                 )}
@@ -345,7 +345,7 @@ useEffect(() => {
                        {isCreationMode ? 'Creating New Entity' : 'Edit Mode Active'}
                     </div>
                     {isCreationMode && (
-                      <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-3 rounded text-xs font-bold transition-all shadow-lg shadow-red-900/20">
+                      <button onClick={handleConfirmNewProject} className="w-full flex justify-center items-center gap-2 bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-3 rounded text-xs font-bold transition-all shadow-lg shadow-yellow-900/20">
                         <Check size={14} /> CONFIRM & CREATE DRAFT
                       </button>
                     )}
@@ -355,10 +355,18 @@ useEffect(() => {
              <div className="p-6 md:p-8 flex flex-col gap-8">
                  {/* Header Proyecto */}
                  <div className="flex items-start gap-4">
-                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-black border border-white/10 shrink-0" />
+                     {/* Mini planeta de proyectos CSS */}
+                     <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                       {/* Tilted Ring (behind sphere) */}
+                       <div className="absolute w-14 h-4 border-[2px] border-yellow-500/80 rounded-full transform -rotate-[20deg] z-0" />
+                       {/* Planet Sphere */}
+                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-600 to-zinc-950 border border-yellow-500/30 shadow-[0_0_15px_rgba(255,204,0,0.4)] z-10" />
+                       {/* Tilted Ring (front half overlay) */}
+                       <div className="absolute w-14 h-4 border-[2px] border-t-transparent border-r-transparent border-yellow-500/80 rounded-full transform -rotate-[20deg] z-20 pointer-events-none" />
+                     </div>
                      <div className="flex-1 min-w-0">
                          {isAdmin ? (
-                            <input value={currentProject.title} onChange={(e) => handleEdit('title', e.target.value)} placeholder="NOMBRE DEL PROYECTO" className="w-full bg-transparent text-xl font-bold text-white border-b border-zinc-800 focus:border-red-500 focus:outline-none py-1 placeholder-zinc-700" />
+                            <input value={currentProject.title} onChange={(e) => handleEdit('title', e.target.value)} placeholder="NOMBRE DEL PROYECTO" className="w-full bg-transparent text-xl font-bold text-white border-b border-zinc-800 focus:border-yellow-500 focus:outline-none py-1 placeholder-zinc-700" />
                          ) : (
                             <h1 className="text-xl md:text-2xl font-bold text-white leading-tight break-words">{currentProject.title}</h1>
                          )}
@@ -378,7 +386,7 @@ useEffect(() => {
                             type="date"
                             value={currentProject.creation_date || ''}
                             onChange={(e) => handleEdit('creation_date', e.target.value)}
-                            className="bg-black/30 border border-zinc-800 p-2 text-xs text-white rounded focus:border-red-500 focus:outline-none w-full font-mono uppercase"
+                            className="bg-black/30 border border-zinc-800 p-2 text-xs text-white rounded focus:border-yellow-500 focus:outline-none w-full font-mono uppercase"
                          />
                     ) : (
                         <p className="text-xs text-zinc-400 font-mono">
@@ -405,7 +413,7 @@ useEffect(() => {
                                         onClick={(e) => { e.preventDefault(); toggleSoftware(tech.name); }}
                                         className={`flex flex-col items-center justify-center p-2 rounded transition-all aspect-square
                                             ${isSelected 
-                                                ? 'bg-red-900/30 border border-red-500 text-red-400 shadow-[0_0_10px_rgba(220,38,38,0.2)]' 
+                                                ? 'bg-yellow-950/30 border border-yellow-500 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.2)]' 
                                                 : 'bg-zinc-900/50 border border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800'}
                                         `}
                                         title={tech.name}
@@ -423,7 +431,7 @@ useEffect(() => {
                             {availableTech.filter(tech => currentProject.tags?.includes(tech.name)).map(tech => {
                                 const IconComponent = ICON_MAP[tech.icon_key] || Monitor;
                                 return (
-                                <div key={tech.id} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-red-500/50 transition-colors" title={tech.name}>
+                                <div key={tech.id} className="group relative bg-zinc-900 p-2 rounded border border-white/5 hover:border-yellow-500/50 transition-colors" title={tech.name}>
                                     <IconComponent size={20} className="text-zinc-400 group-hover:text-white transition-colors"/>
                                 </div>
                             )})}
@@ -435,7 +443,7 @@ useEffect(() => {
                  <div className="space-y-2">
                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Briefing</h3>
                     {isAdmin ? (
-                      <textarea value={currentProject.description || ''} onChange={(e) => handleEdit('description', e.target.value)} placeholder="Escribe la descripción..." className="w-full h-32 bg-black/30 p-3 rounded text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-red-500 resize-none leading-relaxed" />
+                      <textarea value={currentProject.description || ''} onChange={(e) => handleEdit('description', e.target.value)} placeholder="Escribe la descripción..." className="w-full h-32 bg-black/30 p-3 rounded text-sm text-zinc-300 focus:outline-none border border-zinc-800 focus:border-yellow-500 resize-none leading-relaxed" />
                     ) : (
                       <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{currentProject.description}</p>
                     )}
@@ -451,7 +459,7 @@ useEffect(() => {
                           {currentProject.tags?.filter(tag => !availableTech.some(tech => tech.name === tag)).map((tag, index) => (
                             <span key={index} className="flex items-center gap-1 text-[10px] uppercase font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
                               {tag}
-                              {isAdmin && <button onClick={(e) => { e.preventDefault(); removeTag(tag); }} className="hover:text-red-500 ml-1"><X size={12} /></button>}
+                              {isAdmin && <button onClick={(e) => { e.preventDefault(); removeTag(tag); }} className="hover:text-yellow-500 ml-1"><X size={12} /></button>}
                             </span>
                           ))}
                         </div>
@@ -462,7 +470,7 @@ useEffect(() => {
                               value={tagInput}
                               onChange={(e) => setTagInput(e.target.value)}
                               onKeyDown={handleTagKeyDown}
-                              className="w-full bg-black/30 border border-zinc-800 p-2 text-xs text-white focus:outline-none focus:border-red-500 rounded"
+                              className="w-full bg-black/30 border border-zinc-800 p-2 text-xs text-white focus:outline-none focus:border-yellow-500 rounded"
                               placeholder="Escribe tag y pulsa Enter..."
                             />
                           </div>
