@@ -709,12 +709,26 @@ function CroppedImage({
     return getRoundedRectShape(planeWidth, planeHeight, radius);
   }, [planeWidth, planeHeight, radius]);
 
+  // shapeGeometry genera las UV usando las coordenadas X/Y crudas de la forma
+  // (que están centradas en 0,0), así que hay que remapearlas manualmente a 0-1
+  // o la textura sale duplicada/espejada al usar RepeatWrapping.
+  const geometry = useMemo(() => {
+    const geo = new THREE.ShapeGeometry(shape);
+    const pos = geo.attributes.position;
+    const uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) {
+      uv[i * 2] = (pos.getX(i) + planeWidth / 2) / planeWidth;
+      uv[i * 2 + 1] = (pos.getY(i) + planeHeight / 2) / planeHeight;
+    }
+    geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    return geo;
+  }, [shape, planeWidth, planeHeight]);
+
   // Mientras carga, o si la imagen falla, mostramos una placa sólida en vez
   // de dejar el hueco transparente (así nunca se ve el fondo "a través" de la tarjeta)
   if (!texture) {
     return (
-      <mesh position={position} renderOrder={renderOrder}>
-        <shapeGeometry args={[shape]} />
+      <mesh position={position} renderOrder={renderOrder} geometry={geometry}>
         <meshStandardMaterial
           color={hasError ? "#2a1414" : "#0d0d0d"}
           roughness={0.6}
@@ -725,8 +739,7 @@ function CroppedImage({
   }
 
   return (
-    <mesh position={position} renderOrder={renderOrder}>
-      <shapeGeometry args={[shape]} />
+    <mesh position={position} renderOrder={renderOrder} geometry={geometry}>
       <meshBasicMaterial map={texture} transparent toneMapped={false} />
     </mesh>
   );
@@ -1008,12 +1021,9 @@ function ProjectCard({
         <meshPhysicalMaterial
           color="#ffffff"
           transparent
-          opacity={0.15}
+          opacity={0.1}
           roughness={0.15}
           metalness={0.8}
-          transmission={0.4}
-          thickness={0.05}
-          ior={1.5}
         />
       </mesh>
 
