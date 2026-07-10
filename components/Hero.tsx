@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, extend } from "@react-three/fiber";
 import {
   Environment,
   Float,
@@ -13,10 +13,11 @@ import {
   Billboard,
   Image,
   useTexture,
+  shaderMaterial,
 } from "@react-three/drei";
-import { useRef, useState, useEffect, Suspense } from "react";
+import React, { useRef, useState, useEffect, Suspense, useLayoutEffect, useMemo } from "react";
 import * as THREE from "three";
-import { X, Database, Settings } from "lucide-react";
+import { X, Database, Settings, Pencil } from "lucide-react";
 
 // Importar los componentes de las secciones para cargarlos en los overlays
 import AboutMe from "@/components/sections/AboutMe";
@@ -32,6 +33,7 @@ import ContactPanels from "@/components/ContactPanels";
 import { supabase } from "@/lib/supabase";
 import { Project, TechItem, ExperienceItem } from "@/types/database";
 import ProjectModal from "@/components/projects/ProjectModal";
+import CropEditorModal from "@/components/projects/CropEditorModal";
 import ExperienceModal from "@/components/sections/ExperienceModal";
 import { useAdmin, CURRENT_SLUG } from "@/context/AdminContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -495,6 +497,8 @@ interface ProjectRingProps {
   isSpanish: boolean;
   orbitSpeedMultiplier: number;
   onSelectProject: (id: string) => void;
+  onEditCrop: (project: Project) => void;
+  isProjectsActive: boolean;
 }
 
 // --- FUNCIONES DE UTILIDAD PARA GEOMETRÍAS CON BORDES REDONDEADOS ---
@@ -528,22 +532,108 @@ function getBottomBannerShape(width: number, height: number, bannerHeight: numbe
   return shape;
 }
 
+interface CroppedImageProps {
+  url: string;
+  scale: [number, number];
+  position?: [number, number, number];
+  radius?: number;
+  renderOrder?: number;
+  cropX?: number;
+  cropY?: number;
+}
+
+function CroppedImage({
+  url,
+  scale,
+  position,
+  radius = 0,
+  renderOrder = 0,
+  cropX = 0.5,
+  cropY = 0.5,
+}: CroppedImageProps) {
+  const baseTexture = useTexture(url);
+  
+  // Clone texture so each card has independent offset/repeat settings
+  const texture = useMemo(() => {
+    const t = baseTexture.clone();
+    t.needsUpdate = true;
+    return t;
+  }, [baseTexture]);
+
+  const planeWidth = scale[0];
+  const planeHeight = scale[1];
+  
+  // Safe extract image dimensions
+  const imageWidth = (texture as any).image?.width || 1;
+  const imageHeight = (texture as any).image?.height || 1;
+
+  // Reactively calculate repeat and offset to achieve cover aspect ratio
+  const { repeatX, repeatY, offsetX, offsetY } = useMemo(() => {
+    const rs = planeWidth / planeHeight;
+    const ri = imageWidth / imageHeight;
+
+    let rx = 1.0;
+    let ry = 1.0;
+    let ox = 0.0;
+    let oy = 0.0;
+
+    if (rs < ri) {
+      // Image is wider than the plane (crop horizontally)
+      rx = rs / ri;
+      ox = (1.0 - rx) * cropX;
+    } else {
+      // Image is taller than the plane (crop vertically)
+      ry = ri / rs;
+      oy = (1.0 - ry) * (1.0 - cropY);
+    }
+
+    return { repeatX: rx, repeatY: ry, offsetX: ox, offsetY: oy };
+  }, [planeWidth, planeHeight, imageWidth, imageHeight, cropX, cropY]);
+
+  // Apply settings to texture
+  useLayoutEffect(() => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(repeatX, repeatY);
+    texture.offset.set(offsetX, offsetY);
+  }, [texture, repeatX, repeatY, offsetX, offsetY]);
+
+  // Generate the rounded shape
+  const shape = useMemo(() => {
+    return getRoundedRectShape(planeWidth, planeHeight, radius);
+  }, [planeWidth, planeHeight, radius]);
+
+  return (
+    <mesh position={position} renderOrder={renderOrder}>
+      <shapeGeometry args={[shape]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
 // --- COMPONENTE 3D: Tarjeta Individual de Proyecto con Oclusión ---
 interface ProjectCardProps {
   project: Project;
   idx: number;
   N: number;
   onSelectProject: (id: string) => void;
+  onEditCrop: (project: Project) => void;
+  isProjectsActive: boolean;
   allProjects: Project[];
   isSpanish: boolean;
   orbitSpeedMultiplier: number;
 }
 
-function ProjectCard({ project, idx, N, onSelectProject, allProjects, isSpanish, orbitSpeedMultiplier }: ProjectCardProps) {
+function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsActive, allProjects, isSpanish, orbitSpeedMultiplier }: ProjectCardProps) {
   const cardRef = useRef<THREE.Group>(null);
   const dotRef = useRef<THREE.MeshStandardMaterial>(null);
   const [hovered, setHovered] = useState(false);
   const [projectIdx, setProjectIdx] = useState(idx);
+  const { isAdmin } = useAdmin();
 
   const theta = (idx / N) * 2 * Math.PI;
   const radius = 3.30; // Se alinea con el radio del aro exterior (3.30)
@@ -713,13 +803,36 @@ function ProjectCard({ project, idx, N, onSelectProject, allProjects, isSpanish,
 
       {/* Imagen del proyecto */}
       {currentProject.thumbnail_url && (
-        <Image
+        <CroppedImage
           url={currentProject.thumbnail_url}
           scale={[1.38, 0.90]}
           position={[0, 0, 0.01]}
           radius={0.07}
           renderOrder={2}
+          cropY={currentProject.crop_y !== undefined && currentProject.crop_y !== null ? currentProject.crop_y : 0.5}
         />
+      )}
+
+      {/* Pencil Icon for crop alignment editing (Only visible to admin) */}
+      {isAdmin && isProjectsActive && (
+        <Html
+          position={[0.59, 0.22, 0.025]}
+          center
+        >
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerOver={(e) => e.stopPropagation()}
+            onPointerOut={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditCrop(currentProject);
+            }}
+            className="p-1.5 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black rounded-full shadow-[0_0_15px_rgba(255,204,0,0.5)] transition-all cursor-pointer flex items-center justify-center border border-black/20"
+            title={isSpanish ? "Ajustar recorte" : "Adjust crop"}
+          >
+            <Pencil size={12} className="stroke-[2.5]" />
+          </button>
+        </Html>
       )}
 
       {/* Cristal Transparente Reflectante (Glassmorphism Overlay) */}
@@ -955,7 +1068,7 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
   );
 }
 
-function ProjectRing({ projects, isSpanish, orbitSpeedMultiplier, onSelectProject }: ProjectRingProps) {
+function ProjectRing({ projects, isSpanish, orbitSpeedMultiplier, onSelectProject, onEditCrop, isProjectsActive }: ProjectRingProps) {
   const N = Math.min(projects.length, 6); // Limitar slots a un máximo de 6 para evitar saturar el aro
 
   return (
@@ -967,6 +1080,8 @@ function ProjectRing({ projects, isSpanish, orbitSpeedMultiplier, onSelectProjec
           idx={idx}
           N={N}
           onSelectProject={onSelectProject}
+          onEditCrop={onEditCrop}
+          isProjectsActive={isProjectsActive}
           allProjects={projects}
           isSpanish={isSpanish}
           orbitSpeedMultiplier={orbitSpeedMultiplier}
@@ -1324,6 +1439,7 @@ export default function Hero() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [showAllProjectsGrid, setShowAllProjectsGrid] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [croppingProject, setCroppingProject] = useState<Project | null>(null);
   const { isAdmin, deleteItem, notify } = useAdmin();
 
   // Estados para base de datos de tecnología (Tech Stack)
@@ -1395,21 +1511,22 @@ export default function Hero() {
     }
   };
 
+  const fetchProjects = async () => {
+    const { data } = await supabase
+      .from("projects")
+      .select("*")
+      .order("display_order", { ascending: true });
+    if (data) {
+      setProjects(data);
+      preloadImages(
+        data.slice(0, 6).map((project) => project.thumbnail_url ?? ""),
+      );
+      setProjectsReady(true);
+    }
+  };
+
   // Cargar proyectos y precargar thumbnails en segundo plano
   useEffect(() => {
-    const fetchProjects = async () => {
-      const { data } = await supabase
-        .from("projects")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (data) {
-        setProjects(data);
-        preloadImages(
-          data.slice(0, 6).map((project) => project.thumbnail_url ?? ""),
-        );
-        setProjectsReady(true);
-      }
-    };
     fetchProjects();
   }, []);
 
@@ -1550,6 +1667,10 @@ export default function Hero() {
                       setSelectedProjectId(id);
                       setIsModalOpen(true);
                     }}
+                    onEditCrop={(proj) => {
+                      setCroppingProject(proj);
+                    }}
+                    isProjectsActive={activePlanet === "projects"}
                   />
                   <ProjectsMoon
                     position={[4.4, 1.6, -0.2]}
@@ -1975,6 +2096,16 @@ export default function Hero() {
         onClose={() => setIsModalOpen(false)}
         initialProjectId={selectedProjectId}
         allProjectsList={projects}
+      />
+
+      {/* --- MODAL DE EDICIÓN DE RECORTE DE PROYECTO (Solo Admin) --- */}
+      <CropEditorModal
+        isOpen={croppingProject !== null}
+        project={croppingProject}
+        onClose={() => setCroppingProject(null)}
+        onSaved={fetchProjects}
+        isSpanish={isSpanish}
+        notify={notify}
       />
 
       {/* --- MODAL AÑADIR SOFTWARE (Solo Admin, fuera del canvas para evitar bugs de CSS transform) --- */}

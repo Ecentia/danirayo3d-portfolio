@@ -7,6 +7,7 @@ export interface Project {
   thumbnail_url: string;
   display_order: number;
   creation_date?: string;
+  crop_y?: number | null;
 }
 
 export interface ExperienceItem {
