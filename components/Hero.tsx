@@ -15,7 +15,14 @@ import {
   useTexture,
   shaderMaterial,
 } from "@react-three/drei";
-import React, { useRef, useState, useEffect, Suspense, useLayoutEffect, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  Suspense,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import * as THREE from "three";
 import { X, Database, Settings, Pencil } from "lucide-react";
 
@@ -43,8 +50,10 @@ const getTranslation = (value: string | null, isSpanish: boolean): string => {
   if (!value) return "";
   try {
     const parsed = JSON.parse(value);
-    if (parsed && typeof parsed === 'object') {
-      return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
+    if (parsed && typeof parsed === "object") {
+      return (
+        (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value
+      );
     }
   } catch (e) {}
   return value;
@@ -69,7 +78,9 @@ function SciFiHelmet() {
 
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <group scale={1.4}> {/* Un pelín más pequeño (era 1.8) */}
+      <group scale={1.4}>
+        {" "}
+        {/* Un pelín más pequeño (era 1.8) */}
         {/* Núcleo Central Rojo (El "Casco") */}
         <Sphere ref={mainRef} args={[1, 64, 64]}>
           <MeshDistortMaterial
@@ -81,7 +92,6 @@ function SciFiHelmet() {
             speed={1.5}
           />
         </Sphere>
-
         {/* Anillo de energía orbitando */}
         <Torus
           ref={ringRef}
@@ -95,7 +105,6 @@ function SciFiHelmet() {
             toneMapped={false}
           />
         </Torus>
-
         {/* Luces internas */}
         <pointLight color="red" intensity={5} distance={3} />
       </group>
@@ -175,7 +184,8 @@ function InteractivePlanet({
     const t = state.clock.getElapsedTime();
     const speedMultiplier = hovered ? 2.5 : 1;
 
-    const isStaticPlanet = targetId === "about-me" || targetId === "tech-arsenal";
+    const isStaticPlanet =
+      targetId === "about-me" || targetId === "tech-arsenal";
 
     if (meshRef.current && !isStaticPlanet) {
       meshRef.current.rotation.y = t * 0.3 * speedMultiplier;
@@ -187,8 +197,9 @@ function InteractivePlanet({
 
     if (ringRef.current) {
       // Si el planeta de proyectos está activo y en zoom, que rote a 0.11 para sincronizarse con las tarjetas
-      const baseSpeed = (targetId === "projects" && isZoomed) ? 0.11 : 0.15;
-      ringRef.current.rotation.z = t * baseSpeed * (isZoomed ? 1 : speedMultiplier);
+      const baseSpeed = targetId === "projects" && isZoomed ? 0.11 : 0.15;
+      ringRef.current.rotation.z =
+        t * baseSpeed * (isZoomed ? 1 : speedMultiplier);
     }
 
     if (satelliteRef.current) {
@@ -232,8 +243,14 @@ function InteractivePlanet({
 
   // Los planetas interactivos son más grandes, y si están haciendo zoom crecen a 2.0 (o 4.2 para proyectos)
   const scale = isZoomed
-    ? (targetId === "projects" ? 4.2 : (targetId === "career" ? 1.6 : 2.0))
-    : (hovered ? 1.15 : 0.95);
+    ? targetId === "projects"
+      ? 4.2
+      : targetId === "career"
+        ? 1.6
+        : 2.0
+    : hovered
+      ? 1.15
+      : 0.95;
 
   const planetGroup = (
     <group position={position} scale={scale}>
@@ -274,7 +291,12 @@ function InteractivePlanet({
               roughness={0.2}
             />
           </Sphere>
-          <Torus ref={ringRef} args={[0.7, 0.03, 8, 48]} rotation={[Math.PI / 2.15, 0, 0]} renderOrder={1}>
+          <Torus
+            ref={ringRef}
+            args={[0.7, 0.03, 8, 48]}
+            rotation={[Math.PI / 2.15, 0, 0]}
+            renderOrder={1}
+          >
             <meshStandardMaterial
               color={color}
               emissive={emissive}
@@ -357,7 +379,11 @@ function InteractivePlanet({
           </Sphere>
 
           {/* Anillo de Giroscopio 1 (Eje X/Z) */}
-          <Torus ref={ringRef} args={[0.48, 0.012, 8, 48]} rotation={[Math.PI / 2.2, 0, 0]}>
+          <Torus
+            ref={ringRef}
+            args={[0.48, 0.012, 8, 48]}
+            rotation={[Math.PI / 2.2, 0, 0]}
+          >
             <meshStandardMaterial
               color={color}
               emissive={emissive}
@@ -370,7 +396,10 @@ function InteractivePlanet({
 
           {/* Anillo de Giroscopio 2 (Eje Y/Z inclinado cruzado) */}
           <group ref={satelliteRef}>
-            <Torus args={[0.58, 0.009, 8, 48]} rotation={[0.4, Math.PI / 4, 0.4]}>
+            <Torus
+              args={[0.58, 0.009, 8, 48]}
+              rotation={[0.4, Math.PI / 4, 0.4]}
+            >
               <meshStandardMaterial
                 color="#ffffff"
                 emissive={emissive}
@@ -461,7 +490,7 @@ function CameraManager({ activePlanet }: CameraManagerProps) {
 
     // Ajustar cámara para hacer zoom y encuadrar el planeta en el lateral izquierdo
     if (activePlanet === "about-me") {
-      targetPos.set(-4.5, 1.50, 1.75); // Posición ajustada para evitar recorte izquierdo y mantener planeta azul y amarillo
+      targetPos.set(-4.5, 1.5, 1.75); // Posición ajustada para evitar recorte izquierdo y mantener planeta azul y amarillo
       targetLook.set(-2.8, 1.35, -1.0); // Mirar un poco a la derecha para ver Projects en el fondo
     } else if (activePlanet === "projects") {
       targetPos.set(4.5, 1.8, 5.15); // Centrado y a la distancia adecuada para ver el aro
@@ -518,7 +547,12 @@ function getRoundedRectShape(width: number, height: number, radius: number) {
   return shape;
 }
 
-function getBottomBannerShape(width: number, height: number, bannerHeight: number, radius: number) {
+function getBottomBannerShape(
+  width: number,
+  height: number,
+  bannerHeight: number,
+  radius: number,
+) {
   const shape = new THREE.Shape();
   const x = -width / 2;
   const y = -height / 2;
@@ -542,6 +576,41 @@ interface CroppedImageProps {
   cropY?: number;
 }
 
+// Cache de promesas por URL para no repetir descargas y para poder detectar
+// fallos de carga (imagen rota, 404, o bloqueo por CORS en el bucket de Supabase)
+const projectTextureCache = new Map<string, Promise<THREE.Texture>>();
+
+function loadProjectTexture(url: string): Promise<THREE.Texture> {
+  const cached = projectTextureCache.get(url);
+  if (cached) return cached;
+
+  const promise = new Promise<THREE.Texture>((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+    // Necesario para poder subir la imagen como textura de WebGL cuando viene
+    // de otro dominio (Supabase Storage). Sin esto, si el bucket no manda las
+    // cabeceras CORS correctas, la textura falla en silencio y la tarjeta
+    // se queda transparente en vez de mostrar un error.
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      url,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        resolve(tex);
+      },
+      undefined,
+      (err) => {
+        // Si falla, la sacamos del cache para permitir reintentar más adelante
+        // (por ejemplo si el usuario vuelve a subir la imagen)
+        projectTextureCache.delete(url);
+        reject(err);
+      },
+    );
+  });
+
+  projectTextureCache.set(url, promise);
+  return promise;
+}
+
 function CroppedImage({
   url,
   scale,
@@ -551,21 +620,57 @@ function CroppedImage({
   cropX = 0.5,
   cropY = 0.5,
 }: CroppedImageProps) {
-  const baseTexture = useTexture(url);
-  
+  console.log("🔥🔥🔥 CroppedImage EJECUTANDO con url:", url);
+  const [baseTexture, setBaseTexture] = useState<THREE.Texture | null>(null);
+  const [hasError, setHasError] = useState(false);
+
+  // Carga manual (sin Suspense) para que un fallo de red/CORS en UNA imagen
+  // nunca deje la tarjeta invisible ni cuelgue el resto de la escena 3D.
+  useEffect(() => {
+    if (!url) {
+      setBaseTexture(null);
+      setHasError(true);
+      return;
+    }
+
+    let cancelled = false;
+    setHasError(false);
+
+    loadProjectTexture(url)
+      .then((tex) => {
+        if (!cancelled) setBaseTexture(tex);
+      })
+      .catch((err) => {
+        console.error(
+          "[Planeta de Proyectos] No se pudo cargar la imagen del proyecto:",
+          url,
+          err,
+        );
+        if (!cancelled) {
+          setBaseTexture(null);
+          setHasError(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  const planeWidth = scale[0];
+  const planeHeight = scale[1];
+
   // Clone texture so each card has independent offset/repeat settings
   const texture = useMemo(() => {
+    if (!baseTexture) return null;
     const t = baseTexture.clone();
     t.needsUpdate = true;
     return t;
   }, [baseTexture]);
 
-  const planeWidth = scale[0];
-  const planeHeight = scale[1];
-  
   // Safe extract image dimensions
-  const imageWidth = (texture as any).image?.width || 1;
-  const imageHeight = (texture as any).image?.height || 1;
+  const imageWidth = (texture as any)?.image?.width || 1;
+  const imageHeight = (texture as any)?.image?.height || 1;
 
   // Reactively calculate repeat and offset to achieve cover aspect ratio
   const { repeatX, repeatY, offsetX, offsetY } = useMemo(() => {
@@ -592,6 +697,7 @@ function CroppedImage({
 
   // Apply settings to texture
   useLayoutEffect(() => {
+    if (!texture) return;
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(repeatX, repeatY);
@@ -603,14 +709,25 @@ function CroppedImage({
     return getRoundedRectShape(planeWidth, planeHeight, radius);
   }, [planeWidth, planeHeight, radius]);
 
+  // Mientras carga, o si la imagen falla, mostramos una placa sólida en vez
+  // de dejar el hueco transparente (así nunca se ve el fondo "a través" de la tarjeta)
+  if (!texture) {
+    return (
+      <mesh position={position} renderOrder={renderOrder}>
+        <shapeGeometry args={[shape]} />
+        <meshStandardMaterial
+          color={hasError ? "#2a1414" : "#0d0d0d"}
+          roughness={0.6}
+          metalness={0.2}
+        />
+      </mesh>
+    );
+  }
+
   return (
     <mesh position={position} renderOrder={renderOrder}>
       <shapeGeometry args={[shape]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        toneMapped={false}
-      />
+      <meshBasicMaterial map={texture} transparent toneMapped={false} />
     </mesh>
   );
 }
@@ -628,7 +745,17 @@ interface ProjectCardProps {
   orbitSpeedMultiplier: number;
 }
 
-function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsActive, allProjects, isSpanish, orbitSpeedMultiplier }: ProjectCardProps) {
+function ProjectCard({
+  project,
+  idx,
+  N,
+  onSelectProject,
+  onEditCrop,
+  isProjectsActive,
+  allProjects,
+  isSpanish,
+  orbitSpeedMultiplier,
+}: ProjectCardProps) {
   const cardRef = useRef<THREE.Group>(null);
   const dotRef = useRef<THREE.MeshStandardMaterial>(null);
   const [hovered, setHovered] = useState(false);
@@ -636,13 +763,22 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
   const { isAdmin } = useAdmin();
 
   const theta = (idx / N) * 2 * Math.PI;
-  const radius = 3.30; // Se alinea con el radio del aro exterior (3.30)
+  const radius = 3.3; // Se alinea con el radio del aro exterior (3.30)
   const alpha = Math.PI / 2.15; // Inclinación de 83.7 grados
   const yOffset = 0.15; // Desplazamiento vertical constante más bajo
 
   // Pre-generar las formas 2D con esquinas redondeadas (tarjetas un pelín más grandes)
-  const borderShape = getRoundedRectShape(1.40, 0.92, 0.08); // Marco un pelín más grande (1.40 x 0.92)
-  const bannerShape = getBottomBannerShape(1.38, 0.90, 0.24, 0.07); // Banner inferior proporcional
+  const borderShape = useMemo(() => getRoundedRectShape(1.4, 0.92, 0.08), []);
+  const bannerShape = useMemo(
+    () => getBottomBannerShape(1.38, 0.9, 0.24, 0.07),
+    [],
+  );
+  const frameShape = useMemo(() => {
+    const outer = getRoundedRectShape(1.4, 0.92, 0.08);
+    const inner = getRoundedRectShape(1.36, 0.88, 0.06);
+    outer.holes.push(inner);
+    return outer;
+  }, []);
 
   const currentScale = useRef(1.0);
   const lastPhiRef = useRef(theta);
@@ -668,8 +804,8 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
 
     // Calcular posición en el plano inclinado de manera global para evitar rotaciones de coordenadas raras
     const x = radius * Math.cos(phi);
-    const y = (radius * Math.sin(phi)) * Math.cos(alpha) + yOffset;
-    const z = (radius * Math.sin(phi)) * Math.sin(alpha);
+    const y = radius * Math.sin(phi) * Math.cos(alpha) + yOffset;
+    const z = radius * Math.sin(phi) * Math.sin(alpha);
 
     // Rotación suave alrededor del eje Y global (nunca se ponen de cabeza ni giran sobre sí mismas)
     const ry = Math.atan2(x, z) * 0.85;
@@ -680,7 +816,11 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
 
       // Lerp suave para escala únicamente
       const targetScale = hovered ? 1.25 : 1.0;
-      currentScale.current = THREE.MathUtils.lerp(currentScale.current, targetScale, 0.1);
+      currentScale.current = THREE.MathUtils.lerp(
+        currentScale.current,
+        targetScale,
+        0.1,
+      );
       cardRef.current.scale.setScalar(currentScale.current);
     }
 
@@ -741,7 +881,11 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
             roughness={0.1}
           />
         </mesh>
-        <mesh position={[0, 0, 0.001]} rotation={[0, 0, Math.PI / 2]} renderOrder={2}>
+        <mesh
+          position={[0, 0, 0.001]}
+          rotation={[0, 0, Math.PI / 2]}
+          renderOrder={2}
+        >
           <planeGeometry args={[0.6, 0.01]} />
           <meshStandardMaterial
             color="#ffcc00"
@@ -755,27 +899,55 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
         {/* Esquinas decorativas metálicas */}
         <mesh position={[-0.59, 0.38, 0.001]} renderOrder={2}>
           <planeGeometry args={[0.1, 0.1]} />
-          <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.5} />
+          <meshStandardMaterial
+            color="#ffcc00"
+            emissive="#ffcc00"
+            emissiveIntensity={0.5}
+          />
         </mesh>
         <mesh position={[0.59, 0.38, 0.001]} renderOrder={2}>
           <planeGeometry args={[0.1, 0.1]} />
-          <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.5} />
+          <meshStandardMaterial
+            color="#ffcc00"
+            emissive="#ffcc00"
+            emissiveIntensity={0.5}
+          />
         </mesh>
         <mesh position={[-0.59, -0.38, 0.001]} renderOrder={2}>
           <planeGeometry args={[0.1, 0.1]} />
-          <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.5} />
+          <meshStandardMaterial
+            color="#ffcc00"
+            emissive="#ffcc00"
+            emissiveIntensity={0.5}
+          />
         </mesh>
         <mesh position={[0.59, -0.38, 0.001]} renderOrder={2}>
           <planeGeometry args={[0.1, 0.1]} />
-          <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.5} />
+          <meshStandardMaterial
+            color="#ffcc00"
+            emissive="#ffcc00"
+            emissiveIntensity={0.5}
+          />
         </mesh>
       </group>
 
       {/* VISTA FRONTAL: Marco, imagen, HUD y brillo de cristal */}
-      
-      {/* Marco Amarillo/Oro interactivo */}
+
+      {/* Marco Amarillo/Oro hueco (solo borde, sin fondo sólido) */}
+      <mesh position={[0, 0, 0.012]} renderOrder={3}>
+        <shapeGeometry args={[frameShape]} />
+        <meshStandardMaterial
+          color="#ffcc00"
+          emissive="#ffcc00"
+          emissiveIntensity={hovered ? 2.5 : 0.6}
+          metalness={0.95}
+          roughness={0.05}
+        />
+      </mesh>
+
+      {/* Capa invisible para capturar eventos de interacción */}
       <mesh
-        renderOrder={2}
+        renderOrder={5}
         onPointerOver={(e) => {
           e.stopPropagation();
           setHovered(true);
@@ -792,33 +964,28 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
         }}
       >
         <shapeGeometry args={[borderShape]} />
-        <meshStandardMaterial
-          color="#ffcc00"
-          emissive="#ffcc00"
-          emissiveIntensity={hovered ? 2.5 : 0.6}
-          metalness={0.95}
-          roughness={0.05}
-        />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      {/* Imagen del proyecto */}
-      {currentProject.thumbnail_url && (
-        <CroppedImage
-          url={currentProject.thumbnail_url}
-          scale={[1.38, 0.90]}
-          position={[0, 0, 0.01]}
-          radius={0.07}
-          renderOrder={2}
-          cropY={currentProject.crop_y !== undefined && currentProject.crop_y !== null ? currentProject.crop_y : 0.5}
-        />
-      )}
+      {/* Imagen del proyecto: se renderiza siempre (incluso sin thumbnail_url) para
+          que, si falta la portada, se vea una placa sólida en vez de dejar un hueco
+          transparente que muestre el fondo a través de la tarjeta */}
+      <CroppedImage
+        url={currentProject.thumbnail_url || ""}
+        scale={[1.38, 0.9]}
+        position={[0, 0, 0.01]}
+        radius={0.07}
+        renderOrder={2}
+        cropY={
+          currentProject.crop_y !== undefined && currentProject.crop_y !== null
+            ? currentProject.crop_y
+            : 0.5
+        }
+      />
 
       {/* Pencil Icon for crop alignment editing (Only visible to admin) */}
       {isAdmin && isProjectsActive && (
-        <Html
-          position={[0.59, 0.22, 0.025]}
-          center
-        >
+        <Html position={[0.59, 0.22, 0.025]} center>
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onPointerOver={(e) => e.stopPropagation()}
@@ -836,7 +1003,7 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
       )}
 
       {/* Cristal Transparente Reflectante (Glassmorphism Overlay) */}
-      <mesh position={[0, 0, 0.012]} renderOrder={2}>
+      <mesh position={[0, 0, 0.012]} renderOrder={3}>
         <shapeGeometry args={[borderShape]} />
         <meshPhysicalMaterial
           color="#ffffff"
@@ -851,7 +1018,7 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
       </mesh>
 
       {/* HUD Detalle: Sensor parpadeante (Top-Left) */}
-      <mesh position={[-0.63, 0.38, 0.015]} renderOrder={2}>
+      <mesh position={[-0.63, 0.38, 0.015]} renderOrder={4}>
         <sphereGeometry args={[0.012, 16, 16]} />
         <meshStandardMaterial
           ref={dotRef}
@@ -871,9 +1038,11 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
         fontWeight="bold"
         outlineWidth={0.004}
         outlineColor="#000000"
-        renderOrder={2}
+        renderOrder={4}
       >
-        {currentProject.tags && currentProject.tags[0] ? currentProject.tags[0].toUpperCase() : "3D ART"}
+        {currentProject.tags && currentProject.tags[0]
+          ? currentProject.tags[0].toUpperCase()
+          : "3D ART"}
       </Text>
 
       {/* HUD Detalle: Serial de Proyecto (Top-Right) */}
@@ -886,19 +1055,19 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
         fontWeight="bold"
         outlineWidth={0.004}
         outlineColor="#000000"
-        renderOrder={2}
+        renderOrder={4}
       >
         {`[ PRJ - 0${projectIdx + 1} ]`}
       </Text>
 
       {/* Banner inferior semi-transparente para el título */}
-      <mesh position={[0, 0, 0.016]} renderOrder={2}>
+      <mesh position={[0, 0, 0.016]} renderOrder={4}>
         <shapeGeometry args={[bannerShape]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.7} />
       </mesh>
 
       {/* Separador láser dorado */}
-      <mesh position={[0, -0.22, 0.018]} renderOrder={2}>
+      <mesh position={[0, -0.22, 0.018]} renderOrder={4}>
         <planeGeometry args={[1.38, 0.012]} />
         <meshStandardMaterial
           color="#ffcc00"
@@ -921,7 +1090,7 @@ function ProjectCard({ project, idx, N, onSelectProject, onEditCrop, isProjectsA
         fontWeight="bold"
         outlineWidth={0.006}
         outlineColor="#000000"
-        renderOrder={2}
+        renderOrder={4}
       >
         {getTranslation(currentProject.title, isSpanish).toUpperCase()}
       </Text>
@@ -945,11 +1114,11 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
       const orbitRadius = 2.0;
       const speed = 0.55;
       const angle = t * speed;
-      
+
       satelliteRef.current.position.x = orbitRadius * Math.cos(angle);
       satelliteRef.current.position.z = orbitRadius * Math.sin(angle);
       satelliteRef.current.position.y = Math.sin(t * 2.0) * 0.12; // Bobbing suave
-      
+
       // Auto-rotación
       satelliteRef.current.rotation.y = t * 1.5;
       satelliteRef.current.rotation.x = t * 0.6;
@@ -1000,7 +1169,7 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
       {/* Paneles solares */}
       <group rotation={[0, 0, Math.PI / 6]}>
         <mesh position={[-0.32, 0, 0]}>
-          <boxGeometry args={[0.20, 0.06, 0.015]} />
+          <boxGeometry args={[0.2, 0.06, 0.015]} />
           <meshStandardMaterial
             color="#00f3ff"
             emissive="#00f3ff"
@@ -1009,7 +1178,7 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
           />
         </mesh>
         <mesh position={[0.32, 0, 0]}>
-          <boxGeometry args={[0.20, 0.06, 0.015]} />
+          <boxGeometry args={[0.2, 0.06, 0.015]} />
           <meshStandardMaterial
             color="#00f3ff"
             emissive="#00f3ff"
@@ -1040,26 +1209,26 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
             className="bg-zinc-950/95 border px-2.5 py-1.5 rounded flex items-center gap-1.5 whitespace-nowrap shadow-lg"
             style={{
               borderColor: hovered ? "#00ffff" : "#ff0055",
-              boxShadow: hovered 
-                ? "0 0 15px rgba(0,243,255,0.4)" 
-                : "0 0 15px rgba(255,0,85,0.2)"
+              boxShadow: hovered
+                ? "0 0 15px rgba(0,243,255,0.4)"
+                : "0 0 15px rgba(255,0,85,0.2)",
             }}
           >
-            <span 
+            <span
               className="text-[8px] font-black uppercase tracking-wider text-white"
               style={{
-                color: hovered ? "#00ffff" : "#ffffff"
+                color: hovered ? "#00ffff" : "#ffffff",
               }}
             >
               + ADD PROJECT
             </span>
           </div>
-          <div 
+          <div
             className="w-[1px] h-2 bg-gradient-to-b"
             style={{
-              background: hovered 
-                ? "linear-gradient(to bottom, #00ffff, transparent)" 
-                : "linear-gradient(to bottom, #ff0055, transparent)"
+              background: hovered
+                ? "linear-gradient(to bottom, #00ffff, transparent)"
+                : "linear-gradient(to bottom, #ff0055, transparent)",
             }}
           />
         </div>
@@ -1068,7 +1237,14 @@ function AdminSatellite({ onAddProject }: AdminSatelliteProps) {
   );
 }
 
-function ProjectRing({ projects, isSpanish, orbitSpeedMultiplier, onSelectProject, onEditCrop, isProjectsActive }: ProjectRingProps) {
+function ProjectRing({
+  projects,
+  isSpanish,
+  orbitSpeedMultiplier,
+  onSelectProject,
+  onEditCrop,
+  isProjectsActive,
+}: ProjectRingProps) {
   const N = Math.min(projects.length, 6); // Limitar slots a un máximo de 6 para evitar saturar el aro
 
   return (
@@ -1102,9 +1278,9 @@ function SocialSatellites() {
   const { isAdmin } = useAdmin();
 
   // Posiciones fijas en las esquinas libres del espacio (con amplio margen respecto a los planetas)
-  const pos1: [number, number, number] = [-5.2, 2.5, 0.5];  // ArtStation: Arriba a la izquierda
-  const pos2: [number, number, number] = [3.8, -2.4, 0.5];  // Instagram: Abajo a la derecha
-  const pos3: [number, number, number] = [5.2, 2.5, 0.5];   // LinkedIn: Arriba a la derecha
+  const pos1: [number, number, number] = [-5.2, 2.5, 0.5]; // ArtStation: Arriba a la izquierda
+  const pos2: [number, number, number] = [3.8, -2.4, 0.5]; // Instagram: Abajo a la derecha
+  const pos3: [number, number, number] = [5.2, 2.5, 0.5]; // LinkedIn: Arriba a la derecha
   const posSettings: [number, number, number] = [-3.8, -2.4, 0.5]; // Settings: Abajo a la izquierda
 
   useFrame((state) => {
@@ -1127,7 +1303,8 @@ function SocialSatellites() {
       sat3.current.rotation.z = Math.sin(t * 0.5 + 2.4) * 0.05;
     }
     if (satSettings.current) {
-      satSettings.current.position.y = posSettings[1] + Math.sin(t * 1.2 + 3.6) * 0.08;
+      satSettings.current.position.y =
+        posSettings[1] + Math.sin(t * 1.2 + 3.6) * 0.08;
       satSettings.current.rotation.y = t * 0.14;
       satSettings.current.rotation.z = Math.sin(t * 0.5 + 3.6) * 0.05;
     }
@@ -1140,7 +1317,7 @@ function SocialSatellites() {
     link: string,
     label: string,
     color: string,
-    initialPos: [number, number, number]
+    initialPos: [number, number, number],
   ) => {
     const isHovered = hovered === id;
 
@@ -1212,7 +1389,11 @@ function SocialSatellites() {
           {/* Antena Parabólica Superior */}
           <mesh position={[0, 0.12, 0]}>
             <coneGeometry args={[0.06, 0.03, 16]} />
-            <meshStandardMaterial color="#aaaaaa" metalness={0.8} roughness={0.3} />
+            <meshStandardMaterial
+              color="#aaaaaa"
+              metalness={0.8}
+              roughness={0.3}
+            />
           </mesh>
 
           {/* Luz LED de Telemetría (Parpadea/Emite luz) */}
@@ -1249,47 +1430,58 @@ function SocialSatellites() {
             {/* Botón flotante estilo HUD */}
             <div className="relative group">
               {/* Brillo de fondo con color de red social */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-xl blur-[14px] opacity-30 group-hover:opacity-85 transition-opacity duration-300 pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle, ${color} 0%, transparent 75%)`
+                  background: `radial-gradient(circle, ${color} 0%, transparent 75%)`,
                 }}
               />
-              
+
               {/* Contenedor del Icono con esquinas Cyberpunk - Aumentado a w-20 h-20 */}
               <div
                 className={`w-20 h-20 rounded-xl flex items-center justify-center border transition-all duration-300 backdrop-blur-xl shadow-2xl relative z-10 ${
                   isHovered ? "scale-115" : "scale-100"
                 }`}
                 style={{
-                  backgroundColor: isHovered ? "rgba(10, 10, 12, 0.95)" : "rgba(10, 10, 12, 0.70)",
+                  backgroundColor: isHovered
+                    ? "rgba(10, 10, 12, 0.95)"
+                    : "rgba(10, 10, 12, 0.70)",
                   borderColor: isHovered ? color : "rgba(255, 255, 255, 0.15)",
                   color: isHovered ? "#ffffff" : "rgba(255, 255, 255, 0.65)",
-                  boxShadow: isHovered ? `0 0 30px ${color}80` : "0 4px 15px rgba(0, 0, 0, 0.5)",
+                  boxShadow: isHovered
+                    ? `0 0 30px ${color}80`
+                    : "0 4px 15px rgba(0, 0, 0, 0.5)",
                 }}
               >
                 {/* Esquinas decorativas del HUD */}
-                <div 
+                <div
                   className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l rounded-tl-sm transition-colors duration-300"
-                  style={{ borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)" }}
+                  style={{
+                    borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)",
+                  }}
                 />
-                <div 
+                <div
                   className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r rounded-tr-sm transition-colors duration-300"
-                  style={{ borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)" }}
+                  style={{
+                    borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)",
+                  }}
                 />
-                <div 
+                <div
                   className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l rounded-bl-sm transition-colors duration-300"
-                  style={{ borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)" }}
+                  style={{
+                    borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)",
+                  }}
                 />
-                <div 
+                <div
                   className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r rounded-br-sm transition-colors duration-300"
-                  style={{ borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)" }}
+                  style={{
+                    borderColor: isHovered ? color : "rgba(255, 255, 255, 0.3)",
+                  }}
                 />
 
                 {icon}
               </div>
             </div>
-
           </div>
         </Html>
       </group>
@@ -1305,7 +1497,7 @@ function SocialSatellites() {
         "https://www.artstation.com/d_rayo3d/",
         "ArtStation",
         "#00f3ff", // Celeste/Cyan
-        pos1
+        pos1,
       )}
       {renderSatellite(
         sat2,
@@ -1314,7 +1506,7 @@ function SocialSatellites() {
         "https://www.instagram.com/d_rayo.3d/",
         "Instagram",
         "#b026ff", // Morado neón
-        pos2
+        pos2,
       )}
       {renderSatellite(
         sat3,
@@ -1323,17 +1515,18 @@ function SocialSatellites() {
         "https://www.linkedin.com/in/daniel-rodriguez-rayo-67a5132aa/",
         "LinkedIn",
         "#0077b5", // Azul LinkedIn
-        pos3
+        pos3,
       )}
-      {isAdmin && renderSatellite(
-        satSettings,
-        "settings",
-        <Settings size={38} />,
-        "/admin/settings",
-        "Settings",
-        "#10b981", // Verde neón esmeralda para el panel admin
-        posSettings
-      )}
+      {isAdmin &&
+        renderSatellite(
+          satSettings,
+          "settings",
+          <Settings size={38} />,
+          "/admin/settings",
+          "Settings",
+          "#10b981", // Verde neón esmeralda para el panel admin
+          posSettings,
+        )}
     </group>
   );
 }
@@ -1386,17 +1579,29 @@ function ProjectsMoon({ position, isSpanish, onClick }: ProjectsMoonProps) {
         {/* Cráter 1 */}
         <mesh position={[0.18, 0.18, 0.18]}>
           <sphereGeometry args={[0.07, 16, 16]} />
-          <meshStandardMaterial color="#71717a" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial
+            color="#71717a"
+            roughness={1.0}
+            metalness={0.0}
+          />
         </mesh>
         {/* Cráter 2 */}
         <mesh position={[-0.2, -0.1, 0.18]}>
           <sphereGeometry args={[0.09, 16, 16]} />
-          <meshStandardMaterial color="#52525b" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial
+            color="#52525b"
+            roughness={1.0}
+            metalness={0.0}
+          />
         </mesh>
         {/* Cráter 3 */}
         <mesh position={[0.0, -0.22, 0.18]}>
           <sphereGeometry args={[0.06, 16, 16]} />
-          <meshStandardMaterial color="#71717a" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial
+            color="#71717a"
+            roughness={1.0}
+            metalness={0.0}
+          />
         </mesh>
       </mesh>
 
@@ -1423,12 +1628,16 @@ export default function Hero() {
   const [isHoveringTitle, setIsHoveringTitle] = useState(false);
   const [activePlanet, setActivePlanet] = useState<string | null>(null);
   const { isSpanish } = useLanguage();
-  const aboutMeX = activePlanet === "career" ? -2.2 : (activePlanet === "about-me" ? -1.9 : -2.8);
+  const aboutMeX =
+    activePlanet === "career"
+      ? -2.2
+      : activePlanet === "about-me"
+        ? -1.9
+        : -2.8;
   const aboutMeY = activePlanet === "tech-arsenal" ? 0.8 : 1.35;
   const contactX = activePlanet === "tech-arsenal" ? -1.6 : 0;
-  const techArsenalPos: [number, number, number] = activePlanet === "about-me"
-    ? [-5.4, 0.32, -0.6]
-    : [-5.2, -1.2, 0.5];
+  const techArsenalPos: [number, number, number] =
+    activePlanet === "about-me" ? [-5.4, 0.32, -0.6] : [-5.2, -1.2, 0.5];
   const techArsenalScale = activePlanet === "about-me" ? 0.35 : 1.0;
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -1436,7 +1645,9 @@ export default function Hero() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsReady, setProjectsReady] = useState(false);
   const [orbitWarmed, setOrbitWarmed] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
   const [showAllProjectsGrid, setShowAllProjectsGrid] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [croppingProject, setCroppingProject] = useState<Project | null>(null);
@@ -1445,14 +1656,18 @@ export default function Hero() {
   // Estados para base de datos de tecnología (Tech Stack)
   const [techList, setTechList] = useState<TechItem[]>([]);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
-  const [techFormData, setTechFormData] = useState({ name: '', category: '3D & TEXTURING', icon_key: 'SiBlender' });
+  const [techFormData, setTechFormData] = useState({
+    name: "",
+    category: "3D & TEXTURING",
+    icon_key: "SiBlender",
+  });
 
   const fetchTech = async () => {
     const { data } = await supabase
-      .from('tech_stack')
-      .select('*')
-      .eq('client_slug', CURRENT_SLUG)
-      .order('display_order', { ascending: true });
+      .from("tech_stack")
+      .select("*")
+      .eq("client_slug", CURRENT_SLUG)
+      .order("display_order", { ascending: true });
     if (data) setTechList(data);
   };
 
@@ -1463,25 +1678,31 @@ export default function Hero() {
   const handleAddTech = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!techFormData.name) return;
-    const { error } = await supabase.from('tech_stack').insert([{
-      ...techFormData,
-      client_slug: CURRENT_SLUG,
-      display_order: techList.length
-    }]);
-    
+    const { error } = await supabase.from("tech_stack").insert([
+      {
+        ...techFormData,
+        client_slug: CURRENT_SLUG,
+        display_order: techList.length,
+      },
+    ]);
+
     if (error) {
-        notify("Error al añadir: " + error.message, "error");
+      notify("Error al añadir: " + error.message, "error");
     } else {
-        notify("Software añadido", "success");
-        setIsTechModalOpen(false);
-        setTechFormData({ name: '', category: '3D & TEXTURING', icon_key: 'SiBlender' });
-        fetchTech();
+      notify("Software añadido", "success");
+      setIsTechModalOpen(false);
+      setTechFormData({
+        name: "",
+        category: "3D & TEXTURING",
+        icon_key: "SiBlender",
+      });
+      fetchTech();
     }
   };
 
   const handleDeleteTech = async (id: string) => {
     if (confirm("¿Seguro que deseas eliminar este programa?")) {
-      await deleteItem('tech_stack', id);
+      await deleteItem("tech_stack", id);
       fetchTech();
     }
   };
@@ -1489,14 +1710,15 @@ export default function Hero() {
   const [orbitSpeedMultiplier, setOrbitSpeedMultiplier] = useState(1.0);
   // Estados para base de datos de trayectoria (Career Timeline)
   const [experienceList, setExperienceList] = useState<ExperienceItem[]>([]);
-  const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null);
+  const [editingExperience, setEditingExperience] =
+    useState<ExperienceItem | null>(null);
   const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
 
   const fetchExperience = async () => {
     const { data } = await supabase
-      .from('experience')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("experience")
+      .select("*")
+      .order("created_at", { ascending: false });
     if (data) setExperienceList(data);
   };
 
@@ -1505,8 +1727,14 @@ export default function Hero() {
   }, [isAdmin]);
 
   const handleDeleteExperience = async (id: string) => {
-    if (confirm(isSpanish ? "¿Seguro que deseas eliminar este registro de experiencia?" : "Are you sure you want to delete this experience record?")) {
-      await deleteItem('experience', id);
+    if (
+      confirm(
+        isSpanish
+          ? "¿Seguro que deseas eliminar este registro de experiencia?"
+          : "Are you sure you want to delete this experience record?",
+      )
+    ) {
+      await deleteItem("experience", id);
       fetchExperience();
     }
   };
@@ -1518,9 +1746,11 @@ export default function Hero() {
       .order("display_order", { ascending: true });
     if (data) {
       setProjects(data);
-      preloadImages(
-        data.slice(0, 6).map((project) => project.thumbnail_url ?? ""),
-      );
+      // Nota: ya no usamos preloadImages() aquí para las miniaturas de proyectos.
+      // Disparaba una petición con crossOrigin="anonymous" a la MISMA URL que
+      // luego carga CroppedImage/THREE.TextureLoader, y si el bucket no devolvía
+      // la cabecera CORS en esa respuesta concreta, el navegador reutilizaba esa
+      // entrada fallida y la textura se quedaba transparente sin ningún error visible.
       setProjectsReady(true);
     }
   };
@@ -1553,7 +1783,11 @@ export default function Hero() {
 
   // Controlar la transición y delay para mostrar el sidebar
   useEffect(() => {
-    if (activePlanet && activePlanet !== "projects" && activePlanet !== "tech-arsenal") {
+    if (
+      activePlanet &&
+      activePlanet !== "projects" &&
+      activePlanet !== "tech-arsenal"
+    ) {
       const timer = setTimeout(() => {
         setShowSidebar(true);
       }, 400); // Alineado con el zoom de cámara
@@ -1565,7 +1799,11 @@ export default function Hero() {
 
   // Bloquear el scroll de la página de fondo cuando hay un overlay abierto
   useEffect(() => {
-    if (activePlanet && activePlanet !== "projects" && activePlanet !== "tech-arsenal") {
+    if (
+      activePlanet &&
+      activePlanet !== "projects" &&
+      activePlanet !== "tech-arsenal"
+    ) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -1598,8 +1836,8 @@ export default function Hero() {
     activePlanet === "projects"
       ? showProjectsUI
       : activePlanet === "tech-arsenal"
-      ? true
-      : Boolean(activePlanet && showSidebar);
+        ? true
+        : Boolean(activePlanet && showSidebar);
 
   return (
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-rayo-black perspective-1000">
@@ -1622,7 +1860,11 @@ export default function Hero() {
             color="#ff2e2e"
           />
           {/* El objeto 3D principal (Helmet) — se oculta solo cuando el contenido del planeta ya está listo */}
-          {!showProjectsUI && activePlanet !== "about-me" && activePlanet !== "contact" && activePlanet !== "career" && activePlanet !== "tech-arsenal" && <SciFiHelmet />}
+          {!showProjectsUI &&
+            activePlanet !== "about-me" &&
+            activePlanet !== "contact" &&
+            activePlanet !== "career" &&
+            activePlanet !== "tech-arsenal" && <SciFiHelmet />}
 
           {/* Controlador de Zoom de Cámara */}
           <CameraManager activePlanet={activePlanet} />
@@ -1640,10 +1882,16 @@ export default function Hero() {
           />
 
           {/* Holograma About Me pre-montado para evitar tirón en el primer clic */}
-          <group position={[aboutMeX - 2.0, aboutMeY, -1.0]} visible={activePlanet === "about-me"}>
-            <AboutMeHologram onClose={() => setActivePlanet(null)} isSpanish={isSpanish} />
+          <group
+            position={[aboutMeX - 2.0, aboutMeY, -1.0]}
+            visible={activePlanet === "about-me"}
+          >
+            <AboutMeHologram
+              onClose={() => setActivePlanet(null)}
+              isSpanish={isSpanish}
+            />
           </group>
-          
+
           {/* PLANETA DE PROYECTOS & SU ARO DE TARJETAS 3D */}
           {activePlanet !== "career" && (
             <group position={[4.5, 1.8, -1.0]}>
@@ -1786,7 +2034,9 @@ export default function Hero() {
       {/* --- CONTENIDO UI PRINCIPAL (Se atenúa si un planeta está activo) --- */}
       <div
         className={`relative z-10 flex flex-col items-center text-center px-4 mix-blend-lighten transition-all duration-700 ${
-          dimMainUI ? "opacity-0 scale-90 blur-md pointer-events-none" : "opacity-100 scale-100"
+          dimMainUI
+            ? "opacity-0 scale-90 blur-md pointer-events-none"
+            : "opacity-100 scale-100"
         }`}
       >
         {/* Título Principal con Glitch Interactivo */}
@@ -1829,7 +2079,6 @@ export default function Hero() {
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none font-mono flex flex-col items-center animate-fade-in">
           {/* Main HUD Container */}
           <div className="relative px-8 py-3 bg-zinc-950/80 border border-yellow-500/25 backdrop-blur-xl rounded-md flex flex-col items-center gap-1 shadow-[0_0_45px_rgba(0,0,0,0.9),0_0_15px_rgba(255,204,0,0.05)]">
-            
             {/* Cyber Corner Decos */}
             <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-yellow-500/80 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-yellow-500/80 rounded-tr-sm"></div>
@@ -1850,7 +2099,9 @@ export default function Hero() {
 
             {/* Speed Selector HUD */}
             <div className="flex items-center gap-2 mt-3 pointer-events-auto text-[9px] font-mono text-yellow-500/80">
-              <span className="tracking-widest uppercase font-bold">{isSpanish ? "VELOCIDAD DE GIRO:" : "ORBIT SPEED:"}</span>
+              <span className="tracking-widest uppercase font-bold">
+                {isSpanish ? "VELOCIDAD DE GIRO:" : "ORBIT SPEED:"}
+              </span>
               <div className="flex items-center gap-1">
                 {[0.2, 0.5, 1.0, 2.0, 4.0].map((val) => (
                   <button
@@ -1867,8 +2118,6 @@ export default function Hero() {
                 ))}
               </div>
             </div>
-
-
           </div>
         </div>
       )}
@@ -1878,7 +2127,6 @@ export default function Hero() {
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none font-mono flex flex-col items-center animate-fade-in">
           {/* Main HUD Container */}
           <div className="relative px-8 py-3 bg-zinc-950/80 border border-purple-500/25 backdrop-blur-xl rounded-md flex flex-col items-center gap-1 shadow-[0_0_45px_rgba(0,0,0,0.9),0_0_15px_rgba(176,38,255,0.05)]">
-            
             {/* Cyber Corner Decos */}
             <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-purple-500/80 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-purple-500/80 rounded-tr-sm"></div>
@@ -1896,8 +2144,6 @@ export default function Hero() {
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-purple-400 drop-shadow-[0_0_10px_rgba(176,38,255,0.4)]">
               TECH ARSENAL
             </h1>
-
-
           </div>
         </div>
       )}
@@ -1907,7 +2153,6 @@ export default function Hero() {
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none font-mono flex flex-col items-center animate-fade-in">
           {/* Main HUD Container */}
           <div className="relative px-8 py-3 bg-zinc-950/80 border border-cyan-500/25 backdrop-blur-xl rounded-md flex flex-col items-center gap-1 shadow-[0_0_45px_rgba(0,0,0,0.9),0_0_15px_rgba(0,243,255,0.05)]">
-            
             {/* Cyber Corner Decos */}
             <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-cyan-500/80 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-cyan-500/80 rounded-tr-sm"></div>
@@ -1925,11 +2170,8 @@ export default function Hero() {
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-cyan-400 drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
               {isSpanish ? "NÚCLEO DE BIOGRAFÍA" : "BIOGRAPHY CORE"}
             </h1>
-
-
           </div>
         </div>
-
       )}
 
       {/* --- TITULO DE LA SECCIÓN DE CONTACTO (Top Center, estilo Cyberpunk HUD Rojo/Rosa) --- */}
@@ -1937,7 +2179,6 @@ export default function Hero() {
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none font-mono flex flex-col items-center animate-fade-in">
           {/* Main HUD Container */}
           <div className="relative px-8 py-3 bg-zinc-950/80 border border-red-500/25 backdrop-blur-xl rounded-md flex flex-col items-center gap-1 shadow-[0_0_45px_rgba(0,0,0,0.9),0_0_15px_rgba(239,68,68,0.05)]">
-            
             {/* Cyber Corner Decos */}
             <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-red-500/80 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-red-500/80 rounded-tr-sm"></div>
@@ -1955,11 +2196,8 @@ export default function Hero() {
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]">
               {isSpanish ? "CENTRO DE CONTACTO" : "CONTACT HUB"}
             </h1>
-
-
           </div>
         </div>
-
       )}
 
       {/* --- TITULO DE LA SECCIÓN DE TRABAJO (Top Center, estilo Cyberpunk HUD Verde) --- */}
@@ -1967,7 +2205,6 @@ export default function Hero() {
         <div className="fixed top-8 md:left-72 left-1/2 md:translate-x-0 -translate-x-1/2 z-40 pointer-events-none select-none font-mono flex flex-col items-center animate-fade-in">
           {/* Main HUD Container */}
           <div className="relative px-8 py-3 bg-zinc-950/80 border border-green-500/25 backdrop-blur-xl rounded-md flex flex-col items-center gap-1 shadow-[0_0_45px_rgba(0,0,0,0.9),0_0_15px_rgba(0,255,102,0.05)]">
-            
             {/* Cyber Corner Decos */}
             <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-green-500/80 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-green-500/80 rounded-tr-sm"></div>
@@ -1985,8 +2222,6 @@ export default function Hero() {
             <h1 className="text-white text-lg md:text-xl font-black uppercase tracking-[0.45em] text-green-400 drop-shadow-[0_0_10px_rgba(0,255,102,0.05)]">
               {isSpanish ? "LÍNEA DE EXPERIENCIA" : "CAREER TIMELINE"}
             </h1>
-
-
 
             {isAdmin && (
               <button
@@ -2010,7 +2245,6 @@ export default function Hero() {
             )}
           </div>
         </div>
-
       )}
 
       {/* --- BOTÓN FLOTANTE VOLVER A LA ÓRBITA (Para Proyectos, estilo oro/amarillo) --- */}
@@ -2019,7 +2253,8 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-yellow-500/40 bg-zinc-950/80 rounded-md text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,204,0,0.25)] hover:scale-105"
         >
-          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
+          <span>✕</span>{" "}
+          {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -2029,7 +2264,8 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-cyan-500/40 bg-zinc-950/80 rounded-md text-cyan-400 hover:bg-cyan-500 hover:text-white hover:border-cyan-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,243,255,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
+          <span>✕</span>{" "}
+          {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -2039,7 +2275,8 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-purple-500/40 bg-zinc-950/80 rounded-md text-purple-400 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(176,38,255,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
+          <span>✕</span>{" "}
+          {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -2049,7 +2286,8 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-red-500/40 bg-zinc-950/80 rounded-md text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
+          <span>✕</span>{" "}
+          {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
@@ -2059,36 +2297,43 @@ export default function Hero() {
           onClick={() => setActivePlanet(null)}
           className="fixed top-6 right-6 z-50 px-5 py-2.5 border border-green-500/40 bg-zinc-950/80 rounded-md text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,102,0.25)] hover:scale-105 cursor-pointer"
         >
-          <span>✕</span> {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
+          <span>✕</span>{" "}
+          {isSpanish ? "Regresar a la órbita" : "Return to Orbit"}
         </button>
       )}
 
       {/* --- PANEL DE DETALLE DE SECCIÓN (SIDEBAR DERECHO, EXCLUYE PROYECTOS Y ABOUT ME) --- */}
-      {showSidebar && activePlanet && activePlanet !== "projects" && activePlanet !== "about-me" && activePlanet !== "tech-arsenal" && activePlanet !== "contact" && activePlanet !== "career" && (
-        <div className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] lg:w-[55%] z-40 bg-zinc-950/70 border-l border-zinc-800/30 backdrop-blur-lg overflow-y-auto custom-scrollbar flex flex-col animate-slide-left sidebar-content-wrapper select-text">
-          {/* Botón flotante para regresar a la órbita general */}
-          <button
-            onClick={() => setActivePlanet(null)}
-            className="sticky top-6 right-6 self-end mr-6 mt-6 z-50 px-5 py-2.5 border border-red-500/40 bg-zinc-950/80 rounded-md text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.25)] hover:scale-105"
-          >
-            <span>✕</span> Return to Orbit
-          </button>
+      {showSidebar &&
+        activePlanet &&
+        activePlanet !== "projects" &&
+        activePlanet !== "about-me" &&
+        activePlanet !== "tech-arsenal" &&
+        activePlanet !== "contact" &&
+        activePlanet !== "career" && (
+          <div className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] lg:w-[55%] z-40 bg-zinc-950/70 border-l border-zinc-800/30 backdrop-blur-lg overflow-y-auto custom-scrollbar flex flex-col animate-slide-left sidebar-content-wrapper select-text">
+            {/* Botón flotante para regresar a la órbita general */}
+            <button
+              onClick={() => setActivePlanet(null)}
+              className="sticky top-6 right-6 self-end mr-6 mt-6 z-50 px-5 py-2.5 border border-red-500/40 bg-zinc-950/80 rounded-md text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-mono uppercase text-xs tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.25)] hover:scale-105"
+            >
+              <span>✕</span> Return to Orbit
+            </button>
 
-          {/* Envoltura del contenido dinámico */}
-          <div className="w-full px-6 md:px-12 py-16 relative z-30 select-text">
-            {activePlanet === "about-me" && (
-              <div className="animate-slide-up">
-                <AboutMe />
-              </div>
-            )}
-            {activePlanet === "tech-arsenal" && (
-              <div className="animate-slide-up">
-                <TechStack />
-              </div>
-            )}
+            {/* Envoltura del contenido dinámico */}
+            <div className="w-full px-6 md:px-12 py-16 relative z-30 select-text">
+              {activePlanet === "about-me" && (
+                <div className="animate-slide-up">
+                  <AboutMe />
+                </div>
+              )}
+              {activePlanet === "tech-arsenal" && (
+                <div className="animate-slide-up">
+                  <TechStack />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* --- MODAL DE DETALLE DE PROYECTO (Estándar de la web) --- */}
       <ProjectModal
@@ -2112,49 +2357,90 @@ export default function Hero() {
       <AnimatePresence>
         {isAdmin && isTechModalOpen && (
           <div className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 select-text">
-            <div 
-              className="bg-[#050507] border border-purple-900/40 p-8 rounded-3xl max-w-md w-full relative shadow-[0_0_60px_rgba(176,38,255,0.15)] font-mono text-white"
-            >
-              <button onClick={() => setIsTechModalOpen(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full hover:bg-purple-900/50 cursor-pointer">
-                 <X size={18} />
+            <div className="bg-[#050507] border border-purple-900/40 p-8 rounded-3xl max-w-md w-full relative shadow-[0_0_60px_rgba(176,38,255,0.15)] font-mono text-white">
+              <button
+                onClick={() => setIsTechModalOpen(false)}
+                className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full hover:bg-purple-900/50 cursor-pointer"
+              >
+                <X size={18} />
               </button>
-              
+
               <div className="flex items-center gap-3 mb-8">
-                 <div className="w-10 h-10 rounded-full bg-purple-900/20 flex items-center justify-center text-purple-500 border border-purple-500/20">
-                    <Database size={18} />
-                 </div>
-                 <h3 className="text-white font-black tracking-tighter text-2xl uppercase">Insert Node</h3>
+                <div className="w-10 h-10 rounded-full bg-purple-900/20 flex items-center justify-center text-purple-500 border border-purple-500/20">
+                  <Database size={18} />
+                </div>
+                <h3 className="text-white font-black tracking-tighter text-2xl uppercase">
+                  Insert Node
+                </h3>
               </div>
-              
+
               <form onSubmit={handleAddTech} className="flex flex-col gap-6">
-                 <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Node_Name</label>
-                    <input autoFocus required value={techFormData.name} onChange={(e) => setTechFormData({...techFormData, name: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-purple-500/50" placeholder="e.g. Marvelous Designer" />
-                 </div>
-                 <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Partition_Category</label>
-                    <select value={techFormData.category} onChange={(e) => setTechFormData({...techFormData, category: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-purple-500/50">
-                       <option value="3D & TEXTURING">3D & TEXTURING</option>
-                       <option value="POST & CREATIVE">POST & CREATIVE</option>
-                    </select>
-                 </div>
-                 <div>
-                    <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">Icon_Key_Hash</label>
-                    <select value={techFormData.icon_key} onChange={(e) => setTechFormData({...techFormData, icon_key: e.target.value})} className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-purple-500/50">
-                       {Object.keys(ICON_MAP).map(key => (
-                         <option key={key} value={key}>{key.replace('Si', '').replace('Icon', '')}</option>
-                       ))}
-                      </select>
-                   </div>
-                   
-                   <button type="submit" className="mt-2 bg-gradient-to-r from-purple-700 to-purple-600 text-white font-bold tracking-widest py-4 rounded-xl hover:from-purple-600 hover:to-purple-500 transition-all active:scale-95 shadow-[0_0_30px_rgba(176,38,255,0.3)] uppercase cursor-pointer">
-                      Initialize Node
-                   </button>
-                </form>
-              </div>
+                <div>
+                  <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">
+                    Node_Name
+                  </label>
+                  <input
+                    autoFocus
+                    required
+                    value={techFormData.name}
+                    onChange={(e) =>
+                      setTechFormData({ ...techFormData, name: e.target.value })
+                    }
+                    className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-purple-500/50"
+                    placeholder="e.g. Marvelous Designer"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">
+                    Partition_Category
+                  </label>
+                  <select
+                    value={techFormData.category}
+                    onChange={(e) =>
+                      setTechFormData({
+                        ...techFormData,
+                        category: e.target.value,
+                      })
+                    }
+                    className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-purple-500/50"
+                  >
+                    <option value="3D & TEXTURING">3D & TEXTURING</option>
+                    <option value="POST & CREATIVE">POST & CREATIVE</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-500 uppercase font-mono mb-2 block tracking-widest">
+                    Icon_Key_Hash
+                  </label>
+                  <select
+                    value={techFormData.icon_key}
+                    onChange={(e) =>
+                      setTechFormData({
+                        ...techFormData,
+                        icon_key: e.target.value,
+                      })
+                    }
+                    className="w-full bg-[#0a0a0c] border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors font-mono appearance-none focus:ring-1 focus:ring-purple-500/50"
+                  >
+                    {Object.keys(ICON_MAP).map((key) => (
+                      <option key={key} value={key}>
+                        {key.replace("Si", "").replace("Icon", "")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-2 bg-gradient-to-r from-purple-700 to-purple-600 text-white font-bold tracking-widest py-4 rounded-xl hover:from-purple-600 hover:to-purple-500 transition-all active:scale-95 shadow-[0_0_30px_rgba(176,38,255,0.3)] uppercase cursor-pointer"
+                >
+                  Initialize Node
+                </button>
+              </form>
             </div>
-          )}
-          {isAdmin && (
+          </div>
+        )}
+        {isAdmin && (
           <ExperienceModal
             isOpen={isExperienceModalOpen}
             onClose={() => {
@@ -2237,16 +2523,30 @@ export default function Hero() {
 
         /* Animaciones para Overlays */
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes slideUp {
-          from { transform: translateY(40px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(40px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
         @keyframes slideLeft {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
         }
         .animate-fade-in {
           animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -2268,7 +2568,11 @@ export default function Hero() {
           box-shadow: none !important;
         }
         :global(.sidebar-content-wrapper section > .pointer-events-none),
-        :global(.sidebar-content-wrapper section > div:first-of-type.pointer-events-none) {
+        :global(
+          .sidebar-content-wrapper
+            section
+            > div:first-of-type.pointer-events-none
+        ) {
           display: none !important;
         }
         :global(.sidebar-content-wrapper .max-w-7xl),
