@@ -498,7 +498,7 @@ function CameraManager({ activePlanet }: CameraManagerProps) {
     } else if (activePlanet === "tech-arsenal") {
       targetPos.set(-5.2, -1.0, 3.2); // Centrado en el planeta y alejado para ver los paneles a los lados
       targetLook.set(-5.2, -1.2, 0.5);
-    } else if (activePlanet === "career") {
+    } else if (activePlanet === "carper") {
       targetPos.set(5.2, -1.0, 4.8);
       targetLook.set(5.2, -1.2, 0.5);
     } else if (activePlanet === "contact") {
@@ -1932,7 +1932,7 @@ export default function Hero() {
                     isProjectsActive={activePlanet === "projects"}
                   />
                   <ProjectsMoon
-                    position={[2.0, 0.6, 1.2]}
+                    position={[3.5, 1.5, 1.2]}
                     isSpanish={isSpanish}
                     onClick={() => setShowAllProjectsGrid(true)}
                   />
