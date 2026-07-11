@@ -179,10 +179,10 @@ export default function MobileHome({
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-3"
                   >
-                    <h3 className="text-xl font-bold text-white leading-tight tracking-tight">
+                    <h3 className="text-2xl font-bold text-white leading-tight tracking-tight">
                       {title}
                     </h3>
-                    <p className="text-sm text-zinc-400 leading-relaxed font-light whitespace-pre-wrap">
+                    <p className="text-base text-zinc-300 leading-relaxed font-light whitespace-pre-wrap">
                       {description}
                     </p>
                   </motion.div>

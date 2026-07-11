@@ -28,7 +28,7 @@ export default function TechArsenalPanels({ techList, isSpanish, openAddModal, o
   ) => {
     return (
       <div
-        className="w-[480px] bg-zinc-950/90 border border-purple-500/20 backdrop-blur-xl rounded-2xl p-6 select-none font-mono flex flex-col gap-5 shadow-[0_0_50px_rgba(0,0,0,0.95)] relative animate-fade-in"
+        className="w-[540px] bg-zinc-950/90 border border-purple-500/20 backdrop-blur-xl rounded-2xl p-6 select-none font-mono flex flex-col gap-5 shadow-[0_0_50px_rgba(0,0,0,0.95)] relative animate-fade-in"
         style={{
           boxShadow: `0 0 40px rgba(176, 38, 255, 0.08), inset 0 0 20px rgba(176, 38, 255, 0.04)`,
           borderColor: borderColor,

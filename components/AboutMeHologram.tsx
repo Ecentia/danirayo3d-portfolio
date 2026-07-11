@@ -89,19 +89,19 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
         {/* 4. Título de la sección */}
         <Text
           position={[-0.15, 0.55, 0.02]}
-          fontSize={0.08}
+          fontSize={0.09}
           color="#00f3ff"
           anchorX="left"
           anchorY="middle"
           fontWeight="bold"
-          maxWidth={1.0}
+          maxWidth={1.1}
         >
           {content.title.toUpperCase()}
         </Text>
 
         {/* 5. Línea divisoria en 3D */}
-        <mesh position={[0.325, 0.43, 0.01]}>
-          <planeGeometry args={[0.95, 0.008]} />
+        <mesh position={[0.4, 0.43, 0.01]}>
+          <planeGeometry args={[1.1, 0.008]} />
           <meshStandardMaterial
             color="#00f3ff"
             emissive="#00f3ff"
@@ -112,11 +112,11 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
         {/* 6. Texto de descripción de la Bio */}
         <Text
           position={[-0.15, 0.35, 0.02]}
-          fontSize={0.045}
+          fontSize={0.052}
           color="white"
           anchorX="left"
           anchorY="top"
-          maxWidth={0.95}
+          maxWidth={1.1}
           lineHeight={1.4}
         >
           {content.description}
@@ -125,7 +125,7 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
         {/* 7. Telemetría inferior */}
         <Text
           position={[-0.15, -0.75, 0.02]}
-          fontSize={0.035}
+          fontSize={0.038}
           color="#666666"
           anchorX="left"
           anchorY="bottom"

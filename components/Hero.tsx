@@ -493,8 +493,8 @@ function CameraManager({ activePlanet }: CameraManagerProps) {
       targetPos.set(-4.5, 1.5, 1.75); // Posición ajustada para evitar recorte izquierdo y mantener planeta azul y amarillo
       targetLook.set(-2.8, 1.35, -1.0); // Mirar un poco a la derecha para ver Projects en el fondo
     } else if (activePlanet === "projects") {
-      targetPos.set(4.5, 1.8, 5.15); // Centrado y a la distancia adecuada para ver el aro
-      targetLook.set(4.5, 1.8, -1.0); // Mirar directo al centro del planeta
+      targetPos.set(4.4, 1.8, 5.15); // Desplazado a la izquierda para empujar el planeta a la derecha
+      targetLook.set(4.4, 1.8, -1.0); // Mirar a la misma X para evitar rotación angular asimétrica
     } else if (activePlanet === "tech-arsenal") {
       targetPos.set(-5.2, -1.0, 3.2); // Centrado en el planeta y alejado para ver los paneles a los lados
       targetLook.set(-5.2, -1.2, 0.5);
@@ -1562,6 +1562,7 @@ function ProjectsMoon({ position, isSpanish, onClick }: ProjectsMoonProps) {
   return (
     <group
       position={position}
+      scale={1.5}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -1904,7 +1905,7 @@ export default function Hero() {
 
           {/* PLANETA DE PROYECTOS & SU ARO DE TARJETAS 3D */}
           {activePlanet !== "career" && (
-            <group position={[4.5, 1.8, -1.0]}>
+            <group position={[4.8, 1.8, -1.0]}>
               <InteractivePlanet
                 position={[0, 0, 0]}
                 targetId="projects"
@@ -1931,7 +1932,7 @@ export default function Hero() {
                     isProjectsActive={activePlanet === "projects"}
                   />
                   <ProjectsMoon
-                    position={[4.4, 1.6, -0.2]}
+                    position={[2.0, 0.6, 1.2]}
                     isSpanish={isSpanish}
                     onClick={() => setShowAllProjectsGrid(true)}
                   />

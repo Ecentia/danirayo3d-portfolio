@@ -104,7 +104,7 @@ export default function AboutMe() {
                 <div className="relative">
                     {/* Icono de fondo decorativo */}
                     <Fingerprint size={120} className="absolute -top-10 -left-10 text-white/[0.02] pointer-events-none -rotate-12" />
-                    <h2 className="relative text-5xl md:text-7xl font-black text-white leading-[0.95] tracking-tighter uppercase break-words">
+                    <h2 className="relative text-6xl md:text-8xl font-black text-white leading-[0.95] tracking-tighter uppercase break-words">
                       {content.title}
                       <span className="text-red-600 animate-pulse inline-block ml-1">_</span>
                     </h2>
@@ -134,7 +134,7 @@ export default function AboutMe() {
                        <textarea 
                           value={content.description}
                           onChange={(e) => handleLocalChange('description', e.target.value)}
-                          className="w-full h-80 bg-black/40 text-red-50/90 font-mono text-base md:text-lg border border-red-900/30 p-6 rounded-lg focus:outline-none focus:border-red-500/60 focus:bg-black/60 resize-none transition-all custom-scrollbar leading-relaxed"
+                          className="w-full h-80 bg-black/40 text-red-50/90 font-mono text-lg md:text-xl border border-red-900/30 p-6 rounded-lg focus:outline-none focus:border-red-500/60 focus:bg-black/60 resize-none transition-all custom-scrollbar leading-relaxed"
                        />
                        <div className="absolute bottom-4 right-4 text-red-600 opacity-40 pointer-events-none flex items-center gap-2 font-mono text-xs">
                          <Terminal size={16} /> {isSpanish ? "ESPERANDO ENTRADA..." : "WAITING FOR INPUT..."}
@@ -146,7 +146,7 @@ export default function AboutMe() {
                         <div className="absolute -top-6 -left-4 text-6xl text-white/[0.03] font-serif leading-none select-none pointer-events-none">"</div>
                         
                         {/* IMPORTANTE: whitespace-pre-wrap permite los saltos de línea */}
-                        <p className="text-lg md:text-xl text-zinc-300 font-light leading-relaxed tracking-wide whitespace-pre-wrap group-hover:text-zinc-200 transition-colors duration-500">
+                        <p className="text-xl md:text-2xl text-zinc-300 font-light leading-relaxed tracking-wide whitespace-pre-wrap group-hover:text-zinc-200 transition-colors duration-500">
                           {content.description}
                         </p>
                     </div>
