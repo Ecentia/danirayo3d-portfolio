@@ -498,7 +498,7 @@ function CameraManager({ activePlanet }: CameraManagerProps) {
     } else if (activePlanet === "tech-arsenal") {
       targetPos.set(-5.2, -1.0, 3.2); // Centrado en el planeta y alejado para ver los paneles a los lados
       targetLook.set(-5.2, -1.2, 0.5);
-    } else if (activePlanet === "carper") {
+    } else if (activePlanet === "career") {
       targetPos.set(5.2, -1.0, 4.8);
       targetLook.set(5.2, -1.2, 0.5);
     } else if (activePlanet === "contact") {

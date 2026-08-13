@@ -102,19 +102,21 @@ function CareerCard({
 
   // Dimensiones y Layout Dinámicos de tarjeta basados en el texto
   const showAdmin = isAdmin;
-  const titleLines = Math.ceil((titleText || "").length / 38) || 1;
+  const orgText = currentItem.organization ? currentItem.organization.toUpperCase() : "";
+  const titleLines = Math.ceil((titleText || "").length / 24) || 1;
+  const orgLines = Math.ceil(orgText.length / 26) || 1;
   const descLines = (descText || "").split("\n").reduce((acc: number, line: string) => {
-    const charsPerLine = 58;
+    const charsPerLine = 34;
     const linesForSegment = Math.ceil(line.length / charsPerLine) || 1;
     return acc + linesForSegment;
   }, 0);
 
-  const cardWidth = 1.5;
-  const baseHeight = 0.55;
-  const adminOffset = showAdmin ? 0.22 : 0;
+  const cardWidth = 1.95;
+  const baseHeight = 0.65;
+  const adminOffset = showAdmin ? 0.25 : 0;
   const cardHeight = Math.max(
-    baseHeight + titleLines * 0.09 + descLines * 0.052 + adminOffset + 0.10,
-    0.85
+    baseHeight + titleLines * 0.12 + orgLines * 0.08 + descLines * 0.08 + adminOffset + 0.14,
+    1.10
   );
 
   const borderThickness = 0.04;
@@ -122,11 +124,12 @@ function CareerCard({
   const innerShape = getRoundedRectShape(cardWidth, cardHeight, 0.06);
 
   // Posiciones de los elementos relativas al centro de la tarjeta
-  const yHeader = cardHeight / 2 - 0.13;
-  const yTitle = cardHeight / 2 - 0.31;
-  const yOrg = cardHeight / 2 - 0.31 - titleLines * 0.09 - 0.09;
-  const yDesc = cardHeight / 2 - 0.31 - titleLines * 0.09 - 0.09 - 0.12;
-  const yAdmin = -cardHeight / 2 + 0.13;
+  const paddingX = cardWidth / 2 - 0.10;
+  const yHeader = cardHeight / 2 - 0.15;
+  const yTitle = cardHeight / 2 - 0.36;
+  const yOrg = cardHeight / 2 - 0.36 - titleLines * 0.12 - 0.06;
+  const yDesc = cardHeight / 2 - 0.36 - titleLines * 0.12 - orgLines * 0.08 - 0.12;
+  const yAdmin = -cardHeight / 2 + 0.14;
 
   return (
     <group
@@ -181,11 +184,12 @@ function CareerCard({
 
       {/* Tipo / Categoría (Top Left) */}
       <Text
-        position={[-0.67, yHeader, 0.01]}
-        fontSize={0.04}
+        position={[-paddingX, yHeader, 0.01]}
+        fontSize={0.060}
         color="#00ff66"
         anchorX="left"
         anchorY="middle"
+        maxWidth={paddingX * 1.1}
         fontWeight="bold"
         renderOrder={4}
       >
@@ -194,11 +198,12 @@ function CareerCard({
 
       {/* Fechas (Top Right) */}
       <Text
-        position={[0.67, yHeader, 0.01]}
-        fontSize={0.035}
+        position={[paddingX, yHeader, 0.01]}
+        fontSize={0.050}
         color="#a1a1aa"
         anchorX="right"
         anchorY="middle"
+        maxWidth={paddingX * 1.1}
         fontWeight="bold"
         renderOrder={4}
       >
@@ -207,13 +212,13 @@ function CareerCard({
 
       {/* Título Principal */}
       <Text
-        position={[-0.67, yTitle, 0.01]}
-        fontSize={0.06}
+        position={[-paddingX, yTitle, 0.01]}
+        fontSize={0.090}
         color="#ffffff"
         anchorX="left"
         anchorY="middle"
         fontWeight="black"
-        maxWidth={1.34}
+        maxWidth={paddingX * 2}
         renderOrder={4}
       >
         {titleText.toUpperCase()}
@@ -221,25 +226,27 @@ function CareerCard({
 
       {/* Organización */}
       <Text
-        position={[-0.67, yOrg, 0.01]}
-        fontSize={0.045}
+        position={[-paddingX, yOrg, 0.01]}
+        fontSize={0.068}
         color="#34d399"
         anchorX="left"
-        anchorY="middle"
+        anchorY="top"
         fontWeight="bold"
+        maxWidth={paddingX * 2}
+        lineHeight={1.2}
         renderOrder={4}
       >
-        {currentItem.organization.toUpperCase()}
+        {orgText}
       </Text>
 
       {/* Descripción corta */}
       <Text
-        position={[-0.67, yDesc, 0.01]}
-        fontSize={0.036}
+        position={[-paddingX, yDesc, 0.01]}
+        fontSize={0.058}
         color="#e4e4e7"
         anchorX="left"
         anchorY="top"
-        maxWidth={1.34}
+        maxWidth={paddingX * 2}
         lineHeight={1.4}
         renderOrder={4}
       >
@@ -251,7 +258,7 @@ function CareerCard({
         <group position={[0, yAdmin, 0.01]}>
           <Text
             position={[-0.3, 0, 0]}
-            fontSize={0.038}
+            fontSize={0.048}
             color="#00ff66"
             fontWeight="bold"
             onClick={(e) => {
@@ -272,7 +279,7 @@ function CareerCard({
           </Text>
           <Text
             position={[0.3, 0, 0]}
-            fontSize={0.038}
+            fontSize={0.048}
             color="#ef4444"
             fontWeight="bold"
             onClick={(e) => {
