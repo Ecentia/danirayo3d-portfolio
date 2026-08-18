@@ -7,6 +7,7 @@ import { Project, GalleryImage } from '@/types/database';
 import Image from 'next/image';
 import { Layers, ImageOff, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { isVideoUrl, getVideoPreviewSrc } from '@/lib/media';
 
 const getTranslation = (value: string | null, isSpanish: boolean): string => {
   if (!value) return "";
@@ -145,14 +146,26 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
               key={img.id} 
               className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 shadow-xl"
             >
-              {/* Usamos un aspect-ratio automático para que la imagen mantenga su proporción */}
-              <Image 
-                src={img.image_url} 
-                alt={`${translatedTitle} detail ${i + 1}`} 
-                width={1200}
-                height={800}
-                className="w-full h-auto object-cover"
-              />
+              {/* Usamos un aspect-ratio automático para que el medio mantenga su proporción */}
+              {isVideoUrl(img.image_url) ? (
+                <video
+                  src={getVideoPreviewSrc(img.image_url)}
+                  controls
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-auto bg-black"
+                />
+              ) : (
+                <Image 
+                  src={img.image_url} 
+                  alt={`${translatedTitle} detail ${i + 1}`} 
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                />
+              )}
             </motion.div>
           ))}
         </div>

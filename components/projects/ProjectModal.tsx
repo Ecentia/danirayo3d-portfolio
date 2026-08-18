@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, UploadCloud, Trash2, Check, Plus, Layers, Calendar, Monitor } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, UploadCloud, Trash2, Check, Plus, Layers, Calendar, Monitor, Film } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { FullProjectData, Project, GalleryImage } from '@/types/database';
 import { useAdmin } from '@/context/AdminContext';
 import { useUi } from '@/context/UiContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { isVideoUrl, isVideoFile, getVideoPreviewSrc, VIDEO_ACCEPT, MAX_VIDEO_SIZE_MB } from '@/lib/media';
 
 import { ICON_MAP } from '@/components/sections/TechStack';
 import { CURRENT_SLUG } from '@/context/AdminContext';
@@ -230,6 +231,22 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     const file = event.target.files?.[0];
     if (!file || !currentProject) return;
 
+    const isVideo = isVideoFile(file);
+
+    // La portada se usa como textura en el planeta 3D y con next/image, así que
+    // solo admite imágenes. Los vídeos únicamente pueden ir en la galería.
+    if (isVideo && uploadTargetRef.current === 'thumbnail') {
+      notify("La portada debe ser una imagen", 'error');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (isVideo && file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      notify(`El vídeo supera el límite de ${MAX_VIDEO_SIZE_MB} MB`, 'error');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
@@ -260,7 +277,7 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
             const { data: refreshedGallery } = await supabase.from('project_gallery').select('*').eq('project_id', currentProject.id).order('display_order', { ascending: true });
             if (refreshedGallery) setCurrentProject(prev => prev ? ({ ...prev, gallery: refreshedGallery }) : null);
         }
-        notify("Imagen añadida", 'success');
+        notify(isVideo ? "Vídeo añadido" : "Imagen añadida", 'success');
         setTimeout(() => { imageContainerRef.current?.scrollTo({ top: imageContainerRef.current.scrollHeight, behavior: 'smooth' }); }, 100);
       }
     } catch (error: any) {
@@ -272,7 +289,7 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   };
 
   const handleDeleteGalleryImage = async (imageId: string) => {
-    if (!currentProject || !isAdmin || !confirm("¿Eliminar imagen?")) return;
+    if (!currentProject || !isAdmin || !confirm("¿Eliminar este archivo?")) return;
     if (isCreationMode || imageId.startsWith('temp-')) {
         setCurrentProject({ ...currentProject, gallery: currentProject.gallery.filter(img => img.id !== imageId) });
     } else {
@@ -286,6 +303,11 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
 
   const triggerFileUpload = (target: 'thumbnail' | 'gallery') => {
     uploadTargetRef.current = target;
+    // Lo aplicamos de forma imperativa porque el input es compartido y un
+    // setState no llegaría a tiempo antes del click programático.
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = target === 'gallery' ? `image/*,${VIDEO_ACCEPT}` : 'image/*';
+    }
     fileInputRef.current?.click();
   };
 
@@ -348,7 +370,19 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
 
                 {contentImages.map((img, index) => (
                   <div key={img.id} className="relative w-full h-auto bg-zinc-900/20 group">
-                    <Image src={img.image_url} alt={`Project asset ${index}`} width={1920} height={1200} className="w-full h-auto object-contain md:rounded-sm shadow-xl" priority={index === 0} />
+                    {isVideoUrl(img.image_url) ? (
+                      <video
+                        src={getVideoPreviewSrc(img.image_url)}
+                        controls
+                        loop
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-auto object-contain md:rounded-sm shadow-xl bg-black"
+                      />
+                    ) : (
+                      <Image src={img.image_url} alt={`Project asset ${index}`} width={1920} height={1200} className="w-full h-auto object-contain md:rounded-sm shadow-xl" priority={index === 0} />
+                    )}
                     {isAdmin && (
                       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                          {(img as any).isThumbnail ? (
@@ -364,8 +398,14 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
 
                 {isAdmin && currentProject.thumbnail_url && (
                    <button onClick={() => triggerFileUpload('gallery')} disabled={uploading} className="w-full py-16 border-2 border-dashed border-zinc-900 hover:border-yellow-500/50 rounded-lg flex flex-col items-center justify-center text-zinc-700 hover:text-yellow-500 transition-all mt-4 group">
-                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500" /> : <Plus size={40} strokeWidth={1} className="group-hover:scale-110 transition-transform" />}
-                      <span className="text-[10px] font-mono mt-4 uppercase tracking-[0.2em]">{uploading ? 'UPLOADING...' : 'ADD GALLERY IMAGE'}</span>
+                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500" /> : (
+                        <div className="flex items-center gap-3 group-hover:scale-110 transition-transform">
+                          <Plus size={40} strokeWidth={1} />
+                          <Film size={32} strokeWidth={1} />
+                        </div>
+                      )}
+                      <span className="text-[10px] font-mono mt-4 uppercase tracking-[0.2em]">{uploading ? 'UPLOADING...' : 'ADD IMAGE / VIDEO'}</span>
+                      {!uploading && <span className="text-[9px] font-mono mt-2 text-zinc-800 group-hover:text-zinc-600 tracking-[0.15em]">MP4 / WEBM · MAX {MAX_VIDEO_SIZE_MB}MB</span>}
                    </button>
                 )}
             </div>
