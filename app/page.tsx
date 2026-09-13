@@ -86,24 +86,36 @@ export default function Home() {
 
     // 2. Si es móvil o tiene GPU, comprobar estado del sistema (mantenimiento)
     const checkSystemState = async () => {
-      const { data: maintenanceData } = await supabase
-        .from("portfolio_content")
-        .select("description")
-        .eq("section_id", "maintenance")
-        .maybeSingle();
+      // Si Supabase no responde (proyecto pausado, red caída...) la web debe
+      // seguir cargando: sin el finally, checking se quedaba en true y la
+      // pantalla permanecía en negro indefinidamente.
+      try {
+        const { data: maintenanceData, error } = await supabase
+          .from("portfolio_content")
+          .select("description")
+          .eq("section_id", "maintenance")
+          .maybeSingle();
 
-      const isLocked = maintenanceData?.description === "true";
-
-      if (isLocked) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session) {
-          setIsMaintenance(true);
+        if (error) {
+          console.error("[Mantenimiento] No se pudo comprobar el estado:", error.message);
         }
+
+        const isLocked = maintenanceData?.description === "true";
+
+        if (isLocked) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
+          if (!session) {
+            setIsMaintenance(true);
+          }
+        }
+      } catch (err) {
+        console.error("[Mantenimiento] Error inesperado comprobando el estado:", err);
+      } finally {
+        setChecking(false); // Terminamos de comprobar
       }
-      setChecking(false); // Terminamos de comprobar
     };
 
     checkSystemState();

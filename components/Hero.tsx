@@ -22,6 +22,9 @@ import React, {
   Suspense,
   useLayoutEffect,
   useMemo,
+  Component,
+  ErrorInfo,
+  ReactNode,
 } from "react";
 import * as THREE from "three";
 import { X, Database, Settings, Pencil } from "lucide-react";
@@ -58,6 +61,39 @@ const getTranslation = (value: string | null, isSpanish: boolean): string => {
   } catch (e) {}
   return value;
 };
+
+// Los loaders de drei/three (HDR, fuentes, texturas) lanzan el error hacia React
+// cuando falla una descarga. Sin un boundary, un único asset caído desmonta la
+// app entera ("Application error: a client-side exception has occurred").
+interface SceneErrorBoundaryProps {
+  name: string;
+  fallback?: ReactNode;
+  children: ReactNode;
+}
+
+class SceneErrorBoundary extends Component<
+  SceneErrorBoundaryProps,
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(
+      `[Escena 3D] Fallo en "${this.props.name}", se omite:`,
+      error,
+      info.componentStack,
+    );
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback ?? null;
+    return this.props.children;
+  }
+}
 
 // --- COMPONENTE 3D: El "Casco/Orbe" Sci-Fi Central ---
 function SciFiHelmet() {
@@ -1854,6 +1890,8 @@ export default function Hero() {
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-rayo-black perspective-1000">
       {/* --- ESCENA 3D DE FONDO --- */}
       <div className="absolute inset-0 z-0">
+        {/* Último recurso: si la escena 3D falla, se oculta pero el resto de la web sigue viva */}
+        <SceneErrorBoundary name="Canvas">
         <Canvas
           camera={{ position: [0, 0, 5] }}
           dpr={[1, 1.5]}
@@ -2023,9 +2061,13 @@ export default function Hero() {
           )}
 
           {/* Entorno y partículas */}
-          <Suspense fallback={null}>
-            <Environment preset="city" />
-          </Suspense>
+          {/* HDR servido desde /public: preset="city" lo descargaba de raw.githack.com,
+              cuyo certificado SSL es inválido y rompía la web en producción */}
+          <SceneErrorBoundary name="Environment">
+            <Suspense fallback={null}>
+              <Environment files="/hdri/potsdamer_platz_1k.hdr" />
+            </Suspense>
+          </SceneErrorBoundary>
           <Stars
             radius={100}
             depth={50}
@@ -2037,6 +2079,7 @@ export default function Hero() {
           />
           {activePlanet === null && <SocialSatellites />}
         </Canvas>
+        </SceneErrorBoundary>
       </div>
 
       {/* Rejilla Retro superpuesta (Cyberpunk floor) */}

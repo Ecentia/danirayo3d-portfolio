@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, UploadCloud, Trash2, Check, Plus, Layers, Calendar, Monitor, Film } from 'lucide-react';
 import Image from 'next/image';
@@ -59,7 +60,7 @@ const SubstancePainterIcon = (props: any) => (
 );
 
 // --- ESTILOS (Scrollbar Visible y Roja) ---
-const modernScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-yellow-950/40 hover:[&::-webkit-scrollbar-thumb]:bg-yellow-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
+const modernScrollbar = "overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-yellow-950/40 hover:[&::-webkit-scrollbar-thumb]:bg-yellow-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -82,6 +83,9 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
   const [availableTech, setAvailableTech] = useState<TechItem[]>([]);
   const { isSpanish } = useLanguage();
   const [modalLang, setModalLang] = useState<'en' | 'es'>('en');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   // Efecto para sincronizar el estado global de UI
   useEffect(() => {
@@ -320,14 +324,14 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
     onClose();
   };
 
-  if (!isOpen || !currentProject) return null;
+  if (!isOpen || !currentProject || !mounted) return null;
 
   const contentImages = [
     ...(currentProject.thumbnail_url ? [{ id: 'thumb', image_url: currentProject.thumbnail_url, isThumbnail: true }] : []),
     ...currentProject.gallery
   ];
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -578,6 +582,7 @@ export default function ProjectModal({ isOpen, onClose, initialProjectId, allPro
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
