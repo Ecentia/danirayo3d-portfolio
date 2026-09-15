@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-rayo-red: #ff0000;
+  --color-rayo-red: #ff2e2e;
   --color-rayo-dark: #080808;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* inline: las variables de next/font viven en <body>, así que la utilidad
+   tiene que resolver var() donde se usa y no en :root */
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
   color: white;
-  cursor: crosshair;
+  color-scheme: dark;
 }
 
 html,
@@ -20,6 +28,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+::selection {
+  background: rgb(255 46 46 / 0.3);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 1px solid rgb(255 255 255 / 0.6);
+  outline-offset: 3px;
+}
+
 /* --- TUS EFECTOS (Asegurándonos de los z-index) --- */
 
 /* 1. La Grid (Capa -2) */
@@ -28,8 +46,8 @@ body {
   inset: 0;
   background-size: 50px 50px;
   background-image:
-    linear-gradient(to right, rgba(255, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 0, 0, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 0, 0, 0.035) 1px, transparent 1px);
   mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
   pointer-events: none;
   z-index: -40; /* Muy atrás */
@@ -68,4 +86,66 @@ body {
   z-index: 9999; /* Siempre encima de todo */
   pointer-events: none;
   opacity: 0.4;
+}
+
+/* --- ANIMACIONES GLOBALES ---
+   Antes vivían en un <style jsx> con scope dentro de Hero, así que los paneles
+   renderizados con <Html> de drei (otro árbol DOM) nunca las recibían. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(200%) skewX(12deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s var(--ease-out-expo) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.7s var(--ease-out-expo) both;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.15) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

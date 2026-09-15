@@ -5,8 +5,6 @@ import { AdminProvider } from "@/context/AdminContext";
 import { UiProvider } from "@/context/UiContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AdminControls from "@/components/AdminControls";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import BackgroundEffects from "@/components/layout/BackgroundEffects";
 
 const geistSans = Geist({
@@ -350,7 +348,7 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased text-white selection:bg-red-500/30 overflow-x-hidden min-h-screen relative`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased text-white selection:bg-red-500/30 overflow-x-hidden min-h-screen relative`}
       >
         {/* CAPA 1: Fondo con degradado radial */}
         <div

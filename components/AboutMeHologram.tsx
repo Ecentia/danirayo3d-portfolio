@@ -1,17 +1,16 @@
 import { useEffect, useState, useRef } from "react";
-import { Image, Text, Billboard } from "@react-three/drei";
+import { Image as ImagePlane, Text, Billboard } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { supabase } from "@/lib/supabase";
 import { CURRENT_SLUG } from "@/context/AdminContext";
-import { useLanguage } from "@/context/LanguageContext";
 
 interface AboutMeHologramProps {
   onClose: () => void;
   isSpanish: boolean;
 }
 
-export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramProps) {
+export default function AboutMeHologram({ isSpanish }: AboutMeHologramProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [content, setContent] = useState({
     title: isSpanish ? "ARQUITECTO DE REALIDADES" : "REALITY ARCHITECT",
@@ -20,13 +19,19 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
 
   useEffect(() => {
     const fetchData = async () => {
-      const sectionId = isSpanish ? "about_me" : "about_me_en";
-      const { data } = await supabase
+      // Si falta la versión del idioma pedido se usa la otra: about_me_en no existía en la
+      // base de datos y los visitantes en inglés veían un texto provisional
+      const preferred = isSpanish ? "about_me" : "about_me_en";
+      const { data: rows, error } = await supabase
         .from("portfolio_content")
-        .select("title, description")
+        .select("section_id, title, description")
         .eq("client_slug", CURRENT_SLUG)
-        .eq("section_id", sectionId)
-        .single();
+        .in("section_id", ["about_me", "about_me_en"]);
+
+      if (error) {
+        console.error("[Sobre mí] No se pudo cargar el contenido:", error.message);
+      }
+      const data = rows?.find((row) => row.section_id === preferred) ?? rows?.[0];
 
       if (data) {
         setContent({ title: data.title, description: data.description });
@@ -62,7 +67,7 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
           <meshStandardMaterial
             color="#00f3ff"
             emissive="#00f3ff"
-            emissiveIntensity={1.5}
+            emissiveIntensity={0.6}
             metalness={0.9}
             roughness={0.1}
           />
@@ -79,7 +84,7 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
         </mesh>
 
         {/* 3. Foto de Daniel Rayo (A la izquierda) */}
-        <Image
+        <ImagePlane
           url="/daniel_rayo.jfif"
           scale={[1.0, 1.4]}
           position={[-0.8, 0, 0.01]}
@@ -96,7 +101,7 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
           fontWeight="bold"
           maxWidth={1.1}
         >
-          {content.title.toUpperCase()}
+          {content.title}
         </Text>
 
         {/* 5. Línea divisoria en 3D */}
@@ -130,7 +135,7 @@ export default function AboutMeHologram({ onClose, isSpanish }: AboutMeHologramP
           anchorX="left"
           anchorY="bottom"
         >
-          SYS.LOC: ABOUT_ME // SEVILLA, ES
+          {isSpanish ? "Sevilla, España" : "Seville, Spain"}
         </Text>
       </group>
     </Billboard>

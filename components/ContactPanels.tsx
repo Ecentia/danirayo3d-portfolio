@@ -1,19 +1,28 @@
 import { useState } from "react";
 import { Html } from "@react-three/drei";
-import { Mail, Send, CheckCircle, Copy, AlertTriangle } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
+import { Send, CheckCircle, AlertTriangle } from "lucide-react";
+
+const ACCENT = "#ff3366";
+const CONTACT_EMAIL = "drayo3d.contact@gmail.com";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xvzwzpre";
+
+// Fondo casi opaco en lugar de backdrop-blur: desenfocar el canvas WebGL que hay
+// detrás obligaba al navegador a recalcular el blur en cada frame
+const PANEL_CLASS =
+  "animate-fade-in relative flex w-[485px] select-none flex-col gap-8 rounded-2xl border border-white/[0.08] bg-[#0b0b0c]/95 p-9 font-sans text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)]";
+const LABEL_CLASS = "mb-2 block text-[13px] text-white/45";
+const INPUT_CLASS =
+  "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3.5 text-[15px] text-white placeholder:text-white/25 transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.05] focus:outline-none";
 
 export default function ContactPanels({ isSpanish }: { isSpanish: boolean }) {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [copiedEmail, setCopiedEmail] = useState(false);
 
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xvzwzpre";
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
     setFormStatus("submitting");
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const data = Object.fromEntries(new FormData(form).entries());
 
     try {
       const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -25,94 +34,86 @@ export default function ContactPanels({ isSpanish }: { isSpanish: boolean }) {
         body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        setFormStatus("success");
-        (e.target as HTMLFormElement).reset();
-        setTimeout(() => setFormStatus("idle"), 5000);
-      } else {
-        throw new Error("Failed");
+      if (!response.ok) {
+        throw new Error(`Formspree respondió ${response.status}`);
       }
+
+      setFormStatus("success");
+      form.reset();
+      setTimeout(() => setFormStatus("idle"), 5000);
     } catch (error) {
+      console.error("[Contacto] No se pudo enviar el formulario:", error);
       setFormStatus("error");
       setTimeout(() => setFormStatus("idle"), 5000);
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText("drayo3d.contact@gmail.com");
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+  const copyToClipboard = async () => {
+    try {
+      // navigator.clipboard no existe en contextos no seguros (http)
+      if (!navigator.clipboard) throw new Error("Clipboard API no disponible");
+      await navigator.clipboard.writeText(CONTACT_EMAIL);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch (error) {
+      console.error("[Contacto] No se pudo copiar el correo:", error);
+    }
   };
 
   const renderLeftPanel = () => {
     return (
-      <div
-        className="w-[485px] bg-zinc-950/90 border border-red-500/20 backdrop-blur-xl rounded-2xl p-10 select-none font-mono flex flex-col gap-8 shadow-[0_0_50px_rgba(0,0,0,0.95)] relative animate-fade-in text-white"
-        style={{
-          boxShadow: `0 0 40px rgba(255, 51, 102, 0.08), inset 0 0 20px rgba(255, 51, 102, 0.04)`,
-          borderColor: "rgba(255, 51, 102, 0.25)",
-        }}
-      >
-        {/* Cyber Corners */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 rounded-tl-lg border-red-500/80" />
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 rounded-tr-lg border-red-500/80" />
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 rounded-bl-lg border-red-500/80" />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 rounded-br-lg border-red-500/80" />
-
-        {/* Header */}
-        <div className="flex items-center gap-3 border-b border-red-500/10 pb-4">
-          <Mail size={18} className="text-red-500" />
-          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">
-            {isSpanish ? "Comunicaciones" : "Communications"}
-          </span>
-        </div>
-
-        {/* Content */}
+      <div data-panel className={PANEL_CLASS}>
         <div className="flex flex-col gap-4">
-          <h3 className="text-4xl font-black leading-tight tracking-tight uppercase">
-            {isSpanish ? (
-              <>
-                HABLEMOS DE <br />
-                <span className="text-white/20">TU PROYECTO.</span>
-              </>
-            ) : (
-              <>
-                LET'S DISCUSS <br />
-                <span className="text-white/20">YOUR PROJECT.</span>
-              </>
-            )}
+          <h3 className="text-[34px] font-semibold leading-[1.1] tracking-[-0.03em]">
+            {isSpanish ? "¿Tienes un proyecto en mente?" : "Have a project in mind?"}
           </h3>
-          <p className="text-zinc-400 text-[13px] leading-relaxed max-w-sm font-light">
+          <p className="max-w-sm text-[15px] leading-relaxed text-white/55">
             {isSpanish
-              ? "¿Tienes alguna idea en mente? Estoy disponible para colaboraciones freelance y nuevos retos en la industria 3D."
-              : "Do you have an idea in mind? I am available for freelance collaborations and new challenges in the 3D industry."}
+              ? "Estoy disponible para trabajos freelance y colaboraciones en proyectos 3D. Escríbeme y lo hablamos."
+              : "I'm available for freelance work and collaborations on 3D projects. Drop me a line and let's talk."}
           </p>
         </div>
 
-        {/* Copy Box */}
-        <div className="group relative bg-white/5 border border-white/10 p-5 rounded-xl backdrop-blur-md hover:border-red-600/50 transition-all duration-300 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-4 truncate">
-            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400 group-hover:bg-red-600 group-hover:border-red-500 group-hover:text-white transition-colors duration-300">
-              <Mail size={16} />
-            </div>
-            <div className="truncate">
-              <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider mb-0.5">
-                {isSpanish ? "Correo" : "Email"}
-              </div>
-              <div className="text-sm text-white font-medium select-text truncate">drayo3d.contact@gmail.com</div>
-            </div>
+        <div className="flex items-center justify-between gap-3 border-t border-white/[0.08] pt-6">
+          <div className="min-w-0">
+            <div className="mb-1 text-[13px] text-white/40">{isSpanish ? "Correo" : "Email"}</div>
+            <div className="select-text truncate text-[15px] text-white">{CONTACT_EMAIL}</div>
           </div>
           <button
             onClick={copyToClipboard}
-            className="p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
-            title={isSpanish ? "Copiar correo" : "Copy email"}
+            className="shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[13px] text-white/60 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
           >
-            {copiedEmail ? (
-              <CheckCircle size={18} className="text-green-500 animate-pulse" />
-            ) : (
-              <Copy size={18} />
-            )}
+            {copiedEmail ? (isSpanish ? "Copiado" : "Copied") : isSpanish ? "Copiar" : "Copy"}
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStatus = (kind: "success" | "error") => {
+    const isSuccess = kind === "success";
+    return (
+      <div className="animate-fade-in flex flex-col items-center justify-center gap-4 py-16 text-center">
+        {isSuccess ? (
+          <CheckCircle size={36} strokeWidth={1.5} className="text-emerald-400" />
+        ) : (
+          <AlertTriangle size={36} strokeWidth={1.5} style={{ color: ACCENT }} />
+        )}
+        <div>
+          <h4 className="mb-2 text-lg font-medium tracking-tight text-white">
+            {isSuccess
+              ? isSpanish ? "Mensaje enviado" : "Message sent"
+              : isSpanish ? "No se pudo enviar" : "Couldn't send it"}
+          </h4>
+          <p className="max-w-[300px] text-sm leading-relaxed text-white/50">
+            {isSuccess
+              ? isSpanish
+                ? "Gracias por escribirme. Te responderé lo antes posible."
+                : "Thanks for reaching out. I'll get back to you as soon as I can."
+              : isSpanish
+                ? "Comprueba tu conexión e inténtalo de nuevo."
+                : "Check your connection and try again."}
+          </p>
         </div>
       </div>
     );
@@ -120,107 +121,67 @@ export default function ContactPanels({ isSpanish }: { isSpanish: boolean }) {
 
   const renderRightPanel = () => {
     return (
-      <div
-        className="w-[485px] bg-zinc-950/90 border border-red-500/20 backdrop-blur-xl rounded-2xl p-10 select-none font-mono flex flex-col gap-8 shadow-[0_0_50px_rgba(0,0,0,0.95)] relative animate-fade-in text-white"
-        style={{
-          boxShadow: `0 0 40px rgba(255, 51, 102, 0.08), inset 0 0 20px rgba(255, 51, 102, 0.04)`,
-          borderColor: "rgba(255, 51, 102, 0.25)",
-        }}
-      >
-        {/* Cyber Corners */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 rounded-tl-lg border-red-500/80" />
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 rounded-tr-lg border-red-500/80" />
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 rounded-bl-lg border-red-500/80" />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 rounded-br-lg border-red-500/80" />
+      <div data-panel className={PANEL_CLASS}>
+        <h3 className="text-lg font-medium tracking-tight">
+          {isSpanish ? "Envíame un mensaje" : "Send me a message"}
+        </h3>
 
-        {/* Header */}
-        <div className="flex items-center gap-3 border-b border-red-500/10 pb-4">
-          <Send size={18} className="text-red-500" />
-          <span className="text-white text-sm font-black uppercase tracking-[0.25em]">
-            {isSpanish ? "Enviar Mensaje" : "Send Message"}
-          </span>
-        </div>
-
-        {formStatus === "success" ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center gap-4 animate-fade-in">
-            <CheckCircle size={48} className="text-green-500" />
-            <div>
-              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">
-                {isSpanish ? "Mensaje Enviado" : "Message Sent"}
-              </h4>
-              <p className="text-zinc-400 text-[10px] leading-relaxed max-w-[280px]">
-                {isSpanish
-                  ? "Tu mensaje ha sido enviado correctamente. Me pondré en contacto contigo lo antes posible."
-                  : "Your message has been sent successfully. I will get back to you as soon as possible."}
-              </p>
-            </div>
-          </div>
-        ) : formStatus === "error" ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center gap-4 animate-fade-in">
-            <AlertTriangle size={48} className="text-red-500" />
-            <div>
-              <h4 className="text-white text-sm font-bold uppercase tracking-widest mb-2">
-                {isSpanish ? "Error de Envío" : "Send Failed"}
-              </h4>
-              <p className="text-zinc-400 text-[10px] leading-relaxed max-w-[280px]">
-                {isSpanish
-                  ? "No se pudo enviar el mensaje. Por favor, comprueba tu conexión e inténtalo de nuevo."
-                  : "Could not send message. Please check your connection and try again."}
-              </p>
-            </div>
-          </div>
+        {formStatus === "success" || formStatus === "error" ? (
+          renderStatus(formStatus)
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 select-text">
+          <form onSubmit={handleSubmit} className="flex select-text flex-col gap-4">
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+              <label htmlFor="contact-name" className={LABEL_CLASS}>
                 {isSpanish ? "Nombre" : "Name"}
               </label>
               <input
+                id="contact-name"
                 required
                 type="text"
                 name="name"
-                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-5 py-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-red-500/40"
-                placeholder={isSpanish ? "Tu Nombre" : "Your Name"}
+                autoComplete="name"
+                className={INPUT_CLASS}
               />
             </div>
 
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+              <label htmlFor="contact-email" className={LABEL_CLASS}>
                 {isSpanish ? "Correo" : "Email"}
               </label>
               <input
+                id="contact-email"
                 required
                 type="email"
                 name="email"
-                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-5 py-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono focus:ring-1 focus:ring-red-500/40"
-                placeholder="your-email@example.com"
+                autoComplete="email"
+                className={INPUT_CLASS}
               />
             </div>
 
             <div>
-              <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2 block">
+              <label htmlFor="contact-message" className={LABEL_CLASS}>
                 {isSpanish ? "Mensaje" : "Message"}
               </label>
               <textarea
+                id="contact-message"
                 required
                 name="message"
                 rows={3}
-                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-5 py-4 text-sm text-white focus:border-red-500 focus:outline-none transition-colors font-mono resize-none focus:ring-1 focus:ring-red-500/40"
-                placeholder={isSpanish ? "Escribe tu mensaje aquí..." : "Write your message here..."}
+                className={`${INPUT_CLASS} resize-none`}
               />
             </div>
 
             <button
               type="submit"
               disabled={formStatus === "submitting"}
-              className="mt-2 w-full bg-red-600 hover:bg-red-500 text-white font-bold tracking-widest py-4 text-sm rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2 uppercase cursor-pointer"
+              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-[15px] font-medium text-black transition-[background-color,color,scale] duration-300 hover:bg-[#ff3366] hover:text-white active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
             >
               {formStatus === "submitting" ? (
                 <span>{isSpanish ? "Enviando..." : "Sending..."}</span>
               ) : (
                 <>
-                  <Send size={14} />
-                  <span>{isSpanish ? "Enviar Mensaje" : "Send Message"}</span>
+                  <Send size={15} />
+                  <span>{isSpanish ? "Enviar" : "Send"}</span>
                 </>
               )}
             </button>

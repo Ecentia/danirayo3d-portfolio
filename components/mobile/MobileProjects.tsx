@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Project, GalleryImage } from '@/types/database';
 import Image from 'next/image';
-import { Layers, ImageOff, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { ImageOff, ArrowLeft, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isVideoUrl, getVideoPreviewSrc } from '@/lib/media';
 
@@ -16,7 +16,9 @@ const getTranslation = (value: string | null, isSpanish: boolean): string => {
     if (parsed && typeof parsed === 'object') {
       return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
     }
-  } catch (e) {}
+  } catch {
+    // No es JSON: el valor es texto plano sin traducciones y se devuelve tal cual
+  }
   return value;
 };
 
@@ -61,7 +63,7 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500 gap-4">
         <Loader2 size={32} className="animate-spin text-red-500" />
-        <span className="text-[10px] font-bold uppercase tracking-widest">{isSpanish ? "Cargando Recursos..." : "Loading Assets..."}</span>
+        <span className="text-sm">{isSpanish ? "Cargando..." : "Loading..."}</span>
       </div>
     );
   }
@@ -87,7 +89,7 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
           className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-zinc-300 transition-colors backdrop-blur-xl"
         >
           <ArrowLeft size={16} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">{isSpanish ? "Volver" : "Back"}</span>
+          <span className="text-sm">{isSpanish ? "Volver" : "Back"}</span>
         </button>
       </div>
 
@@ -114,16 +116,16 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
       <div className="px-6 mt-8 flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           {project.tags?.map((tag, idx) => (
-            <span key={idx} className="px-3 py-1 bg-red-950/40 border border-red-500/20 rounded-md text-[9px] font-bold text-red-400 uppercase tracking-widest">
+            <span key={idx} className="text-[13px] text-white/50">
               {tag}
             </span>
           ))}
         </div>
-        <h1 className="text-3xl font-black text-white uppercase leading-none tracking-tight">
+        <h1 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white">
           {translatedTitle}
         </h1>
         {translatedDesc && (
-          <p className="text-sm text-zinc-400 leading-relaxed font-light mt-2 bg-white/[0.02] p-4 rounded-2xl border border-white/5 whitespace-pre-wrap">
+          <p className="mt-2 whitespace-pre-wrap text-[15px] font-light leading-relaxed text-white/65">
             {translatedDesc}
           </p>
         )}
@@ -133,8 +135,7 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
       {gallery.length > 0 && (
         <div className="px-4 mt-12 flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-2 px-2">
-            <Sparkles size={14} className="text-red-500" />
-            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{isSpanish ? "Galería del Proyecto" : "Project Gallery"}</h3>
+            <h3 className="text-sm text-white/40">{isSpanish ? "Galería del Proyecto" : "Project Gallery"}</h3>
           </div>
           
           {gallery.map((img, i) => (
@@ -142,7 +143,7 @@ function MobileProjectDetail({ projectId, onBack }: { projectId: string; onBack:
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: Math.min(i, 2) * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               key={img.id} 
               className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 shadow-xl"
             >
@@ -219,13 +220,11 @@ export default function MobileProjects() {
             exit={{ opacity: 0, scale: 0.98 }}
             className="px-5"
           >
-            <div className="flex items-center justify-between mb-8 px-1">
-              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-                {isSpanish ? <>Trabajos <span className="text-red-500">Seleccionados</span></> : <>Selected <span className="text-red-500">Works</span></>}
+            <div className="mb-8 flex items-baseline justify-between px-1">
+              <h2 className="text-3xl font-semibold tracking-[-0.03em] text-white">
+                {isSpanish ? "Proyectos" : "Projects"}
               </h2>
-              <span className="text-[9px] font-bold tracking-widest text-zinc-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                 {projects.length} {isSpanish ? "PROYECTOS" : "PROJECTS"}
-              </span>
+              <span className="text-sm tabular-nums text-white/40">{projects.length}</span>
             </div>
 
             {loading ? (
@@ -244,9 +243,9 @@ export default function MobileProjects() {
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: "-40px" }}
-                      transition={{ delay: i * 0.1, type: "spring", stiffness: 80 }}
+                      transition={{ delay: Math.min(i, 3) * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                       onClick={() => setSelectedProjectId(project.id)}
-                      className="group relative w-full aspect-[4/3] bg-zinc-950 rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
+                      className="group relative w-full aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl bg-zinc-950"
                     >
                        {/* 1. IMAGEN */}
                        {project.thumbnail_url ? (
@@ -267,11 +266,11 @@ export default function MobileProjects() {
                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-6 flex flex-col justify-end pointer-events-none">
                           <div className="transition-transform duration-500">
                             {project.tags && project.tags.length > 0 && (
-                              <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-bold uppercase tracking-widest mb-3 rounded-full">
-                                 {project.tags[0]}
+                              <span className="mb-2 block text-[13px] text-white/60">
+                                {project.tags[0]}
                               </span>
                             )}
-                            <h3 className="text-2xl font-black text-white uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                            <h3 className="text-2xl font-semibold tracking-tight text-white leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                                 {translatedCardTitle}
                             </h3>
                           </div>

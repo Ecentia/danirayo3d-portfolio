@@ -1,90 +1,85 @@
 "use client";
 
-// --- IMPORTS DE ESCRITORIO ---
-import React, { useState } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import React, { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { AnimatePresence, MotionConfig } from "framer-motion";
 import MaintenanceScreen from "@/components/MaintenanceScreen";
-import { supabase } from "@/lib/supabase";
-import AboutMe from "@/components/sections/AboutMe";
-import ProjectsGrid from "@/components/sections/ProjectGrid";
-import TechStack from "@/components/sections/TechStack";
-import Experience from "@/components/sections/Experience";
-import Contact from "@/components/sections/Contact";
-
-// --- IMPORT DEL NUEVO HERO ---
-import Hero from "@/components/Hero";
-
-// --- IMPORT DE LA APP MÓVIL ---
-// Asegúrate de haber creado este componente en la carpeta correcta
 import MobileShell from "@/components/mobile/MobileShell";
-import SketchfabGallery from "@/components/sections/SketchfabGallery";
+import IntroLoader from "@/components/IntroLoader";
+import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/context/LanguageContext";
 
-// --- CONFIGURACIÓN DE ANIMACIONES WEB ---
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 60 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
-  },
-};
+// Three.js + drei pesan más de 1 MB: solo se descargan en escritorio.
+// Antes la escena 3D se montaba (oculta con CSS) también en móvil.
+const Hero = dynamic(() => import("@/components/Hero"), { ssr: false });
 
-const revealSide = (direction: "left" | "right"): Variants => ({
-  hidden: { opacity: 0, x: direction === "left" ? -100 : 100 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 1, ease: "easeOut" },
-  },
-});
+type ViewportKind = "desktop" | "mobile";
+type GpuStatus = "checking" | "ok" | "error";
+
+const DESKTOP_QUERY = "(min-width: 768px)";
+// Evita un parpadeo del loader cuando todo está en caché
+const MIN_LOADER_MS = 900;
+// Nadie se queda atrapado en el loader si un asset se cuelga sin lanzar error
+const LOADER_SAFETY_TIMEOUT_MS = 12000;
+
+function hasHardwareAcceleration(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = (canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+    if (!gl) return false;
+
+    const dbgRenderInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    if (dbgRenderInfo) {
+      const renderer = String(gl.getParameter(dbgRenderInfo.UNMASKED_RENDERER_WEBGL) || "");
+      if (/swiftshader|software|llvmpipe|microsoft basic|google rendering/i.test(renderer)) {
+        return false;
+      }
+    }
+
+    // Liberamos el contexto de prueba: los navegadores limitan los contextos WebGL vivos
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch (err) {
+    console.warn("[GPU] No se pudo comprobar la aceleración por hardware:", err);
+    return false;
+  }
+}
 
 export default function Home() {
-  // ---- ESTADOS PARA EL PRECARGADOR Y GPU CHECK ----
-  const [gpuStatus, setGpuStatus] = useState<"checking" | "ok" | "error">("checking");
-  const [progress, setProgress] = useState(0);
-  const [showLoader, setShowLoader] = useState(true);
+  const { isSpanish } = useLanguage();
 
-  // ---- NUEVOS ESTADOS PARA EL MANTENIMIENTO ----
+  const [viewport, setViewport] = useState<ViewportKind | null>(null);
+  const [gpuStatus, setGpuStatus] = useState<GpuStatus>("checking");
+
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  React.useEffect(() => {
-    // 1. Verificar aceleración por hardware / WebGL
-    const checkGPU = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        const gl = (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
-        if (!gl) return false;
+  const [sceneProgress, setSceneProgress] = useState(0);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
 
-        const dbgRenderInfo = gl.getExtension("WEBGL_debug_renderer_info");
-        if (dbgRenderInfo) {
-          const renderer = gl.getParameter(dbgRenderInfo.UNMASKED_RENDERER_WEBGL) || "";
-          if (/swiftshader|software|llvmpipe|microsoft basic|google rendering/i.test(renderer)) {
-            return false;
-          }
-        }
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
+  // 1. Escritorio o móvil (reactivo a cambios de tamaño)
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const update = () => setViewport(mq.matches ? "desktop" : "mobile");
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
-    const isDesk = window.innerWidth >= 768;
-    const hasGPU = checkGPU();
+  // 2. Verificar aceleración por hardware solo cuando se va a usar WebGL
+  useEffect(() => {
+    if (viewport !== "desktop" || gpuStatus !== "checking") return;
+    setGpuStatus(hasHardwareAcceleration() ? "ok" : "error");
+  }, [viewport, gpuStatus]);
 
-    if (isDesk && !hasGPU) {
-      setGpuStatus("error");
-      setChecking(false);
-      return;
-    }
+  // 3. Estado de mantenimiento, en paralelo a la carga de la escena
+  useEffect(() => {
+    let cancelled = false;
 
-    setGpuStatus("ok");
-
-    // 2. Si es móvil o tiene GPU, comprobar estado del sistema (mantenimiento)
     const checkSystemState = async () => {
       // Si Supabase no responde (proyecto pausado, red caída...) la web debe
       // seguir cargando: sin el finally, checking se quedaba en true y la
@@ -107,238 +102,139 @@ export default function Home() {
             data: { session },
           } = await supabase.auth.getSession();
 
-          if (!session) {
+          if (!session && !cancelled) {
             setIsMaintenance(true);
           }
         }
       } catch (err) {
         console.error("[Mantenimiento] Error inesperado comprobando el estado:", err);
       } finally {
-        setChecking(false); // Terminamos de comprobar
+        if (!cancelled) setChecking(false);
       }
     };
 
     checkSystemState();
-
-    // 3. Simulación de barra de progreso para amortiguar el compilador WebGL
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 8) + 4;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(interval);
-        setTimeout(() => {
-          setShowLoader(false);
-        }, 300);
-      }
-      setProgress(currentProgress);
-    }, 60);
-
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Determinar log de telemetría basado en el progreso
-  const getTelemetryLog = (p: number) => {
-    if (p < 20) return "SYSTEM: INITIALIZING QUANTUM CORE...";
-    if (p < 40) return "ORBIT: CALCULATING PLANETARY TRAJECTORIES...";
-    if (p < 60) return "SHADERS: COMPILING GRAPHICS COMPLEMENTS...";
-    if (p < 80) return "NETWORK: SECURING SUPABASE DATA STREAM...";
-    if (p < 100) return "GRAPHICS: INJECTING CYBERPUNK GRID NEST...";
-    return "READY: BOOTING PORTFOLIO EXPERIENCE...";
-  };
+  // 4. Temporizadores del loader
+  useEffect(() => {
+    const minTimer = setTimeout(() => setMinTimeElapsed(true), MIN_LOADER_MS);
+    const safetyTimer = setTimeout(() => setTimedOut(true), LOADER_SAFETY_TIMEOUT_MS);
+    return () => {
+      clearTimeout(minTimer);
+      clearTimeout(safetyTimer);
+    };
+  }, []);
 
-  // Si está desactivada la aceleración por hardware en Escritorio, se le bloquea y advierte
-  if (gpuStatus === "error") {
-    return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center font-mono text-white px-6">
-        <div className="border border-red-500/30 bg-red-950/10 p-8 rounded-lg max-w-md w-full flex flex-col items-center gap-4 text-center shadow-[0_0_50px_rgba(239,68,68,0.15)] animate-fade-in">
-          <svg className="w-16 h-16 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <h2 className="text-red-500 font-bold text-lg uppercase tracking-wider">
-            Aceleración por Hardware Desactivada
-          </h2>
-          <p className="text-zinc-400 text-xs leading-relaxed">
-            Esta experiencia interactiva en 3D requiere aceleración por hardware para ejecutarse con fluidez y evitar sobrecargar tu procesador.
-          </p>
-          <div className="w-full h-[1px] bg-red-500/20 my-2"></div>
-          <div className="text-zinc-500 text-[10px] leading-relaxed text-left space-y-1">
-            <strong className="text-zinc-400">Cómo solucionarlo:</strong>
-            <p>1. Abre los ajustes de tu navegador (Chrome, Edge, etc.).</p>
-            <p>2. Busca <strong>&quot;Aceleración por hardware&quot;</strong> o <strong>&quot;Sistema&quot;</strong>.</p>
-            <p>3. Activa la opción <strong>&quot;Usar aceleración por hardware cuando esté disponible&quot;</strong>.</p>
-            <p>4. Reinicia tu navegador e intenta entrar de nuevo.</p>
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-6 py-2 border border-red-500/50 hover:bg-red-500/20 text-red-400 font-bold tracking-widest text-xs rounded transition-all uppercase cursor-pointer"
-          >
-            Recomprobar
-          </button>
-        </div>
-      </div>
+  const contentReady =
+    !checking &&
+    viewport !== null &&
+    (viewport === "mobile" || gpuStatus === "error" || isMaintenance || sceneReady);
+
+  useEffect(() => {
+    if (!showLoader) return;
+    if (contentReady && minTimeElapsed) {
+      setShowLoader(false);
+    } else if (timedOut) {
+      console.warn("[Loader] Tiempo máximo de carga alcanzado; se muestra la web igualmente.");
+      setShowLoader(false);
+    }
+  }, [contentReady, minTimeElapsed, timedOut, showLoader]);
+
+  const handleSceneProgress = useCallback((value: number) => {
+    // El LoadingManager de three reinicia el porcentaje entre tandas de assets;
+    // nunca dejamos que la barra retroceda.
+    if (!Number.isFinite(value)) return;
+    setSceneProgress((prev) => Math.max(prev, value));
+  }, []);
+
+  const handleSceneReady = useCallback(() => setSceneReady(true), []);
+
+  let loaderProgress = 6;
+  if (contentReady) {
+    loaderProgress = 100;
+  } else if (viewport === "desktop") {
+    // 0-12 descarga del chunk 3D, 12-90 assets reales, 90-100 compilación de shaders
+    loaderProgress = 12 + Math.min(sceneProgress, 100) * 0.78;
+  } else if (viewport === "mobile") {
+    loaderProgress = checking ? 55 : 90;
+  }
+
+  let content: React.ReactNode = null;
+  if (isMaintenance) {
+    content = <MaintenanceScreen />;
+  } else if (viewport === "mobile") {
+    content = <MobileShell />;
+  } else if (viewport === "desktop" && gpuStatus === "error") {
+    content = <GpuUnavailableScreen isSpanish={isSpanish} />;
+  } else if (viewport === "desktop" && gpuStatus === "ok") {
+    // Se monta detrás del loader para que texturas y shaders estén listos al revelarse
+    content = (
+      <main className="relative z-0 h-screen w-full overflow-hidden">
+        <Hero
+          onProgress={handleSceneProgress}
+          onReady={handleSceneReady}
+          introActive={showLoader}
+        />
+      </main>
     );
   }
 
-  // Mientras comprueba la base de datos, mostramos pantalla negra
-  if (checking) return <div className="min-h-screen bg-[#050505]"></div>;
-
-  // Si está en mantenimiento y NO es admin, mostramos la pantalla de bloqueo
-  if (isMaintenance) {
-    return <MaintenanceScreen />;
-  }
-
-  // A PARTIR DE AQUÍ VA EL RESTO DE TU CÓDIGO NORMAL DE LA WEB...
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <AnimatePresence>
         {showLoader && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="fixed inset-0 bg-[#050505] z-[9999] flex flex-col items-center justify-center font-mono text-white"
-          >
-            <div className="flex flex-col items-center gap-6">
-              {/* Telemetría animada */}
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-red-500/80 uppercase tracking-[0.25em] font-semibold animate-pulse">
-                  {getTelemetryLog(progress)}
-                </span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-widest text-center">
-                  Loading Assets & Shaders
-                </span>
-              </div>
-
-              {/* Contenedor de la barra de progreso */}
-              <div className="relative">
-                {/* Barra de fondo */}
-                <div className="w-72 h-[3px] bg-zinc-900 rounded-full overflow-hidden relative border border-white/5">
-                  {/* Barra de progreso con resplandor */}
-                  <div
-                    className="h-full bg-gradient-to-r from-red-600 via-red-500 to-red-400 transition-all duration-100 ease-out"
-                    style={{
-                      width: `${progress}%`,
-                      boxShadow: "0 0 10px rgba(239, 68, 68, 0.8)",
-                    }}
-                  />
-                </div>
-                {/* Porcentaje flotante */}
-                <div className="absolute right-0 -bottom-5 text-[9px] text-zinc-400 font-bold">
-                  {progress}%
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <IntroLoader key="intro-loader" progress={loaderProgress} isSpanish={isSpanish} />
         )}
       </AnimatePresence>
+      {content}
+    </MotionConfig>
+  );
+}
 
-      {/* ================================================= */}
-      {/* MUNDO 1: APP MÓVIL (Visible < 768px)              */}
-      {/* ================================================= */}
-      <div className="md:hidden">
-        {/* MobileShell es una App SPA completa, ocupa todo el viewport */}
-        <MobileShell />
+function GpuUnavailableScreen({ isSpanish }: { isSpanish: boolean }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] px-6 text-white">
+      <div className="animate-fade-in flex w-full max-w-md flex-col gap-5 rounded-3xl border border-white/10 bg-white/[0.02] p-8 text-center backdrop-blur-xl">
+        <span className="mx-auto h-1.5 w-1.5 rounded-full bg-rayo-red" />
+        <h2 className="text-xl font-semibold tracking-tight">
+          {isSpanish ? "Aceleración por hardware desactivada" : "Hardware acceleration is off"}
+        </h2>
+        <p className="text-sm leading-relaxed text-white/55">
+          {isSpanish
+            ? "Esta experiencia interactiva en 3D requiere aceleración por hardware para ejecutarse con fluidez y evitar sobrecargar tu procesador."
+            : "This interactive 3D experience needs hardware acceleration to run smoothly without overloading your CPU."}
+        </p>
+        <div className="h-px w-full bg-white/10" />
+        <ol className="space-y-1.5 text-left text-xs leading-relaxed text-white/45">
+          <li>
+            1. {isSpanish ? "Abre los ajustes de tu navegador (Chrome, Edge, etc.)." : "Open your browser settings (Chrome, Edge, etc.)."}
+          </li>
+          <li>
+            2. {isSpanish ? "Busca " : "Search for "}
+            <strong className="text-white/70">
+              &quot;{isSpanish ? "Aceleración por hardware" : "Hardware acceleration"}&quot;
+            </strong>
+            .
+          </li>
+          <li>
+            3.{" "}
+            {isSpanish
+              ? "Activa \"Usar aceleración por hardware cuando esté disponible\"."
+              : "Enable \"Use hardware acceleration when available\"."}
+          </li>
+          <li>4. {isSpanish ? "Reinicia el navegador e intenta entrar de nuevo." : "Restart the browser and try again."}</li>
+        </ol>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 cursor-pointer rounded-full bg-white px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-black transition-colors hover:bg-rayo-red hover:text-white"
+        >
+          {isSpanish ? "Recomprobar" : "Check again"}
+        </button>
       </div>
-
-      {/* ================================================= */}
-      {/* MUNDO 2: WEB ESCRITORIO (Visible >= 768px)        */}
-      {/* ================================================= */}
-      <main className="hidden md:block w-full h-screen overflow-hidden relative z-0">
-        {/* 1. HERO SECTION (NUEVO) */}
-        <Hero />
-
-        {/* ESTILOS GLOBALES EFECTO GLITCH CONSTANTE (Sin fondo negro) */}
-        <style jsx global>{`
-          .cyber-glitch {
-            position: relative;
-          }
-
-          /* Creamos dos copias exactas del texto, superpuestas, pero con fondo transparente */
-          .cyber-glitch::before,
-          .cyber-glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent; /* ✅ NADA de fondos negros */
-            pointer-events: none;
-            color: white; /* El texto es blanco como el original */
-          }
-
-          /* Capa Roja (Se desfasa a la izquierda y tiene sombra roja) */
-          .cyber-glitch::before {
-            left: 3px;
-            text-shadow: -2px 0 #ff0000;
-            animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
-          }
-
-          /* Capa Cyan (Se desfasa a la derecha y tiene sombra cyan) */
-          .cyber-glitch::after {
-            left: -3px;
-            text-shadow: 2px 0 #00ffff;
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-          }
-
-          /* Animación agresiva de cortes horizontales (Capa 1) */
-          @keyframes glitch-anim-1 {
-            0% {
-              clip-path: inset(20% 0 80% 0);
-              transform: translate(-2px, 1px);
-            }
-            20% {
-              clip-path: inset(60% 0 10% 0);
-              transform: translate(2px, -1px);
-            }
-            40% {
-              clip-path: inset(40% 0 50% 0);
-              transform: translate(-2px, 2px);
-            }
-            60% {
-              clip-path: inset(80% 0 5% 0);
-              transform: translate(2px, -2px);
-            }
-            80% {
-              clip-path: inset(10% 0 70% 0);
-              transform: translate(-1px, 1px);
-            }
-            100% {
-              clip-path: inset(30% 0 50% 0);
-              transform: translate(1px, -1px);
-            }
-          }
-
-          /* Animación agresiva de cortes horizontales (Capa 2) */
-          @keyframes glitch-anim-2 {
-            0% {
-              clip-path: inset(10% 0 60% 0);
-              transform: translate(2px, -1px);
-            }
-            20% {
-              clip-path: inset(30% 0 20% 0);
-              transform: translate(-2px, 2px);
-            }
-            40% {
-              clip-path: inset(70% 0 10% 0);
-              transform: translate(1px, -1px);
-            }
-            60% {
-              clip-path: inset(20% 0 50% 0);
-              transform: translate(-1px, 2px);
-            }
-            80% {
-              clip-path: inset(50% 0 30% 0);
-              transform: translate(2px, -2px);
-            }
-            100% {
-              clip-path: inset(5% 0 80% 0);
-              transform: translate(-2px, 1px);
-            }
-          }
-        `}</style>
-      </main>
-    </>
+    </div>
   );
 }

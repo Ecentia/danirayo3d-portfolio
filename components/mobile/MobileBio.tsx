@@ -14,7 +14,9 @@ const getTranslation = (value: string | null, isSpanish: boolean): string => {
     if (parsed && typeof parsed === 'object') {
       return (isSpanish ? parsed.es : parsed.en) || parsed.en || parsed.es || value;
     }
-  } catch (e) {}
+  } catch {
+    // No es JSON: el valor es texto plano sin traducciones y se devuelve tal cual
+  }
   return value;
 };
 
@@ -40,26 +42,18 @@ export default function MobileBio() {
     <div className="pt-10 pb-10 w-full overflow-x-clip px-5">
       
       {/* HEADER PREMIUM */}
-      <div className="flex items-center justify-between mb-10 px-1">
-        <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
-          {isSpanish ? <>Línea de <span className="text-red-500">Experiencia</span></> : <>Career <span className="text-red-500">Path</span></>}
+      <div className="mb-10 flex items-baseline justify-between px-1">
+        <h2 className="text-3xl font-semibold leading-none tracking-[-0.03em] text-white">
+          {isSpanish ? "Experiencia" : "Experience"}
         </h2>
-        <span className="text-[9px] font-bold tracking-widest text-zinc-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
-           {items.length} {isSpanish ? "REGISTROS" : "RECORDS"}
-        </span>
+        <span className="text-sm tabular-nums text-white/40">{items.length}</span>
       </div>
 
       {/* CONTENEDOR DE LA LÍNEA DE TIEMPO */}
       <div className="relative">
         
         {/* Línea de Energía (Spine) perfectamente alineada al centro de los iconos */}
-        <div className="absolute left-[19px] top-4 bottom-0 w-[2px] bg-white/5 rounded-full overflow-hidden">
-           <motion.div 
-             className="w-full h-1/3 bg-gradient-to-b from-transparent via-red-600 to-transparent"
-             animate={{ y: ['-100%', '300%'] }}
-             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-           />
-        </div>
+        <div className="absolute bottom-0 left-[19px] top-4 w-px bg-white/10" />
 
         {loading ? (
           // Skeletons de Carga Premium
@@ -81,7 +75,7 @@ export default function MobileBio() {
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
-                  transition={{ delay: i * 0.1, type: "spring", stiffness: 80 }}
+                  transition={{ delay: Math.min(i, 3) * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   className="relative pl-14" // Espacio exacto para esquivar la línea
                 >
                   
@@ -89,47 +83,41 @@ export default function MobileBio() {
                   <div className="absolute left-0 top-3 w-10 h-10 bg-[#030303] rounded-full flex items-center justify-center z-10">
                     <div className={`w-8 h-8 rounded-full border flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
                        isWork 
-                         ? 'border-red-500/50 bg-red-950/30 text-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]' 
-                         : 'border-zinc-700 bg-zinc-900 text-zinc-400'
+                         ? 'border-white/20 bg-[#0b0b0c] text-white/85' 
+                         : 'border-white/10 bg-[#0b0b0c] text-white/45'
                     }`}>
                       {isWork ? <Briefcase size={14} /> : <GraduationCap size={14} />}
                     </div>
                   </div>
 
                   {/* TARJETA DE CONTENIDO (Glassmorphism Avanzado) */}
-                  <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-                    
-                    {/* Brillo superior del cristal */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
                     
                     {/* METADATOS (Tipo y Fechas) */}
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                      <span className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                        isWork ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-white/5 text-zinc-400 border border-white/10'
-                      }`}>
+                      <span className={`text-[13px] ${isWork ? 'text-white/70' : 'text-white/45'}`}>
                         {isWork ? (isSpanish ? 'Profesional' : 'Professional') : (isSpanish ? 'Académico' : 'Academic')}
                       </span>
-                      
-                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-500">
+
+                      <div className="flex items-center gap-1.5 text-[13px] text-white/40">
                         <Calendar size={12} className="text-zinc-600" />
                         <span>{item.start_date}</span>
                         <span>—</span>
                         {item.end_date ? (
                           <span>{item.end_date}</span>
                         ) : (
-                          <span className="text-red-500 font-bold animate-pulse">{isSpanish ? 'PRESENTE' : 'PRESENT'}</span>
+                          <span className="text-rayo-red">{isSpanish ? 'Actualidad' : 'Present'}</span>
                         )}
                       </div>
                     </div>
 
                     {/* TÍTULO Y ORGANIZACIÓN */}
                     <div className="mb-3">
-                      <h3 className="text-xl font-black text-white leading-tight">
+                      <h3 className="text-xl font-semibold tracking-tight text-white leading-tight">
                         {translatedTitle}
                       </h3>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="w-4 h-[1px] bg-red-600"></span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+                        <span className="text-sm text-white/55">
                           {item.organization}
                         </span>
                       </div>
